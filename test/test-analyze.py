@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 """
-Street Fighter 6 Screenshot Analyzer CLI
+Street Fighter 6 Image Analysis Test
 
-Command-line interface for analyzing Street Fighter 6 screenshots
-to extract timer values, character names, and variations.
+This script provides functionality to:
+- Analyze single images for OCR text detection
+- Visualize detection regions on images
+- Save annotated results for review
+
+Usage:
+    python test-analyze.py screenshot.png
+    python test-analyze.py screenshot.png --dry
+    python test-analyze.py screenshot.png --regions timer character1
 """
 
 import argparse
 import sys
 import os
 import cv2 as cv
-from image_analyzer import ImageAnalyzer
+from ..image_analyzer import ImageAnalyzer
 
 def main():
     """Main entry point for the CLI."""
@@ -37,7 +44,7 @@ def main():
     parser.add_argument(
         '--regions', '-r',
         nargs='+',
-        choices=['timer', 'character1', 'character2', 'variation1', 'variation2'],
+        choices=['timer', 'character1', 'character2'],
         help='Specific regions to analyze (default: all regions)'
     )
 
@@ -62,7 +69,6 @@ def main():
         print(f"❌ Error: Image file '{args.image}' does not exist.", file=sys.stderr)
         sys.exit(1)
 
-    # Create analyzer with custom directories if provided
     analyzer = ImageAnalyzer(
         output_directory=args.output_dir,
         analyzed_frames_subdirectory=args.analyzed_dir
@@ -70,16 +76,12 @@ def main():
 
     try:
         if args.dry:
-            # Dry-run mode: visualize regions only
-            print("🔍 Dry-run mode enabled - Visualizing regions with color analysis")
+            print("🔍 Dry-run mode enabled - Visualizing regions")
             regions = args.regions or None
             output_file = analyzer.visualize_regions(args.image, regions_to_show=regions)
             print(f"✓ Regions saved to: {output_file}")
 
         else:
-            # Normal mode: full analysis
-            print("🎯 Detection with color context: C=Purple, M=Orange, D=Light Blue")
-
             # Analyze image
             regions = args.regions or None
             results = analyzer.analyze_image(args.image, regions_to_analyze=regions)
@@ -104,10 +106,8 @@ def main():
                 detection_results=results
             )
 
-            # Ensure output directories exist
             analyzer._ensure_output_directories()
 
-            # Save annotated image
             output_path = os.path.join(
                 analyzer.output_directory,
                 analyzer.analyzed_frames_subdirectory,
@@ -116,7 +116,6 @@ def main():
             cv.imwrite(output_path, annotated)
             print(f"✓ Annotated image saved: {output_path}")
 
-            # Final status
             if has_detections:
                 print("\n✓ Analysis completed successfully")
             else:
