@@ -3,13 +3,14 @@ import os
 from datetime import datetime
 
 class FrameExtractor:
-    FRAMES_INTERVAL_SECONDS = 5
     OUTPUT_FORMAT = 'png'
     OUTPUT_DIR = 'input'
     FRAMES_DIR = 'frames'
 
-    def __init__(self, video_path, output_name=None, no_prompt=False):
+    def __init__(self, video_path, output_name=None, no_prompt=False, frames_per_minute=12):
         self.video_path = video_path
+        self.frames_per_minute = frames_per_minute
+        self.frame_interval_seconds = 60.0 / frames_per_minute
         self.output_name = self.get_video_name(video_path, output_name, no_prompt)
         self.output_folder = self._prepare_output_directory()
 
@@ -52,17 +53,18 @@ class FrameExtractor:
         fps = cap.get(cv.CAP_PROP_FPS)
         frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         duration = frame_count / fps
-        frames_per_extraction = int(fps * self.FRAMES_INTERVAL_SECONDS)
+        frames_per_extraction = int(fps * self.frame_interval_seconds)
 
         print(f"\nExtracting frames from: {self.video_path}")
         print(f"Output directory: {self.output_folder}")
         print(f"FPS: {fps}")
         print(f"Durée totale: {duration:.2f} secondes")
-        print(f"Intervalle d'extraction: {self.FRAMES_INTERVAL_SECONDS} secondes")
+        print(f"Fréquence d'extraction: {self.frames_per_minute} frames par minute ({self.frame_interval_seconds:.1f}s d'intervalle)")
         print(f"Une image sera extraite tous les {frames_per_extraction} frames")
 
         frame_number = 0
         saved_count = 0
+        next_extraction_time = 0.0
 
         while True:
             ret, frame = cap.read()
@@ -71,12 +73,13 @@ class FrameExtractor:
 
             current_time = frame_number / fps
 
-            if current_time % self.FRAMES_INTERVAL_SECONDS == 0:
+            if current_time >= next_extraction_time:
                 timestamp = datetime.fromtimestamp(current_time).strftime('%H-%M-%S')
                 filename = os.path.join(self.output_folder, f'frame_{timestamp}.{self.OUTPUT_FORMAT}')
                 cv.imwrite(filename, frame)
                 saved_count += 1
                 print(f"Image sauvegardée: {filename} (temps: {current_time:.1f}s)")
+                next_extraction_time += self.frame_interval_seconds
 
             frame_number += 1
 
