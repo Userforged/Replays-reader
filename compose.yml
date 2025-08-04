@@ -1,7 +1,15 @@
 services:
   opencv:
     build: .
+    user: "1000:1000"
     volumes:
       - .:/app
     working_dir: /app
     command: tail -f /dev/null
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
