@@ -10,11 +10,12 @@ class ImageAnalyzer:
     DEFAULT_OUTPUT_DIR = 'output'
     DEFAULT_ANALYZED_SUBDIR = 'analyzed'
 
-    def __init__(self, output_directory=None, analyzed_frames_subdirectory=None, save_analyzed_images=True):
+    def __init__(self, output_directory=None, analyzed_frames_subdirectory=None, save_analyzed_images=True, debug=False):
         self.ocr_reader = None
         self.output_directory = output_directory or self.DEFAULT_OUTPUT_DIR
         self.analyzed_frames_subdirectory = analyzed_frames_subdirectory or self.DEFAULT_ANALYZED_SUBDIR
         self.save_analyzed_images = save_analyzed_images
+        self.debug = debug
 
         self.region_colors = {
             'timer': (57, 12, 96),
@@ -30,21 +31,39 @@ class ImageAnalyzer:
 
     def initialize_ocr(self):
         if self.ocr_reader is None:
+            if self.debug:
+                print("[ImageAnalyzer] Initializing OCR reader")
             self.ocr_reader = easyocr.Reader(['en'])
+            if self.debug:
+                print("[ImageAnalyzer] OCR reader initialized")
 
     def analyze_image(self, image_path, regions_to_analyze=None):
+        if self.debug:
+            print(f"[ImageAnalyzer] analyze_image: path='{image_path}', regions={regions_to_analyze}")
+        
         if regions_to_analyze is None:
             regions_to_analyze = ['timer', 'character1', 'character2']
+            if self.debug:
+                print(f"[ImageAnalyzer] Using default regions: {regions_to_analyze}")
 
         self.initialize_ocr()
 
+        if self.debug:
+            print(f"[ImageAnalyzer] Loading image: {image_path}")
         image = cv.imread(image_path)
         if image is None:
+            if self.debug:
+                print(f"[ImageAnalyzer] Failed to load image: {image_path}")
             raise ValueError(f"Unable to load image: {image_path}")
-
+        
+        if self.debug:
+            print(f"[ImageAnalyzer] Image loaded successfully: {image.shape}")
         return self.analyze_frame(image, regions_to_analyze)
 
     def analyze_frame(self, frame, regions_to_analyze=None):
+        if self.debug:
+            print(f"[ImageAnalyzer] analyze_frame: frame_shape={frame.shape}, regions={regions_to_analyze}")
+        
         if regions_to_analyze is None:
             regions_to_analyze = ['timer', 'character1', 'character2']
 
@@ -53,18 +72,41 @@ class ImageAnalyzer:
         detection_results = {}
 
         for region_name in regions_to_analyze:
+            if self.debug:
+                print(f"[ImageAnalyzer] Processing region: {region_name}")
+            
             region_image, boundaries = self.extract_region(frame, region_name)
 
             if region_image is None or boundaries is None:
+                if self.debug:
+                    print(f"[ImageAnalyzer] Region {region_name} extraction failed")
                 detection_results[region_name] = ''
                 continue
 
+            if self.debug:
+                print(f"[ImageAnalyzer] Region {region_name} extracted: {region_image.shape}, boundaries={boundaries}")
+            
             enhanced = self.enhance_image_for_ocr(region_image)
-            if region_name == 'timer':
-                detection_results[region_name] = self._extract_timer_digits(enhanced) if enhanced is not None else ''
-            else:
-                detection_results[region_name] = self._extract_character_name(enhanced) if enhanced is not None else ''
+            if enhanced is None:
+                if self.debug:
+                    print(f"[ImageAnalyzer] Enhancement failed for region {region_name}")
+                detection_results[region_name] = ''
+                continue
 
+            if region_name == 'timer':
+                if self.debug:
+                    print(f"[ImageAnalyzer] Extracting timer digits from {region_name}")
+                detection_results[region_name] = self._extract_timer_digits(enhanced)
+            else:
+                if self.debug:
+                    print(f"[ImageAnalyzer] Extracting character name from {region_name}")
+                detection_results[region_name] = self._extract_character_name(enhanced)
+            
+            if self.debug:
+                print(f"[ImageAnalyzer] Region {region_name} result: '{detection_results[region_name]}'")
+
+        if self.debug:
+            print(f"[ImageAnalyzer] Final detection results: {detection_results}")
         return detection_results
 
     def visualize_regions(self, image_path, regions_to_show=None):
@@ -123,6 +165,8 @@ class ImageAnalyzer:
 
     def extract_region(self, image, region_name):
         height, width = image.shape[:2]
+        if self.debug:
+            print(f"[ImageAnalyzer] extract_region: {region_name}, image_size={width}x{height}")
 
         if region_name == 'timer':
             boundaries = self._calculate_timer_boundaries(height, width)
@@ -131,7 +175,12 @@ class ImageAnalyzer:
         elif region_name == 'character2':
             boundaries = self._calculate_character2_boundaries(height, width)
         else:
+            if self.debug:
+                print(f"[ImageAnalyzer] Unknown region name: {region_name}")
             return None, None
+
+        if self.debug:
+            print(f"[ImageAnalyzer] Raw boundaries for {region_name}: {boundaries}")
 
         left_x, top_y, right_x, bottom_y = self._validate_boundaries(
             left_x=boundaries[0], top_y=boundaries[1],
@@ -140,22 +189,47 @@ class ImageAnalyzer:
         )
 
         if left_x is None:
+            if self.debug:
+                print(f"[ImageAnalyzer] Invalid boundaries for {region_name}")
             return None, None
 
+        if self.debug:
+            print(f"[ImageAnalyzer] Validated boundaries for {region_name}: ({left_x}, {top_y}, {right_x}, {bottom_y})")
+        
         region = image[top_y:bottom_y, left_x:right_x]
+        if self.debug:
+            print(f"[ImageAnalyzer] Extracted region {region_name} shape: {region.shape}")
         return region, (left_x, top_y, right_x, bottom_y)
 
     def enhance_image_for_ocr(self, image):
+        if self.debug:
+            print(f"[ImageAnalyzer] enhance_image_for_ocr: input_shape={image.shape if image is not None else 'None'}")
+        
         if image is None or image.size == 0:
+            if self.debug:
+                print("[ImageAnalyzer] Invalid input image for enhancement")
             return None
 
         try:
+            if self.debug:
+                print("[ImageAnalyzer] Converting to grayscale")
             gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+            
+            if self.debug:
+                print("[ImageAnalyzer] Applying CLAHE")
             clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
             enhanced = clahe.apply(gray)
+            
+            if self.debug:
+                print("[ImageAnalyzer] Upscaling image 2x")
             upscaled = cv.resize(enhanced, None, fx=2, fy=2, interpolation=cv.INTER_CUBIC)
+            
+            if self.debug:
+                print(f"[ImageAnalyzer] Enhancement complete: {upscaled.shape}")
             return upscaled
         except cv.error as e:
+            if self.debug:
+                print(f"[ImageAnalyzer] Enhancement error: {e}")
             print(f"⚠ Error enhancing image: {e}")
             return None
 
@@ -193,19 +267,44 @@ class ImageAnalyzer:
         return left_x, top_y, right_x, bottom_y
 
     def _extract_timer_digits(self, enhanced_image):
+        if self.debug:
+            print(f"[ImageAnalyzer] _extract_timer_digits: processing image shape {enhanced_image.shape}")
+        
         results = self.ocr_reader.readtext(enhanced_image)
+        if self.debug:
+            print(f"[ImageAnalyzer] OCR results for timer: {len(results)} detections")
+        
         digits = ''
-        for detection in results:
+        for i, detection in enumerate(results):
             text = detection[1]
-            digits += ''.join(filter(str.isdigit, text))
+            extracted_digits = ''.join(filter(str.isdigit, text))
+            if self.debug:
+                print(f"[ImageAnalyzer] Detection {i}: '{text}' -> digits: '{extracted_digits}'")
+            digits += extracted_digits
+        
+        if self.debug:
+            print(f"[ImageAnalyzer] Final timer digits: '{digits}'")
         return digits
 
     def _extract_character_name(self, enhanced_image):
+        if self.debug:
+            print(f"[ImageAnalyzer] _extract_character_name: processing image shape {enhanced_image.shape}")
+        
         results = self.ocr_reader.readtext(enhanced_image)
+        if self.debug:
+            print(f"[ImageAnalyzer] OCR results for character: {len(results)} detections")
+        
         text = ''
-        for detection in results:
-            text += detection[1] + ' '
-        return text.strip()
+        for i, detection in enumerate(results):
+            detected_text = detection[1]
+            if self.debug:
+                print(f"[ImageAnalyzer] Detection {i}: '{detected_text}' (confidence: {detection[2]:.3f})")
+            text += detected_text + ' '
+        
+        final_text = text.strip()
+        if self.debug:
+            print(f"[ImageAnalyzer] Final character text: '{final_text}'")
+        return final_text
 
     def _ensure_output_directories(self):
         if not os.path.exists(self.output_directory):

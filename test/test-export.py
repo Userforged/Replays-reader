@@ -43,7 +43,7 @@ def process_street_fighter_frames_for_data_extraction(frames_folder_path, output
     if not os.path.exists(analyzed_frames_output_folder):
         os.makedirs(analyzed_frames_output_folder)
 
-    analyzer = ImageAnalyzer(save_analyzed_images=True)
+    analyzer = ImageAnalyzer(save_analyzed_images=True, debug=True)
 
     # Get all image files from the folder
     image_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff')

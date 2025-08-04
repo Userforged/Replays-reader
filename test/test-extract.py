@@ -34,7 +34,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        extractor = FrameExtractor(args.video, args.folder_name, args.n)
+        extractor = FrameExtractor(args.video, args.folder_name, args.n, debug=True)
         extractor.extract_frames()
     except Exception as e:
         print(f"Erreur : {str(e)}", file=sys.stderr)
