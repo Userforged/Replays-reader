@@ -52,8 +52,8 @@ def main():
     parser.add_argument(
         '--output-dir', '-o',
         type=str,
-        default='output',
-        help='Output directory for results (default: output)'
+        default='test/output',
+        help='Output directory for results (default: test/output)'
     )
 
     parser.add_argument(
@@ -73,20 +73,20 @@ def main():
     analyzer = ImageAnalyzer(
         output_directory=args.output_dir,
         analyzed_frames_subdirectory=args.analyzed_dir,
-        debug=True
+        debug=True  # Active automatiquement save_analyzed_images et save_debug_images
     )
 
     try:
         if args.dry:
-            print("🔍 Dry-run mode enabled - Visualizing regions")
-            regions = args.regions or None
-            output_file = analyzer.visualize_regions(args.image, regions_to_show=regions)
-            print(f"✓ Regions saved to: {output_file}")
+            print("🔍 Dry-run mode enabled - Visualizing ROIs")
+            rois = args.regions or None  # Garder le nom du paramètre args.regions pour compatibilité
+            output_file = analyzer.visualize_rois(args.image, rois_to_show=rois)
+            print(f"✓ ROIs saved to: {output_file}")
 
         else:
             # Analyze image
-            regions = args.regions or None
-            results = analyzer.analyze_image(args.image, regions_to_analyze=regions)
+            rois = args.regions or None  # Garder le nom du paramètre args.regions pour compatibilité
+            results = analyzer.analyze_image(args.image, rois_to_analyze=rois)
 
             # Display results
             print("\n=== DETECTION RESULTS ===")
@@ -101,7 +101,7 @@ def main():
             # Create and save annotated image
             print("\n📸 Creating annotated image...")
             image = cv.imread(args.image)
-            annotated = analyzer.annotate_frame_with_regions(
+            annotated = analyzer.annotate_frame_with_rois(
                 image,
                 list(results.keys()),
                 show_text=True,

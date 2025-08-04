@@ -135,3 +135,74 @@ class FrameExtractor:
         if self.debug:
             print(f"[FrameExtractor] Video capture released")
         print(f"\nExtraction terminée. {saved_count} images sauvegardées dans {self.output_folder}")
+
+    def generate_frames(self):
+        """
+        Générateur qui yield les frames de la vidéo selon l'intervalle configuré.
+        
+        Yields:
+            tuple: (frame, timestamp_seconds, formatted_timestamp)
+        """
+        if self.debug:
+            print(f"[FrameExtractor] generate_frames: Starting frame generation from '{self.video_path}'")
+        
+        if not os.path.exists(self.video_path):
+            if self.debug:
+                print(f"[FrameExtractor] Video file not found: '{self.video_path}'")
+            raise FileNotFoundError(f"Le fichier vidéo '{self.video_path}' n'existe pas.")
+
+        if not self.video_path.lower().endswith('.mp4'):
+            if self.debug:
+                print(f"[FrameExtractor] Invalid file format: '{self.video_path}'")
+            raise ValueError("Le fichier doit être au format MP4.")
+
+        cap = cv.VideoCapture(self.video_path)
+        if not cap.isOpened():
+            if self.debug:
+                print(f"[FrameExtractor] Failed to open video capture")
+            raise RuntimeError("Erreur: Impossible d'ouvrir la vidéo")
+
+        try:
+            fps = cap.get(cv.CAP_PROP_FPS)
+            total_frames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+            duration = total_frames / fps
+
+            if self.debug:
+                print(f"[FrameExtractor] Video properties: fps={fps}, total_frames={total_frames}, duration={duration:.2f}s")
+                print(f"[FrameExtractor] Frame interval: {self.frame_interval_seconds:.1f}s")
+
+            current_time = 0.0
+            frame_count = 0
+            
+            while current_time < duration:
+                # Position vidéo au timestamp spécifique
+                cap.set(cv.CAP_PROP_POS_MSEC, current_time * 1000)
+                
+                ret, frame = cap.read()
+                if not ret:
+                    if self.debug:
+                        print(f"[FrameExtractor] Failed to read frame at {current_time:.1f}s")
+                    current_time += self.frame_interval_seconds
+                    continue
+                
+                # Format timestamp pour affichage
+                hours = int(current_time // 3600)
+                minutes = int((current_time % 3600) // 60)
+                seconds = int(current_time % 60)
+                formatted_timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                
+                if self.debug:
+                    print(f"[FrameExtractor] Yielding frame at {current_time:.1f}s ({formatted_timestamp})")
+                
+                yield frame, current_time, formatted_timestamp
+                
+                frame_count += 1
+                current_time += self.frame_interval_seconds
+                
+            if self.debug:
+                print(f"[FrameExtractor] Frame generation complete. Generated {frame_count} frames.")
+                
+        finally:
+            cap.release()
+            if self.debug:
+                print(f"[FrameExtractor] Video capture released")

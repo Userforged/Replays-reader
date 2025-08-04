@@ -42,7 +42,9 @@ def process_street_fighter_frames_for_data_extraction(frames_folder_path, output
     if not os.path.exists(analyzed_frames_output_folder):
         os.makedirs(analyzed_frames_output_folder)
 
-    analyzer = ImageAnalyzer(save_analyzed_images=True, debug=True)
+    analyzer = ImageAnalyzer(
+        debug=True  # Active automatiquement save_analyzed_images et save_debug_images
+    )
 
     # Get all image files from the folder
     image_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff')
@@ -80,7 +82,7 @@ def process_street_fighter_frames_for_data_extraction(frames_folder_path, output
             
         results = analyzer.analyze_frame(current_frame)
 
-        annotated_frame = analyzer.annotate_frame_with_regions(
+        annotated_frame = analyzer.annotate_frame_with_rois(
             current_frame,
             list(results.keys()),
             show_text=True,

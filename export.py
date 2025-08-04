@@ -6,13 +6,14 @@ import re
 from datetime import datetime
 
 from image_analyzer import ImageAnalyzer
+from frame_extractor import FrameExtractor
 
 OUTPUT_DIRECTORY = 'output'
 ANALYZED_FRAMES_SUBDIRECTORY = 'analyzed_frames'
 
 def process_street_fighter_video_for_data_extraction(video_file_path, frames_per_minute=12, save_frames=True):
     """
-    Analyze Street Fighter 6 video directly without extracting frames to disk.
+    Analyze Street Fighter 6 video using FrameExtractor generator.
     
     Args:
         video_file_path (str): Path to the video file to analyze
@@ -33,92 +34,75 @@ def process_street_fighter_video_for_data_extraction(video_file_path, frames_per
         if not os.path.exists(analyzed_frames_output_folder):
             os.makedirs(analyzed_frames_output_folder)
 
-    # Initialize video capture
-    video_capture = cv.VideoCapture(video_file_path)
-    if not video_capture.isOpened():
-        print("❌ Erreur: Impossible d'ouvrir la vidéo")
-        return
-
-    # Get video properties
-    fps = video_capture.get(cv.CAP_PROP_FPS)
-    total_frames = int(video_capture.get(cv.CAP_PROP_FRAME_COUNT))
-    duration = total_frames / fps
-    interval_seconds = 60.0 / frames_per_minute
+    # Initialize FrameExtractor and ImageAnalyzer
+    frame_extractor = FrameExtractor(
+        video_path=video_file_path,
+        output_name=None,  # Not used for generation
+        no_prompt=True,    # No user interaction
+        frames_per_minute=frames_per_minute,
+        debug=False        # Set to True for verbose output
+    )
     
-    print(f"🎬 Analyse directe de la vidéo: {video_file_path}")
-    print(f"📊 FPS: {fps:.2f}, Durée: {duration:.2f}s")
-    print(f"⏱️  Intervalle d'analyse: {interval_seconds:.1f}s ({frames_per_minute} frames/minute)")
+    analyzer = ImageAnalyzer(
+        debug=False  # Set to True for verbose output and automatic image saving
+    )
     
-    # Initialize analyzer and results
-    analyzer = ImageAnalyzer(save_analyzed_images=False)  # We handle frame saving manually
     json_results_file_path = os.path.join(OUTPUT_DIRECTORY, results_json_filename)
     results_data = []
     
-    current_time = 0.0
+    print(f"🎬 Analyse de la vidéo avec FrameExtractor: {video_file_path}")
+    print(f"⏱️  Intervalle d'analyse: {frame_extractor.frame_interval_seconds:.1f}s ({frames_per_minute} frames/minute)")
+    
     frame_count = 0
-    total_expected_frames = int(duration / interval_seconds) + 1
+    total_expected_frames = None  # Will be calculated during iteration
     
-    while current_time < duration:
-        # Position video at specific timestamp
-        video_capture.set(cv.CAP_PROP_POS_MSEC, current_time * 1000)
-        
-        ret, frame = video_capture.read()
-        if not ret:
-            print(f"⚠️  Impossible de lire la frame à {current_time:.1f}s")
-            current_time += interval_seconds
-            continue
-        
-        # Format timestamp for display and filename
-        hours = int(current_time // 3600)
-        minutes = int((current_time % 3600) // 60)
-        seconds = int(current_time % 60)
-        formatted_timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        
-        print(f"\n🔍 Analyse de la frame à {formatted_timestamp}")
-        
-        # Analyze frame
-        results = analyzer.analyze_frame(frame)
-        
-        # Save annotated frame only if requested
-        analyzed_frame_path = None
-        if save_frames:
-            # Create annotated frame
-            annotated_frame = analyzer.annotate_frame_with_regions(
-                frame,
-                list(results.keys()),
-                show_text=True,
-                detection_results=results
-            )
+    try:
+        # Use the generator to process frames
+        for frame, timestamp_seconds, formatted_timestamp in frame_extractor.generate_frames():
+            print(f"\n🔍 Analyse de la frame à {formatted_timestamp}")
             
-            # Save annotated frame
-            frame_filename = f"analyzed_frame_{hours:02d}-{minutes:02d}-{seconds:02d}.png"
-            analyzed_frame_path = os.path.join(analyzed_frames_output_folder, frame_filename)
-            cv.imwrite(analyzed_frame_path, annotated_frame)
-        
-        # Store results
-        frame_data = {
-            "timestamp": formatted_timestamp,
-            "timer_value": results.get('timer', ''),
-            "character1": results.get('character1', ''),
-            "character2": results.get('character2', '')
-        }
-        results_data.append(frame_data)
-        
-        # Display results
-        if save_frames:
-            print(f"📸 Frame sauvegardée: {analyzed_frame_path}")
-        print(f"⏱️  Timer: {results.get('timer', 'Non détecté')}")
-        print(f"🎮 P1: {results.get('character1', 'Non détecté')}")
-        print(f"🎮 P2: {results.get('character2', 'Non détecté')}")
-        
-        frame_count += 1
-        if frame_count % 10 == 0:
-            progress = (frame_count / total_expected_frames) * 100
-            print(f"📊 Progression: {progress:.1f}% ({frame_count}/{total_expected_frames} frames)")
-        
-        current_time += interval_seconds
+            # Analyze frame
+            results = analyzer.analyze_frame(frame)
+            
+            # Save annotated frame only if requested
+            analyzed_frame_path = None
+            if save_frames:
+                # Create annotated frame
+                annotated_frame = analyzer.annotate_frame_with_rois(
+                    frame,
+                    list(results.keys()),
+                    show_text=True,
+                    detection_results=results
+                )
+                
+                # Save annotated frame
+                frame_filename = f"analyzed_frame_{formatted_timestamp.replace(':', '-')}.png"
+                analyzed_frame_path = os.path.join(analyzed_frames_output_folder, frame_filename)
+                cv.imwrite(analyzed_frame_path, annotated_frame)
+            
+            # Store results
+            frame_data = {
+                "timestamp": formatted_timestamp,
+                "timer_value": results.get('timer', ''),
+                "character1": results.get('character1', ''),
+                "character2": results.get('character2', '')
+            }
+            results_data.append(frame_data)
+            
+            # Display results
+            if save_frames:
+                print(f"📸 Frame sauvegardée: {analyzed_frame_path}")
+            print(f"⏱️  Timer: {results.get('timer', 'Non détecté')}")
+            print(f"🎮 P1: {results.get('character1', 'Non détecté')}")
+            print(f"🎮 P2: {results.get('character2', 'Non détecté')}")
+            
+            frame_count += 1
+            if frame_count % 10 == 0:
+                print(f"📊 Progression: {frame_count} frames analysées")
     
-    video_capture.release()
+    except Exception as e:
+        print(f"❌ Erreur lors de l'analyse: {e}")
+        return
     
     # Save results to JSON
     with open(json_results_file_path, 'w', encoding='utf-8') as json_file:
