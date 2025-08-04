@@ -71,7 +71,8 @@ def main():
 
     analyzer = ImageAnalyzer(
         output_directory=args.output_dir,
-        analyzed_frames_subdirectory=args.analyzed_dir
+        analyzed_frames_subdirectory=args.analyzed_dir,
+        debug=True
     )
 
     try:

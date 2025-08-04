@@ -7,53 +7,92 @@ class FrameExtractor:
     OUTPUT_DIR = 'input'
     FRAMES_DIR = 'frames'
 
-    def __init__(self, video_path, output_name=None, no_prompt=False, frames_per_minute=12):
+    def __init__(self, video_path, output_name=None, no_prompt=False, frames_per_minute=12, debug=False):
         self.video_path = video_path
         self.frames_per_minute = frames_per_minute
         self.frame_interval_seconds = 60.0 / frames_per_minute
+        self.debug = debug
         self.output_name = self.get_video_name(video_path, output_name, no_prompt)
         self.output_folder = self._prepare_output_directory()
 
     def get_video_name(self, video_path, folder_name=None, no_prompt=False):
         default_name = os.path.splitext(os.path.basename(video_path))[0]
+        if self.debug:
+            print(f"[FrameExtractor] get_video_name: default_name='{default_name}', folder_name='{folder_name}', no_prompt={no_prompt}")
+        
         if folder_name:
+            if self.debug:
+                print(f"[FrameExtractor] Using provided folder_name: '{folder_name}'")
             return folder_name
         if no_prompt:
+            if self.debug:
+                print(f"[FrameExtractor] No prompt mode, using default: '{default_name}'")
             return default_name
         user_input = input(f"Nom du dossier de sortie [{default_name}]: ").strip()
-        return user_input if user_input else default_name
+        result = user_input if user_input else default_name
+        if self.debug:
+            print(f"[FrameExtractor] User input result: '{result}'")
+        return result
 
     def _prepare_output_directory(self):
+        if self.debug:
+            print(f"[FrameExtractor] _prepare_output_directory: OUTPUT_DIR='{self.OUTPUT_DIR}', FRAMES_DIR='{self.FRAMES_DIR}', output_name='{self.output_name}'")
+        
         if not os.path.exists(self.OUTPUT_DIR):
+            if self.debug:
+                print(f"[FrameExtractor] Creating OUTPUT_DIR: '{self.OUTPUT_DIR}'")
             os.makedirs(self.OUTPUT_DIR)
 
         frames_path = os.path.join(self.OUTPUT_DIR, self.FRAMES_DIR)
         if not os.path.exists(frames_path):
+            if self.debug:
+                print(f"[FrameExtractor] Creating frames_path: '{frames_path}'")
             os.makedirs(frames_path)
 
         output_folder = os.path.join(frames_path, self.output_name)
         if not os.path.exists(output_folder):
+            if self.debug:
+                print(f"[FrameExtractor] Creating output_folder: '{output_folder}'")
             os.makedirs(output_folder)
         else:
+            if self.debug:
+                print(f"[FrameExtractor] output_folder already exists: '{output_folder}'")
             print(f"⚠️ Le dossier {output_folder} existe déjà")
 
+        if self.debug:
+            print(f"[FrameExtractor] Final output_folder: '{output_folder}'")
         return output_folder
 
     def extract_frames(self):
+        if self.debug:
+            print(f"[FrameExtractor] extract_frames: video_path='{self.video_path}'")
+        
         if not os.path.exists(self.video_path):
+            if self.debug:
+                print(f"[FrameExtractor] Video file not found: '{self.video_path}'")
             raise FileNotFoundError(f"Le fichier vidéo '{self.video_path}' n'existe pas.")
 
         if not self.video_path.lower().endswith('.mp4'):
+            if self.debug:
+                print(f"[FrameExtractor] Invalid file format: '{self.video_path}'")
             raise ValueError("Le fichier doit être au format MP4.")
 
+        if self.debug:
+            print(f"[FrameExtractor] Opening video capture")
         cap = cv.VideoCapture(self.video_path)
         if not cap.isOpened():
+            if self.debug:
+                print(f"[FrameExtractor] Failed to open video capture")
             raise RuntimeError("Erreur: Impossible d'ouvrir la vidéo")
 
         fps = cap.get(cv.CAP_PROP_FPS)
         frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         duration = frame_count / fps
         frames_per_extraction = int(fps * self.frame_interval_seconds)
+
+        if self.debug:
+            print(f"[FrameExtractor] Video properties: fps={fps}, frame_count={frame_count}, duration={duration:.2f}s")
+            print(f"[FrameExtractor] Extraction settings: frames_per_minute={self.frames_per_minute}, interval={self.frame_interval_seconds:.1f}s, frames_per_extraction={frames_per_extraction}")
 
         print(f"\nExtracting frames from: {self.video_path}")
         print(f"Output directory: {self.output_folder}")
@@ -66,9 +105,14 @@ class FrameExtractor:
         saved_count = 0
         next_extraction_time = 0.0
 
+        if self.debug:
+            print(f"[FrameExtractor] Starting frame extraction loop")
+
         while True:
             ret, frame = cap.read()
             if not ret:
+                if self.debug:
+                    print(f"[FrameExtractor] End of video reached at frame {frame_number}")
                 break
 
             current_time = frame_number / fps
@@ -76,6 +120,10 @@ class FrameExtractor:
             if current_time >= next_extraction_time:
                 timestamp = datetime.fromtimestamp(current_time).strftime('%H-%M-%S')
                 filename = os.path.join(self.output_folder, f'frame_{timestamp}.{self.OUTPUT_FORMAT}')
+                
+                if self.debug:
+                    print(f"[FrameExtractor] Extracting frame {frame_number} at time {current_time:.1f}s -> {filename}")
+                
                 cv.imwrite(filename, frame)
                 saved_count += 1
                 print(f"Image sauvegardée: {filename} (temps: {current_time:.1f}s)")
@@ -84,4 +132,6 @@ class FrameExtractor:
             frame_number += 1
 
         cap.release()
+        if self.debug:
+            print(f"[FrameExtractor] Video capture released")
         print(f"\nExtraction terminée. {saved_count} images sauvegardées dans {self.output_folder}")
