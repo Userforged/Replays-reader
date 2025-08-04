@@ -1,0 +1,47 @@
+{
+  "rois": [
+    {
+      "name": "timer",
+      "label": "TIMER",
+      "type": "font",
+      "font_color": {
+        "lighter": [96, 12, 57],
+        "darker": [234, 92, 243]
+      },
+      "ocr_whitelist": "0123456789",
+      "boundaries": {
+        "color": [96, 12, 57],
+        "top": 0.04,
+        "bottom": 0.18,
+        "left": 0.46,
+        "right": 0.54
+      }
+    },
+    {
+      "name": "character1",
+      "label": "PLAYER 1",
+      "type": "font",
+      "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
+      "boundaries": {
+        "color": [92, 0, 210],
+        "top": 0.02,
+        "bottom": 0.15,
+        "left": 0,
+        "right": 0.1
+      }
+    },
+    {
+      "name": "character2",
+      "label": "PLAYER 2",
+      "type": "font",
+      "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
+      "boundaries": {
+        "color": [192, 106, 35],
+        "top": 0.02,
+        "bottom": 0.15,
+        "left": 0.9,
+        "right": 1
+      }
+    }
+  ]
+}
