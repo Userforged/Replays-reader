@@ -1,6 +1,5 @@
 FROM python:3.10-slim
 
-# Installation des dépendances système
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libsm6 \
@@ -11,12 +10,10 @@ RUN apt-get update && apt-get install -y \
     libavif-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Installation des dépendances Python
 COPY requirements.txt /tmp/
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Créer l'utilisateur nayte avec UID/GID 1000
-RUN groupadd -g 1000 nayte && \
-    useradd -u 1000 -g 1000 -s /bin/bash -m nayte
+RUN groupadd -g 1000 userforged && \
+    useradd -u 1000 -g 1000 -s /bin/bash -m userforged
 
 WORKDIR /app
