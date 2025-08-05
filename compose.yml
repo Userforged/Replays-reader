@@ -1,7 +1,10 @@
 services:
   opencv:
-    build: .
-    user: "1000:1000"
+    build:
+      context: .
+      dockerfile: system/Containerfile
+      target: opencv
+    user: "1000:100"
     volumes:
       - .:/app
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -10,9 +13,9 @@ services:
     command: tail -f /dev/null
     environment:
       - DISPLAY=:0
-      - WAYLAND_DISPLAY=$WAYLAND_DISPLAY
-      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
-      - PULSE_SERVER=$PULSE_SERVER
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      - PULSE_SERVER=${PULSE_SERVER}
     deploy:
       resources:
         reservations:
@@ -20,3 +23,34 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+
+  notebook:
+    build:
+      context: .
+      dockerfile: system/Containerfile
+      target: notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/notebooks
+      - ./input:/home/jovyan/input
+      - ./output:/home/jovyan/output
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /mnt/wslg:/mnt/wslg
+    command: >
+      start-notebook.py --IdentityProvider.token='' --ServerApp.password='' --LabApp.check_for_updates_class='jupyterlab.NeverCheckForUpdate'
+      --FileContentsManager.checkpoints_kwargs='{"root_dir": "/home/jovyan/.jupyter_checkpoints"}'
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - DISPLAY=:0
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      - PULSE_SERVER=${PULSE_SERVER}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    shm_size: '8gb'

@@ -1,2 +1,10 @@
-output/
-input/
+/output/
+/input/
+/test/output/
+/notebooks/.ipynb_checkpoints/
+/.cache/
+/.claude/
+/.config/
+/.ipython/
+/.jupyter/
+/.local/
