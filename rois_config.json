@@ -1,12 +1,13 @@
 {
+  "_comment": "Colors are stored in BGR format (Blue, Green, Red) as used by OpenCV",
   "rois": [
     {
       "name": "timer",
       "label": "TIMER",
       "type": "font",
       "font_color": {
-        "lighter": [96, 12, 57],
-        "darker": [234, 92, 243]
+        "darker": [90, 29, 58],
+        "lighter": [234, 92, 243]
       },
       "ocr_whitelist": "0123456789",
       "boundaries": {

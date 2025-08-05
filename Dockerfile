@@ -8,6 +8,11 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libgtk-3-0 \
     libavif-dev \
+    libqt5gui5 \
+    libqt5core5a \
+    libqt5widgets5 \
+    qt5-qmake \
+    qtbase5-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/

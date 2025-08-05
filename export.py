@@ -5,8 +5,8 @@ import json
 import re
 from datetime import datetime
 
-from image_analyzer import ImageAnalyzer
-from frame_extractor import FrameExtractor
+from src.image_analyzer import ImageAnalyzer
+from src.frame_extractor import FrameExtractor
 
 OUTPUT_DIRECTORY = 'output'
 ANALYZED_FRAMES_SUBDIRECTORY = 'analyzed_frames'
