@@ -4,8 +4,15 @@ services:
     user: "1000:1000"
     volumes:
       - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /mnt/wslg:/mnt/wslg
     working_dir: /app
     command: tail -f /dev/null
+    environment:
+      - DISPLAY=:0
+      - WAYLAND_DISPLAY=$WAYLAND_DISPLAY
+      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+      - PULSE_SERVER=$PULSE_SERVER
     deploy:
       resources:
         reservations:

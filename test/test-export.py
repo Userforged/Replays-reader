@@ -24,7 +24,7 @@ import re
 from datetime import datetime
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from image_analyzer import ImageAnalyzer
+from src.image_analyzer import ImageAnalyzer
 
 OUTPUT_DIRECTORY = 'test/output'
 ANALYZED_FRAMES_SUBDIRECTORY = 'analyzed_frames'

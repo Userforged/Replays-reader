@@ -18,7 +18,7 @@ import sys
 import os
 import cv2 as cv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from image_analyzer import ImageAnalyzer
+from src.image_analyzer import ImageAnalyzer
 
 def main():
     """Main entry point for the CLI."""
