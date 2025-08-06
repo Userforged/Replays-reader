@@ -4,12 +4,7 @@
     {
       "name": "timer",
       "label": "TIMER",
-      "type": "font",
-      "font_color": {
-        "darker": [90, 29, 58],
-        "lighter": [234, 92, 243]
-      },
-      "ocr_whitelist": "0123456789",
+      "type": "pattern",
       "boundaries": {
         "color": [96, 12, 57],
         "top": 0.04,
@@ -21,7 +16,7 @@
     {
       "name": "character1",
       "label": "PLAYER 1",
-      "type": "font",
+      "type": "ocr",
       "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
       "boundaries": {
         "color": [92, 0, 210],
@@ -34,7 +29,7 @@
     {
       "name": "character2",
       "label": "PLAYER 2",
-      "type": "font",
+      "type": "ocr",
       "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
       "boundaries": {
         "color": [192, 106, 35],

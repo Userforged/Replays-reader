@@ -6,12 +6,6 @@ import json
 from difflib import get_close_matches
 from .image_converter import ImageConverter
 
-# Import optionnel de PyTesseract pour le fallback OCR
-try:
-    import pytesseract
-    PYTESSERACT_AVAILABLE = True
-except ImportError:
-    PYTESSERACT_AVAILABLE = False
 
 class ImageAnalyzer:
     """Analyzes Street Fighter 6 game screenshots to extract match information."""
@@ -91,8 +85,6 @@ class ImageAnalyzer:
         if rois_to_analyze is None:
             rois_to_analyze = ['timer', 'character1', 'character2']
 
-        self.initialize_ocr()
-
         detection_results = {}
 
         for roi_name in rois_to_analyze:
@@ -122,30 +114,37 @@ class ImageAnalyzer:
             self.debug_counter += 1
             
             roi_info = self._get_roi(roi_name)
+            roi_type = roi_info.get('type', 'ocr') if roi_info else 'ocr'
             
-            if self.debug:
-                print(f"[ImageAnalyzer] 📝 ROI '{roi_name}' uses standard OCR processing")
-            
-            self.image_converter.set_debug_counter(self.debug_counter)
-            
-            enhanced = self.image_converter.enhance_for_ocr(roi_image, roi_info)
-            if enhanced is None:
+            if roi_type == 'pattern':
                 if self.debug:
-                    print(f"[ImageAnalyzer] Enhancement failed for ROI {roi_name}")
-                detection_results[roi_name] = ''
-                continue
-            
-            if self.debug:
-                print(f"[ImageAnalyzer] 🔍 Enhanced image for '{roi_name}' ready for OCR")
-
-            if roi_name == 'timer':
-                if self.debug:
-                    print(f"[ImageAnalyzer] 🔢 Extracting timer digits from '{roi_name}' using enhanced image")
-                detection_results[roi_name] = self._extract_with_fallback_ocr(enhanced, roi_info, 'timer')
+                    print(f"[ImageAnalyzer] 🔍 ROI '{roi_name}' uses pattern matching")
+                detection_results[roi_name] = self._analyze_pattern_roi(roi_image, roi_info)
             else:
                 if self.debug:
-                    print(f"[ImageAnalyzer] 🎮 Extracting character name from '{roi_name}' using enhanced image")
-                detection_results[roi_name] = self._extract_with_fallback_ocr(enhanced, roi_info, 'character')
+                    print(f"[ImageAnalyzer] 📝 ROI '{roi_name}' uses OCR processing")
+                
+                self.initialize_ocr()
+                self.image_converter.set_debug_counter(self.debug_counter)
+                
+                enhanced = self.image_converter.enhance_for_ocr(roi_image, roi_info)
+                if enhanced is None:
+                    if self.debug:
+                        print(f"[ImageAnalyzer] Enhancement failed for ROI {roi_name}")
+                    detection_results[roi_name] = ''
+                    continue
+                
+                if self.debug:
+                    print(f"[ImageAnalyzer] 🔍 Enhanced image for '{roi_name}' ready for OCR")
+
+                if roi_name == 'timer':
+                    if self.debug:
+                        print(f"[ImageAnalyzer] 🔢 Extracting timer digits from '{roi_name}' using enhanced image")
+                    detection_results[roi_name] = self._extract_timer_digits(enhanced, roi_info)
+                else:
+                    if self.debug:
+                        print(f"[ImageAnalyzer] 🎮 Extracting character name from '{roi_name}' using enhanced image")
+                    detection_results[roi_name] = self._extract_character_name(enhanced, roi_info)
             
             if self.debug:
                 print(f"[ImageAnalyzer] ROI {roi_name} result: '{detection_results[roi_name]}'")
@@ -259,107 +258,6 @@ class ImageAnalyzer:
 
         return left_x, top_y, right_x, bottom_y
     
-    def _extract_with_fallback_ocr(self, enhanced_image, roi_info=None, extraction_type='character'):
-        """
-        Extrait du texte avec fallback OCR (EasyOCR -> PyTesseract si échec).
-        Technique inspirée de GoProTimeOCR pour améliorer la fiabilité.
-        
-        Args:
-            enhanced_image: Image améliorée pour l'OCR
-            roi_info: Informations de la ROI
-            extraction_type: 'timer' ou 'character'
-        
-        Returns:
-            Texte extrait ou chaîne vide si échec
-        """
-        if self.debug:
-            print(f"[ImageAnalyzer] _extract_with_fallback_ocr: {extraction_type}, shape={enhanced_image.shape}")
-        
-        # Tentative 1: EasyOCR (méthode principale)
-        primary_result = self._extract_with_easyocr(enhanced_image, roi_info, extraction_type)
-        
-        # Vérifier si le résultat est satisfaisant
-        if self._is_ocr_result_valid(primary_result, extraction_type):
-            if self.debug:
-                print(f"[ImageAnalyzer] ✅ EasyOCR successful: '{primary_result}'")
-            return primary_result
-        
-        # Tentative 2: PyTesseract (fallback)
-        if PYTESSERACT_AVAILABLE:
-            if self.debug:
-                print(f"[ImageAnalyzer] 🔄 EasyOCR result unsatisfactory, trying PyTesseract fallback")
-            
-            fallback_result = self._extract_with_pytesseract(enhanced_image, roi_info, extraction_type)
-            
-            if self._is_ocr_result_valid(fallback_result, extraction_type):
-                if self.debug:
-                    print(f"[ImageAnalyzer] ✅ PyTesseract fallback successful: '{fallback_result}'")
-                return fallback_result
-            elif self.debug:
-                print(f"[ImageAnalyzer] ⚠️  PyTesseract also failed: '{fallback_result}'")
-        elif self.debug:
-            print(f"[ImageAnalyzer] ⚠️  PyTesseract not available for fallback")
-        
-        # Si les deux méthodes échouent, retourner le résultat EasyOCR quand même
-        if self.debug:
-            print(f"[ImageAnalyzer] 🔴 Both OCR methods failed, returning EasyOCR result: '{primary_result}'")
-        return primary_result
-    
-    def _extract_with_easyocr(self, enhanced_image, roi_info=None, extraction_type='character'):
-        """Extraction avec EasyOCR (méthode existante adaptée)."""
-        if extraction_type == 'timer':
-            return self._extract_timer_digits(enhanced_image, roi_info)
-        else:
-            return self._extract_character_name(enhanced_image, roi_info)
-    
-    def _extract_with_pytesseract(self, enhanced_image, roi_info=None, extraction_type='character'):
-        """Extraction avec PyTesseract en fallback."""
-        try:
-            # Configuration Tesseract selon le type
-            if extraction_type == 'timer':
-                # PSM 8 : un seul mot uniformé
-                config = '--psm 8 --oem 3'
-            else:
-                # PSM 7 : une seule ligne de texte
-                config = '--psm 7 --oem 3'
-            
-            # Ajouter la whitelist si disponible
-            if roi_info and 'ocr_whitelist' in roi_info:
-                whitelist = roi_info['ocr_whitelist']
-                config += f' -c tessedit_char_whitelist={whitelist}'
-                if self.debug:
-                    print(f"[ImageAnalyzer] PyTesseract using whitelist: '{whitelist}'")
-            
-            # Extraction du texte
-            result = pytesseract.image_to_string(enhanced_image, config=config).strip()
-            
-            # Post-traitement selon le type
-            if extraction_type == 'timer':
-                # Ne garder que les chiffres
-                result = ''.join(filter(str.isdigit, result))
-            
-            if self.debug:
-                print(f"[ImageAnalyzer] PyTesseract raw result: '{result}'")
-            
-            return result
-            
-        except Exception as e:
-            if self.debug:
-                print(f"[ImageAnalyzer] PyTesseract error: {e}")
-            return ''
-    
-    def _is_ocr_result_valid(self, result, extraction_type):
-        """Vérifie si un résultat OCR est satisfaisant."""
-        if not result or not result.strip():
-            return False
-        
-        if extraction_type == 'timer':
-            # Pour le timer, on attend au moins 1 chiffre
-            digits = ''.join(filter(str.isdigit, result))
-            return len(digits) >= 1
-        else:
-            # Pour les personnages, on attend au moins 2 caractères
-            return len(result.strip()) >= 2
 
     def _extract_timer_digits(self, enhanced_image, roi_info=None):
         if self.debug:
@@ -428,6 +326,85 @@ class ImageAnalyzer:
         if self.debug:
             print(f"[ImageAnalyzer] Final character text: '{final_text}'")
         return final_text
+
+    def _analyze_pattern_roi(self, roi_image, roi_info):
+        """
+        Analyse une ROI de type 'pattern' en utilisant template matching.
+        
+        Args:
+            roi_image: Image de la ROI extraite
+            roi_info: Informations de configuration de la ROI
+        
+        Returns:
+            Résultat de détection (nom du pattern ou chaîne vide)
+        """
+        if self.debug:
+            print(f"[ImageAnalyzer] Pattern matching for ROI '{roi_info['name']}'")
+        
+        # Répertoire des templates pour cette ROI
+        templates_dir = os.path.join('templates', roi_info['name'])
+        
+        if not os.path.exists(templates_dir):
+            if self.debug:
+                print(f"[ImageAnalyzer] ⚠️  Templates directory not found: {templates_dir}")
+            return ''
+        
+        best_match = ''
+        best_confidence = 0.0
+        confidence_threshold = 0.7  # Seuil de confiance minimal
+        
+        # Scanner tous les templates dans le répertoire
+        for template_file in os.listdir(templates_dir):
+            if not template_file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                continue
+                
+            template_path = os.path.join(templates_dir, template_file)
+            template = cv.imread(template_path, cv.IMREAD_GRAYSCALE)
+            
+            if template is None:
+                if self.debug:
+                    print(f"[ImageAnalyzer] ⚠️  Could not load template: {template_path}")
+                continue
+            
+            # Convertir la ROI en niveaux de gris
+            roi_gray = cv.cvtColor(roi_image, cv.COLOR_BGR2GRAY) if len(roi_image.shape) == 3 else roi_image
+            
+            # Template matching avec différentes méthodes
+            methods = [cv.TM_CCOEFF_NORMED, cv.TM_CCORR_NORMED, cv.TM_SQDIFF_NORMED]
+            
+            for method in methods:
+                try:
+                    result = cv.matchTemplate(roi_gray, template, method)
+                    _, max_val, _, max_loc = cv.minMaxLoc(result)
+                    
+                    # Pour TM_SQDIFF_NORMED, plus faible = meilleur match
+                    if method == cv.TM_SQDIFF_NORMED:
+                        confidence = 1.0 - max_val
+                    else:
+                        confidence = max_val
+                    
+                    if confidence > best_confidence and confidence >= confidence_threshold:
+                        best_confidence = confidence
+                        # Utiliser le nom du fichier sans extension comme résultat
+                        best_match = os.path.splitext(template_file)[0]
+                    
+                    if self.debug:
+                        method_name = {cv.TM_CCOEFF_NORMED: 'CCOEFF', cv.TM_CCORR_NORMED: 'CCORR', cv.TM_SQDIFF_NORMED: 'SQDIFF'}[method]
+                        print(f"[ImageAnalyzer]   {template_file} ({method_name}): {confidence:.3f}")
+                        
+                except Exception as e:
+                    if self.debug:
+                        print(f"[ImageAnalyzer] Error matching template {template_file}: {e}")
+                    continue
+        
+        if best_match and best_confidence >= confidence_threshold:
+            if self.debug:
+                print(f"[ImageAnalyzer] ✅ Best pattern match: '{best_match}' (confidence: {best_confidence:.3f})")
+            return best_match
+        else:
+            if self.debug:
+                print(f"[ImageAnalyzer] ❌ No pattern match above threshold {confidence_threshold}")
+            return ''
 
     def _ensure_output_directories(self):
         if not os.path.exists(self.output_directory):
