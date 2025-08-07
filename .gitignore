@@ -1,10 +1,11 @@
 /output/
 /input/
 /test/output/
-/notebooks/.ipynb_checkpoints/
-/.cache/
+/.idea/
 /.claude/
-/.config/
-/.ipython/
-/.jupyter/
-/.local/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

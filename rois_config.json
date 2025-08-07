@@ -4,9 +4,13 @@
     {
       "name": "timer",
       "label": "TIMER",
-      "type": "pattern",
+      "model": "trocr",
       "boundaries": {
-        "color": [96, 12, 57],
+        "color": [
+          96,
+          12,
+          57
+        ],
         "top": 0.04,
         "bottom": 0.18,
         "left": 0.46,
@@ -16,10 +20,14 @@
     {
       "name": "character1",
       "label": "PLAYER 1",
-      "type": "ocr",
+      "model": "easyocr",
       "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
       "boundaries": {
-        "color": [92, 0, 210],
+        "color": [
+          92,
+          0,
+          210
+        ],
         "top": 0.02,
         "bottom": 0.15,
         "left": 0,
@@ -29,14 +37,18 @@
     {
       "name": "character2",
       "label": "PLAYER 2",
-      "type": "ocr",
+      "model": "easyocr",
       "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
       "boundaries": {
-        "color": [192, 106, 35],
-        "top": 0.02,
+        "color": [
+          192,
+          106,
+          35
+        ],
+        "top": 0.019444444444444445,
         "bottom": 0.15,
         "left": 0.9,
-        "right": 1
+        "right": 1.0
       }
     }
   ]

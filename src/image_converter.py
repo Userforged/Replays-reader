@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import os
+from .preprocessing_steps import PreprocessingStep
 
 class ImageConverter:
     """Gère les conversions et améliorations d'images pour l'OCR."""
@@ -10,29 +11,42 @@ class ImageConverter:
         self.output_directory = output_directory or 'output'
         self.debug_counter = 0
     
-    def enhance_for_ocr(self, image, region_info=None):
+    def enhance_for_ocr(self, image, region_info=None, preprocessing_steps: PreprocessingStep = PreprocessingStep.NONE):
         """
-        Améliore l'image pour l'OCR en appliquant les meilleures pratiques EasyOCR.
+        Améliore l'image pour l'OCR en appliquant les étapes de preprocessing choisies.
         
         Args:
             image: Image à traiter
             region_info: Informations de la région
+            preprocessing_steps: Étapes de preprocessing à appliquer (PreprocessingStep enum)
+                               Exemples:
+                               - PreprocessingStep.NONE (aucun preprocessing)
+                               - PreprocessingStep.LIGHT (grayscale + normalisation)
+                               - PreprocessingStep.STANDARD (preset recommandé)
+                               - PreprocessingStep.GRAYSCALE | PreprocessingStep.THRESHOLD (combinaison)
         
         Returns:
-            Image améliorée pour l'OCR
+            Image améliorée pour l'OCR (ou image originale si NONE)
         """
         if self.debug:
             print(f"[ImageConverter] enhance_for_ocr: input_shape={image.shape if image is not None else 'None'}")
-            print(f"[ImageConverter] ⚪ Standard enhancement processing")
+            if preprocessing_steps == PreprocessingStep.NONE:
+                print(f"[ImageConverter] 🚫 No preprocessing (NONE) - returning original image")
+            else:
+                print(f"[ImageConverter] 🔧 Applying preprocessing: {preprocessing_steps}")
         
         if image is None or image.size == 0:
             if self.debug:
                 print("[ImageConverter] Invalid input image for enhancement")
             return None
 
+        # Si aucune étape, retourner l'image originale
+        if preprocessing_steps == PreprocessingStep.NONE:
+            return image.copy()
+
         try:
             working_image = image.copy()
-            return self._apply_enhancement_pipeline(working_image, region_info)
+            return self._apply_enhancement_pipeline(working_image, region_info, preprocessing_steps)
             
         except cv.error as e:
             if self.debug:
@@ -40,42 +54,59 @@ class ImageConverter:
             print(f"⚠ Error enhancing image: {e}")
             return None
     
-    def _apply_enhancement_pipeline(self, image, region_info=None):
+    def _apply_enhancement_pipeline(self, image, region_info=None, preprocessing_steps: PreprocessingStep = PreprocessingStep.AGGRESSIVE):
         """
-        Applique le pipeline d'amélioration standard.
+        Applique le pipeline d'amélioration avec les étapes sélectionnées.
         
         Args:
             image: Image à traiter
             region_info: Informations de la région
+            preprocessing_steps: Étapes de preprocessing (PreprocessingStep enum)
             
         Returns:
             Image améliorée
         """
         working_image = image.copy()
         
-        # Étape 1: Conversion en niveaux de gris
-        working_image = self._convert_to_grayscale(working_image)
-        
-        # Étape 2: Débruitage
-        working_image = self._apply_denoising(working_image)
-        
-        # Étape 3: Normalisation de l'histogramme
-        working_image = self._apply_histogram_normalization(working_image)
-        
-        # Étape 4: CLAHE
-        working_image = self._apply_clahe_enhancement(working_image)
-        
-        # Étape 5: Seuillage binaire (inspiré de GoProTimeOCR)
-        working_image = self._apply_binary_thresholding(working_image, region_info)
-        
-        # Étape 6: Opérations morphologiques (inspiré de GoProTimeOCR)
-        working_image = self._apply_morphological_operations(working_image, region_info)
-        
-        # Étape 7: Upscaling final
-        working_image = self._apply_upscaling(working_image)
+        # Appliquer les étapes dans l'ordre logique si elles sont demandées
+        if PreprocessingStep.GRAYSCALE in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Conversion en niveaux de gris")
+            working_image = self._convert_to_grayscale(working_image)
+            
+        if PreprocessingStep.DENOISING in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Débruitage")
+            working_image = self._apply_denoising(working_image)
+            
+        if PreprocessingStep.NORMALIZE in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Normalisation de l'histogramme")
+            working_image = self._apply_histogram_normalization(working_image)
+            
+        if PreprocessingStep.CLAHE in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Enhancement CLAHE")
+            working_image = self._apply_clahe_enhancement(working_image)
+            
+        if PreprocessingStep.THRESHOLD in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Seuillage binaire")
+            working_image = self._apply_binary_thresholding(working_image, region_info)
+            
+        if PreprocessingStep.MORPHOLOGY in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Opérations morphologiques")
+            working_image = self._apply_morphological_operations(working_image, region_info)
+            
+        if PreprocessingStep.UPSCALE in preprocessing_steps:
+            if self.debug:
+                print(f"[ImageConverter] Executing: Upscaling final")
+            working_image = self._apply_upscaling(working_image)
         
         if self.debug:
-            print(f"[ImageConverter] Enhancement pipeline complete: {working_image.shape}")
+            active_steps = preprocessing_steps.get_step_names()
+            print(f"[ImageConverter] Enhancement pipeline complete with steps {active_steps}: {working_image.shape}")
         return working_image
     
     

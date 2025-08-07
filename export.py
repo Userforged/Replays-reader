@@ -44,6 +44,7 @@ def process_street_fighter_video_for_data_extraction(video_file_path, frames_per
     )
     
     analyzer = ImageAnalyzer(
+        config_file='rois_config.json',  # ✅ Obligatoire pour métadonnées
         debug=False  # Set to True for verbose output and automatic image saving
     )
     
