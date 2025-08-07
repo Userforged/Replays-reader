@@ -15,8 +15,7 @@ ARG COMMON_APT_PACKAGES="\
 FROM python:3.12-slim AS python-build
 
 ARG COMMON_APT_PACKAGES
-RUN apt-get update && apt-get install -y ${COMMON_APT_PACKAGES} \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ${COMMON_APT_PACKAGES} && rm -rf /var/lib/apt/lists/*
 
 FROM python:3.12-slim AS opencv
 
@@ -44,7 +43,7 @@ RUN apt-get update && apt-get install -y ${COMMON_APT_PACKAGES} \
 COPY --link system/backend/requirements.txt /tmp/
 RUN pip install --no-cache-dir --requirement /tmp/requirements.txt
 
-RUN conda install -y graphviz && conda clean -afy
+RUN apt-get update && apt-get install -y graphviz && rm -rf /var/lib/apt/lists/*
 
 # Désactiver les notifications Jupyter news
 RUN sed -i 's/"default": "none"/"default": "false"/g' /opt/conda/share/jupyter/lab/schemas/@jupyterlab/apputils-extension/notification.json && \

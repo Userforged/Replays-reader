@@ -7,6 +7,7 @@ services:
     user: "1000:100"
     volumes:
       - .:/app
+      - pycache:/app/__pycache__
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /mnt/wslg:/mnt/wslg
     working_dir: /app
@@ -16,6 +17,7 @@ services:
       - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
       - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
       - PULSE_SERVER=${PULSE_SERVER}
+      - PYTHONPYCACHEPREFIX=/app/__pycache__
     deploy:
       resources:
         reservations:
@@ -32,9 +34,13 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./notebooks:/home/jovyan/notebooks
+      - ./work:/home/jovyan/work
+      - ./src:/home/jovyan/src
+      - ./rois_config.json:/home/jovyan/rois_config.json:rw
+      - ./characters.json:/home/jovyan/characters.json:ro
       - ./input:/home/jovyan/input
       - ./output:/home/jovyan/output
+      - jupyter_config:/home/jovyan/.jupyter
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /mnt/wslg:/mnt/wslg
     command: >
@@ -54,3 +60,7 @@ services:
               count: 1
               capabilities: [gpu]
     shm_size: '8gb'
+
+volumes:
+  jupyter_config:
+  pycache:
