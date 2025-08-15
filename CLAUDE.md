@@ -186,78 +186,33 @@ Analysis results are saved as JSON with structure:
 
 ## Coding Style Guidelines
 
-### Guard Patterns with Early Returns
+Apply **Clean Code principles** (Robert C. Martin) and **PEP 8** standards:
 
-**PREFERRED**: Use guard patterns with early returns to reduce nesting and improve readability.
+### Core Principles
 
-```python
-def process_frame(frame, analyzer):
-    # Guard clauses - early exits
-    if frame is None:
-        return None
-    
-    if analyzer is None:
-        return None
-        
-    if frame.size == 0:
-        return None
-    
-    # Main logic with minimal nesting
-    results = analyzer.analyze_frame(frame)
-    if not results:
-        return None
-        
-    return results
-```
+- **Single Responsibility**: Each function/class does one thing well
+- **Guard patterns**: Early returns to reduce nesting and improve readability
+- **Intention-revealing names**: `user_count` not `uc`, `calculate_total_price()` not `calc()`
+- **Small functions**: < 20 lines ideally, max 3 parameters
+- **No side effects**: Functions do what their name implies, nothing more
+- **DRY principle**: Extract common functionality, avoid duplication
 
-**AVOID**: Deep nesting with encompassing conditions.
-
-```python
-def process_frame(frame, analyzer):
-    # Avoid this pattern - creates deep nesting
-    if frame is not None and analyzer is not None and frame.size > 0:
-        results = analyzer.analyze_frame(frame)
-        if results:
-            # More nested logic here...
-            return results
-        else:
-            return None
-    else:
-        return None
-```
-
-**Benefits of Guard Patterns:**
-- Reduces cognitive load by handling edge cases upfront
-- Keeps main business logic at consistent indentation level  
-- Makes code more readable and maintainable
-- Clearly separates validation from core functionality
-
-### Python Code Style
-
-Follow **PEP 8** style guidelines for all Python code:
+### Python Standards
 
 - **Line length**: 79 characters maximum
-- **Indentation**: 4 spaces (no tabs)
-- **Naming conventions**:
-  - Functions and variables: `snake_case`
-  - Classes: `PascalCase`
-  - Constants: `UPPER_CASE`
-- **Imports**: Group imports (standard library, third-party, local) with blank lines between groups
-- **Whitespace**: Follow PEP 8 spacing rules around operators, commas, etc.
-- **Docstrings**: Use triple quotes for function/class documentation
+- **Indentation**: 4 spaces (no tabs)  
+- **Naming**: `snake_case` functions/variables, `PascalCase` classes, `UPPER_CASE` constants
+- **Imports**: Group by type (standard, third-party, local) with blank lines between
 
-### Comment Guidelines
+### Comments
 
-**Only comment what is NOT self-explanatory.** Avoid obvious comments that simply restate what the code does.
+**Only comment what is NOT self-explanatory:**
+- Complex algorithms or business logic
+- Non-obvious parameter choices or thresholds
+- Workarounds for bugs or limitations
+- Performance considerations
 
-**AVOID** redundant comments:
-```python
-def _load_character_names(self):
-    """Charge la liste des noms de personnages depuis le fichier JSON."""
-    # Obviously loads character names - function name says it all
-```
-
-**PREFER** comments that explain WHY or complex logic:
+**Example:**
 ```python
 def _match_character_name(self, detected_text, similarity_threshold=0.6):
     """Uses fuzzy matching to handle OCR errors in character detection."""
@@ -265,13 +220,6 @@ def _match_character_name(self, detected_text, similarity_threshold=0.6):
     # Use 0.6 threshold - balances false positives vs missed matches
     close_matches = get_close_matches(text, names, cutoff=0.6)
 ```
-
-**Good reasons to comment:**
-- Complex algorithms or business logic
-- Non-obvious parameter choices or thresholds  
-- Workarounds for bugs or limitations
-- Performance considerations
-- Integration details with external systems
 
 ### Code Edit Reports
 
