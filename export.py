@@ -70,8 +70,31 @@ def _print_analysis_progress(results, frame_count):
         print(f"📊 Progression: {frame_count} frames analysées")
 
 
+def _initialize_json_file(json_path):
+    """Initialize/clear JSON file with empty array."""
+    with open(json_path, 'w', encoding='utf-8') as json_file:
+        json.dump([], json_file)
+
+
+def _append_frame_to_json(frame_data, json_path):
+    """Append a single frame to existing JSON file."""
+    # Read existing data
+    try:
+        with open(json_path, 'r', encoding='utf-8') as json_file:
+            analysis_results = json.load(json_file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        analysis_results = []
+    
+    # Add new frame
+    analysis_results.append(frame_data)
+    
+    # Write back to file
+    with open(json_path, 'w', encoding='utf-8') as json_file:
+        json.dump(analysis_results, json_file, indent=2, ensure_ascii=False)
+
+
 def _save_results_to_json(analysis_results, json_path):
-    """Save analysis results to JSON file."""
+    """Save analysis results to JSON file (legacy function for compatibility)."""
     with open(json_path, 'w', encoding='utf-8') as json_file:
         json.dump(analysis_results, json_file, indent=2, ensure_ascii=False)
 
@@ -85,6 +108,9 @@ def analyze_video(video_source, frames_per_minute=12, save_frames=False, manual_
     # Use the output name determined by FrameExtractor for JSON file
     video_name = frame_extractor.output_name
     json_output_path = os.path.join(OUTPUT_DIRECTORY, f"{video_name}.export.json")
+    
+    # Initialize JSON file (clear if exists)
+    _initialize_json_file(json_output_path)
     
     analysis_results = []
     frame_count = 0
@@ -107,6 +133,9 @@ def analyze_video(video_source, frames_per_minute=12, save_frames=False, manual_
             frame_data = _create_frame_data(timestamp, ocr_results)
             analysis_results.append(frame_data)
             
+            # Write frame immediately to JSON file
+            _append_frame_to_json(frame_data, json_output_path)
+            
             frame_count += 1
             _print_analysis_progress(ocr_results, frame_count)
     
@@ -114,8 +143,7 @@ def analyze_video(video_source, frames_per_minute=12, save_frames=False, manual_
         print(f"❌ Erreur lors de l'analyse: {e}")
         return
     
-    _save_results_to_json(analysis_results, json_output_path)
-    
+    # Final file is already written incrementally, just show completion
     print(f"\n✅ Analyse terminée!")
     print(f"📄 Résultats: {json_output_path}")
     frames_info = (
