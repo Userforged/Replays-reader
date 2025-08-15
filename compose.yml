@@ -1,9 +1,9 @@
 services:
-  opencv:
+  backend:
     build:
       context: .
       dockerfile: system/Containerfile
-      target: opencv
+      target: backend
     user: "1000:100"
     volumes:
       - .:/app

@@ -17,7 +17,7 @@ FROM python:3.12-slim AS python-build
 ARG COMMON_APT_PACKAGES
 RUN apt-get update && apt-get install -y ${COMMON_APT_PACKAGES} && rm -rf /var/lib/apt/lists/*
 
-FROM python:3.12-slim AS opencv
+FROM python:3.12-slim AS backend
 
 COPY --link system/backend/requirements.txt /tmp/
 RUN pip install --no-cache-dir --requirement /tmp/requirements.txt
@@ -25,6 +25,15 @@ RUN pip install --no-cache-dir --requirement /tmp/requirements.txt
 COPY --from=python-build /usr/lib /usr/lib
 COPY --from=python-build /usr/bin/ffmpeg /usr/bin/ffmpeg
 COPY --from=python-build /usr/share/ffmpeg /usr/share/ffmpeg
+
+# Install yt-dlp for video downloading capabilities
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    chmod +x /usr/local/bin/yt-dlp && \
+    apt-get remove -y curl && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -f -g 100 users && \
     useradd -l -m -s /bin/bash -N -u 1000 -g 100 jovyan

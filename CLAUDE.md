@@ -71,8 +71,8 @@ The project uses Docker containers for consistent development environments:
 # Start development environment
 docker compose up -d
 
-# Access OpenCV container for video processing
-docker compose exec opencv bash
+# Access backend container for video processing
+docker compose exec backend bash
 
 # Access Jupyter notebook environment for analysis
 docker compose up notebook
@@ -194,11 +194,40 @@ results = deductor.analyze_frames(frames_data)
 ```
 
 ### Working with Notebooks
+
+**Important: Notebooks serve as both tests and business specifications in this project.**
+
 The project includes several Jupyter notebooks in `work/`:
-- `ROIs_placer.ipynb`: Interactive ROI configuration
+
+#### Core Specifications (`work/global/`)
+- **`test-deduct.ipynb`**: **Business logic documentation for match detection**
+  - Complete design reasoning and architectural decisions
+  - Step-by-step analysis of SF6 match structure requirements
+  - Real data testing with export.json files
+  - Edge cases and validation of business rules
+  - **This is the definitive specification for the MatchDeductor system**
 - `test-analyze.ipynb`: Analysis testing and debugging
+- `test-export.ipynb`: Export pipeline testing
+- `test-extract.ipynb`: Frame extraction testing
+
+#### Development Tools (`work/`)
+- `ROIs_placer.ipynb`: Interactive ROI configuration
 - `dataset_building.ipynb`: Training data preparation
-- `ocr_simple_test.ipynb`: OCR engine testing
+- `check_env.ipynb`: Environment validation
+
+#### Notebook Philosophy
+
+**Notebooks as Living Documentation:**
+- **Specification**: Document business requirements and design decisions
+- **Testing**: Load real data and validate system behavior
+- **Knowledge Preservation**: Capture reasoning process for future maintenance
+- **Debugging**: Provide interactive environment for troubleshooting
+
+**Best Practices:**
+- Keep business logic in notebooks for traceability
+- Test with real export.json files, not synthetic data
+- Document edge cases and their handling
+- Include performance and accuracy metrics
 
 ### ROI Management
 ```python
