@@ -3,6 +3,7 @@
 /test/output/
 /.idea/
 /.claude/
+/.vscode/
 
 # Python cache files
 __pycache__/

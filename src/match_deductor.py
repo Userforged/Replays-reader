@@ -161,25 +161,49 @@ class MatchDeductor:
         return rounds
     
     def _find_round_starts(self, parsed_frames: List[Dict]) -> List[Dict]:
-        """Trouve les débuts de round: transitions timer bas → timer haut (≥90)."""
+        """
+        Trouve les débuts de round basés sur les patterns de timer SF6.
+        Détecte les transitions timer bas → timer haut ou remontées significatives.
+        """
         round_starts = []
         prev_timer = None
         
         for frame in parsed_frames:
             current_timer = frame['timer_value']
             
-            if current_timer is not None and current_timer >= 90:
-                # Timer élevé détecté
-                if prev_timer is None or prev_timer < 50:  # Transition depuis timer bas ou début
+            if current_timer is not None:
+                is_round_start = False
+                transition_type = "unknown"
+                
+                if prev_timer is None:
+                    # Premier timer détecté
+                    if current_timer >= 90:
+                        is_round_start = True
+                        transition_type = "first_high"
+                elif prev_timer < 50 and current_timer >= 90:
+                    # Transition classique: timer bas → timer très haut (≥90)
+                    is_round_start = True
+                    transition_type = "low_to_high"
+                elif prev_timer < 80 and current_timer >= 85:
+                    # Transition modérée: timer bas → timer moyennement haut (≥85)
+                    is_round_start = True
+                    transition_type = "moderate_jump"
+                elif prev_timer is not None and current_timer > prev_timer + 20:
+                    # Saut significatif du timer (>20 points) = probable nouveau round
+                    if current_timer >= 80:
+                        is_round_start = True
+                        transition_type = "significant_jump"
+                
+                if is_round_start:
                     round_starts.append({
                         'timestamp': frame['timestamp'],
                         'timer_value': current_timer,
-                        'prev_timer': prev_timer
+                        'prev_timer': prev_timer,
+                        'transition_type': transition_type
                     })
-                    self._log_debug(f"Début round potentiel: {frame['timestamp_str']} (timer {prev_timer}→{current_timer})")
-            
-            # Mettre à jour le timer précédent seulement si valide
-            if current_timer is not None:
+                    self._log_debug(f"Début round potentiel: {frame['timestamp_str']} (timer {prev_timer}→{current_timer}, type: {transition_type})")
+                
+                # Mettre à jour le timer précédent
                 prev_timer = current_timer
         
         return round_starts
@@ -252,7 +276,10 @@ class MatchDeductor:
         
         # Critères de validation SF6 (pas de filtre durée - un round peut durer 5-99s)
         coverage_ok = timer_coverage >= (1 - self.timer_tolerance)
-        start_ok = start_timer >= 90  # Round SF6 commence généralement à 99
+        
+        # Assouplir la validation du timer de début pour capturer plus de rounds
+        # Accepter les rounds qui commencent à ≥80 (au lieu de ≥90)
+        start_ok = start_timer >= 80  
         pattern_ok = timer_pattern['is_decreasing']  # Timer doit décompter
         
         if self.debug:
