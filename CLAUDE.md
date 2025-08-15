@@ -74,6 +74,11 @@ docker compose up -d
 # Access backend container for video processing
 docker compose exec backend bash
 
+# IMPORTANT: Python execution must be done inside containers
+# DO NOT run python directly on host - use container instead:
+docker compose exec backend python script.py
+docker compose exec backend python3 script.py
+
 # Access Jupyter notebook environment for analysis
 docker compose up notebook
 # Then access http://localhost:8888

@@ -234,49 +234,80 @@ class ImageAnalyzer:
                 )
             return None
 
-    def _match_character_name(self, detected_text,
-                              similarity_threshold=0.6):
-        """Trouve le nom de personnage le plus proche du texte détecté."""
-        if not self.character_names or not detected_text.strip():
-            return ""
+    def _validate_against_expected_values(self, raw_text, expected_values, roi_name):
+        """Valide le texte brut contre les valeurs attendues.
         
-        cleaned_text = detected_text.strip().upper()
+        Args:
+            raw_text: Résultat OCR brut
+            expected_values: Liste des valeurs autorisées ou None
+            roi_name: Nom de la ROI pour le debug
+        
+        Returns:
+            str: Valeur validée ou chaîne vide
+        """
+        if not expected_values or not raw_text.strip():
+            return raw_text.strip()
+        
+        cleaned_text = raw_text.strip().upper()
         
         if self.debug:
             print(
-                f"[ImageAnalyzer] 🔍 Tentative de correspondance pour: "
-                f"'{detected_text}' -> '{cleaned_text}'"
+                f"[ImageAnalyzer] 🔍 Validation {roi_name}: '{raw_text}' -> '{cleaned_text}'"
             )
         
-        # Try exact match first
-        if cleaned_text in self.character_names:
+        # 1. Correspondance exacte
+        if cleaned_text in expected_values:
             if self.debug:
                 print(
-                    f"[ImageAnalyzer] ✅ Correspondance exacte: "
-                    f"'{detected_text}' -> '{cleaned_text}'"
+                    f"[ImageAnalyzer] ✅ Correspondance exacte {roi_name}: '{raw_text}' -> '{cleaned_text}'"
                 )
             return cleaned_text
         
-        # Fuzzy matching fallback
+        # 2. Correspondance floue (fuzzy matching)
         close_matches = get_close_matches(
-            cleaned_text, self.character_names, n=1,
-            cutoff=similarity_threshold
+            cleaned_text, expected_values, n=1, cutoff=0.6
         )
         
         if close_matches:
             best_match = close_matches[0]
             if self.debug:
                 print(
-                    f"[ImageAnalyzer] ✅ Correspondance approximative: "
-                    f"'{detected_text}' -> '{best_match}'"
+                    f"[ImageAnalyzer] ✅ Correspondance floue {roi_name}: '{raw_text}' -> '{best_match}'"
                 )
             return best_match
         
-        # No match found - reject
+        # 3. Logique spécialisée pour les timers (extraction de chiffres)
+        if roi_name == 'timer' and expected_values:
+            # Extraire les chiffres du texte brut
+            digits = ''.join(filter(str.isdigit, cleaned_text))
+            if len(digits) > 0:
+                # Formater sur 2 chiffres si nécessaire
+                if len(digits) == 1:
+                    digits = '0' + digits
+                elif len(digits) > 2:
+                    digits = digits[:2]
+                
+                if digits in expected_values:
+                    if self.debug:
+                        print(
+                            f"[ImageAnalyzer] ✅ Timer formaté {roi_name}: '{raw_text}' -> '{digits}'"
+                        )
+                    return digits
+        
+        # 4. Fallback sur whitelist (backward compatibility)
+        if isinstance(expected_values, str):
+            # expected_values est une string whitelist (ancien format)
+            filtered_text = ''.join(char for char in cleaned_text if char in expected_values)
+            if filtered_text and self.debug:
+                print(
+                    f"[ImageAnalyzer] ✅ Whitelist filter {roi_name}: '{raw_text}' -> '{filtered_text}'"
+                )
+            return filtered_text
+        
+        # 5. Rejet
         if self.debug:
             print(
-                f"[ImageAnalyzer] ❌ REJETÉ (pas un personnage): "
-                f"'{detected_text}'"
+                f"[ImageAnalyzer] ❌ REJETÉ {roi_name}: '{raw_text}' (pas dans expected_values)"
             )
         return ""
 
@@ -317,16 +348,29 @@ class ImageAnalyzer:
 
 
     def analyze_frame(self, frame, rois_to_analyze=None,
-                      preprocessing: PreprocessingStep = PreprocessingStep.NONE):
-        """Analyze frame to extract text from specified ROIs."""
+                      preprocessing: PreprocessingStep = PreprocessingStep.NONE,
+                      expected_values_map=None):
+        """Analyze frame to extract text from specified ROIs.
+        
+        Args:
+            frame: Image à analyser
+            rois_to_analyze: Liste des ROIs à analyser
+            preprocessing: Étapes de préprocessing
+            expected_values_map: Dict mapping roi_name -> expected_values
+                               ex: {"timer": ["00", "01", ..., "99"], 
+                                    "character1": ["RYU", "CHUN-LI", ...]}
+        """
         if rois_to_analyze is None:
             rois_to_analyze = ['timer', 'character1', 'character2']
 
         analysis_results = {}
         
         for roi_name in rois_to_analyze:
-            roi_result = self._analyze_single_roi(
-                frame, roi_name, preprocessing
+            expected_values = self._get_expected_values_for_roi(
+                roi_name, expected_values_map
+            )
+            roi_result = self._analyze_single_roi_with_constraints(
+                frame, roi_name, preprocessing, expected_values
             )
             analysis_results[roi_name] = roi_result
 
@@ -335,8 +379,8 @@ class ImageAnalyzer:
         
         return analysis_results
 
-    def _analyze_single_roi(self, frame, roi_name, preprocessing):
-        """Analyze a single ROI and return the detected text."""
+    def _analyze_single_roi_with_constraints(self, frame, roi_name, preprocessing, expected_values):
+        """Analyze a single ROI and return the detected text with constraints validation."""
         roi_image, boundaries = self._extract_roi(frame, roi_name)
 
         if roi_image is None or boundaries is None:
@@ -352,8 +396,8 @@ class ImageAnalyzer:
         if roi_type == 'pattern':
             return self._process_pattern_roi(roi_name, roi_image, roi_info)
         else:
-            return self._process_ocr_roi(
-                roi_name, roi_image, roi_info, preprocessing
+            return self._process_ocr_roi_with_constraints(
+                roi_name, roi_image, roi_info, preprocessing, expected_values
             )
 
     def _log_roi_extraction(self, roi_name, roi_image, boundaries):
@@ -372,8 +416,8 @@ class ImageAnalyzer:
         self._log_debug(f"ROI '{roi_name}' uses pattern matching")
         return self._analyze_pattern_roi(roi_image, roi_info)
 
-    def _process_ocr_roi(self, roi_name, roi_image, roi_info, preprocessing):
-        """Process ROI using OCR."""
+    def _process_ocr_roi_with_constraints(self, roi_name, roi_image, roi_info, preprocessing, expected_values):
+        """Process ROI using OCR with constraints validation."""
         ocr_model = roi_info.get('model', 'easyocr') if roi_info else 'easyocr'
         
         self._log_debug(
@@ -391,8 +435,8 @@ class ImageAnalyzer:
             f"Enhanced image for '{roi_name}' ready for {ocr_model.upper()}"
         )
 
-        return self._extract_text_with_ocr_model(
-            enhanced_image, roi_info, ocr_model, roi_name
+        return self._extract_text_with_constraints(
+            enhanced_image, roi_info, roi_name, expected_values
         )
 
     def _enhance_roi_image(self, roi_image, roi_info, preprocessing):
@@ -404,15 +448,28 @@ class ImageAnalyzer:
             roi_image, roi_info, preprocessing
         )
 
-    def _extract_text_with_ocr_model(self, enhanced_image, roi_info, 
-                                     ocr_model, roi_name):
-        """Extract text using the specified OCR model."""
-        if ocr_model == 'easyocr':
-            return self._extract_text_with_easyocr(enhanced_image, roi_info)
-        elif roi_name == 'timer':
-            return self._extract_timer_digits(enhanced_image, roi_info)
+    def _extract_text_with_constraints(self, enhanced_image, roi_info, roi_name, expected_values):
+        """Extrait du texte avec validation contre les valeurs attendues.
+        
+        Args:
+            enhanced_image: Image préprocessée
+            roi_info: Configuration ROI
+            roi_name: Nom de la ROI
+            expected_values: Liste des valeurs attendues ou None
+        
+        Returns:
+            str: Texte validé ou chaîne vide si aucune correspondance
+        """
+        ocr_model = roi_info.get('model', 'easyocr') if roi_info else 'easyocr'
+        
+        # Extraction brute selon le modèle
+        if ocr_model == 'trocr':
+            raw_text = self._extract_raw_text_trocr(enhanced_image)
         else:
-            return self._extract_character_name(enhanced_image, roi_info)
+            raw_text = self._extract_raw_text_easyocr(enhanced_image, roi_info)
+        
+        # Validation unifiée avec expected_values
+        return self._validate_against_expected_values(raw_text, expected_values, roi_name)
 
     def _log_final_results(self, results):
         """Log final detection results."""
@@ -567,6 +624,51 @@ class ImageAnalyzer:
         roi = image[top_y:bottom_y, left_x:right_x]
         return roi, (left_x, top_y, right_x, bottom_y)
     
+    def _get_expected_values_for_roi(self, roi_name, expected_values_map):
+        """Récupère les valeurs attendues pour une ROI avec fallback hiérarchique.
+        
+        Priority:
+        1. expected_values_map paramètre
+        2. expected_values dans rois_config.json
+        3. Génération automatique par défaut
+        """
+        # 1. Paramètre explicit
+        if expected_values_map and roi_name in expected_values_map:
+            return expected_values_map[roi_name]
+        
+        # 2. Configuration ROI
+        roi_info = self._get_roi(roi_name)
+        if roi_info and 'expected_values' in roi_info:
+            config_values = roi_info['expected_values']
+            
+            # Si c'est une string (ancien format whitelist), la retourner telle quelle
+            if isinstance(config_values, str):
+                return config_values
+            
+            # Si c'est une liste, la retourner
+            if isinstance(config_values, list):
+                return config_values
+        
+        # 3. Génération automatique par défaut
+        return self._generate_default_expected_values(roi_name)
+    
+    def _generate_default_expected_values(self, roi_name):
+        """Génère les valeurs attendues par défaut pour une ROI."""
+        if roi_name == 'timer':
+            # Timer : 00-99
+            return [f"{i:02d}" for i in range(100)]
+        
+        elif roi_name in ['character1', 'character2']:
+            # Characters : depuis characters.json si disponible
+            if self.character_names:
+                return self.character_names
+            else:
+                # Fallback: whitelist basique
+                return "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- "
+        
+        # Autres ROIs : pas de contraintes
+        return None
+
     def _extract_roi_from_config(self, image, roi_config):
         """Extrait une ROI à partir d'une configuration directe.
         
@@ -617,14 +719,14 @@ class ImageAnalyzer:
         return left_x, top_y, right_x, bottom_y
     
 
-    def _extract_timer_digits(self, enhanced_image, roi_info=None):
-        del roi_info  # Parameter not used but kept for interface consistency
+    def _extract_raw_text_trocr(self, enhanced_image):
+        """Extrait le texte brut avec TrOCR sans filtrage."""
         if self.debug:
-            print(f"[ImageAnalyzer] _extract_timer_digits: processing image shape {enhanced_image.shape}")
+            print(f"[ImageAnalyzer] _extract_raw_text_trocr: processing image shape {enhanced_image.shape}")
         
         if not self.trocr_available:
             if self.debug:
-                print("[ImageAnalyzer] ❌ TrOCR non disponible pour extraction timer")
+                print("[ImageAnalyzer] ❌ TrOCR non disponible")
             return ""
         
         try:
@@ -635,72 +737,28 @@ class ImageAnalyzer:
                 pil_image = Image.fromarray(enhanced_image).convert('RGB')
                 
             if self.debug:
-                print("[ImageAnalyzer] 🔄 Utilisation de TrOCR pour détection timer")
+                print("[ImageAnalyzer] 🔄 Utilisation de TrOCR pour extraction brute")
                 
             # Prédiction TrOCR
             pixel_values = self.trocr_processor(pil_image, return_tensors="pt").pixel_values.to(self.trocr_device)
             generated_ids = self.trocr_model.generate(pixel_values)
             generated_text = self.trocr_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
             
-            # Extract only digits, limit to 2 for SF6 timer format
-            digits = ''.join(filter(str.isdigit, generated_text))
-            if len(digits) > 2:
-                digits = digits[:2]
-            
             if self.debug:
-                print(f"[ImageAnalyzer] TrOCR brut: '{generated_text}' -> digits: '{digits}'")
+                print(f"[ImageAnalyzer] TrOCR texte brut: '{generated_text}'")
                 
-            
-            return digits
+            return generated_text.strip()
             
         except Exception as e:
             if self.debug:
-                print(f"[ImageAnalyzer] ❌ Erreur TrOCR timer: {e}")
+                print(f"[ImageAnalyzer] ❌ Erreur TrOCR: {e}")
             return ""
 
-    def _extract_character_name(self, enhanced_image, roi_info=None):
-        del roi_info  # Parameter not used but kept for interface consistency
-        """Extrait le nom du personnage en utilisant TrOCR"""
-        if self.debug:
-            print(f"[ImageAnalyzer] _extract_character_name: processing image shape {enhanced_image.shape}")
-        
-        if not self.trocr_available:
-            if self.debug:
-                print("[ImageAnalyzer] ❌ TrOCR non disponible pour extraction character")
-            return ""
-        
-        try:
-            if len(enhanced_image.shape) == 3:
-                # OpenCV uses BGR, PIL needs RGB
-                pil_image = Image.fromarray(cv.cvtColor(enhanced_image, cv.COLOR_BGR2RGB))
-            else:
-                pil_image = Image.fromarray(enhanced_image).convert('RGB')
-                
-            if self.debug:
-                print("[ImageAnalyzer] 🔄 Utilisation de TrOCR pour détection character")
-                
-            # Prédiction TrOCR
-            pixel_values = self.trocr_processor(pil_image, return_tensors="pt").pixel_values.to(self.trocr_device)
-            generated_ids = self.trocr_model.generate(pixel_values)
-            generated_text = self.trocr_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-            
-            # Nettoyer le résultat
-            final_text = generated_text.strip()
-            
-            if self.debug:
-                print(f"[ImageAnalyzer] TrOCR character: '{final_text}'")
-                
-            
-            return final_text
-            
-        except Exception as e:
-            if self.debug:
-                print(f"[ImageAnalyzer] ❌ Erreur TrOCR character: {e}")
-            return ""
 
-    def _extract_text_with_easyocr(self, enhanced_image, roi_info=None):
+    def _extract_raw_text_easyocr(self, enhanced_image, roi_info=None):
+        """Extrait le texte brut avec EasyOCR sans filtrage."""
         if self.debug:
-            print(f"[ImageAnalyzer] _extract_text_with_easyocr: processing image shape {enhanced_image.shape}")
+            print(f"[ImageAnalyzer] _extract_raw_text_easyocr: processing image shape {enhanced_image.shape}")
         
         if not self.easyocr_available:
             if self.debug:
@@ -716,7 +774,7 @@ class ImageAnalyzer:
                 ocr_image = enhanced_image
                 
             if self.debug:
-                print("[ImageAnalyzer] 🔄 Utilisation de EasyOCR pour détection texte")
+                print("[ImageAnalyzer] 🔄 Utilisation de EasyOCR pour extraction brute")
                 
             # Returns list of (bbox, text, confidence)
             results = self.easyocr_reader.readtext(ocr_image)
@@ -729,52 +787,14 @@ class ImageAnalyzer:
             if self.debug:
                 print(f"[ImageAnalyzer] EasyOCR détections multiples: {[(r[1], f'{r[2]:.3f}') for r in results]}")
             
-            # Smart strategy for character ROIs: prioritize valid character names
-            detected_text = ""
-            confidence = 0.0
-            
-            if roi_info and roi_info.get('name', '').startswith('character') and self.character_names:
-                for result in results:
-                    text = result[1].strip().upper()
-                    conf = result[2]
-                    
-                    # Check if valid character name (case-insensitive)
-                    if text in self.character_names or get_close_matches(text, self.character_names, n=1, cutoff=0.6):
-                        detected_text = result[1].strip()
-                        confidence = conf
-                        if self.debug:
-                            print(f"[ImageAnalyzer] ✅ Nom de personnage trouvé: '{detected_text}' (confiance: {confidence:.3f})")
-                        break
-                
-                # Fallback to highest confidence if no valid name found
-                if not detected_text:
-                    best_result = max(results, key=lambda x: x[2])
-                    detected_text = best_result[1].strip()
-                    confidence = best_result[2]
-                    if self.debug:
-                        print(f"[ImageAnalyzer] ⚠️ Aucun nom valide, prise du plus confiant: '{detected_text}' (confiance: {confidence:.3f})")
-            else:
-                # For other ROIs: take highest confidence
-                best_result = max(results, key=lambda x: x[2])
-                detected_text = best_result[1].strip()
-                confidence = best_result[2]
-            
-            # Apply character name matching for character ROIs
-            if roi_info and roi_info.get('name', '').startswith('character') and self.character_names:
-                detected_text = self._match_character_name(detected_text)
-            else:
-                # Apply whitelist filtering for non-character ROIs (like timer)
-                if roi_info and 'ocr_whitelist' in roi_info:
-                    whitelist = roi_info['ocr_whitelist']
-                    filtered_text = ''.join(char for char in detected_text if char in whitelist)
-                    if self.debug and filtered_text != detected_text:
-                        print(f"[ImageAnalyzer] EasyOCR texte filtré: '{detected_text}' -> '{filtered_text}'")
-                    detected_text = filtered_text
+            # Prendre la détection avec la meilleure confiance
+            best_result = max(results, key=lambda x: x[2])
+            detected_text = best_result[1].strip()
+            confidence = best_result[2]
             
             if self.debug:
-                print(f"[ImageAnalyzer] EasyOCR résultat final: '{detected_text}' (confiance: {confidence:.3f})")
+                print(f"[ImageAnalyzer] EasyOCR texte brut: '{detected_text}' (confiance: {confidence:.3f})")
                 
-            
             return detected_text
             
         except Exception as e:

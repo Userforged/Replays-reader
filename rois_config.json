@@ -21,7 +21,6 @@
       "name": "character1",
       "label": "PLAYER 1",
       "model": "easyocr",
-      "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
       "boundaries": {
         "color": [
           92,
@@ -38,7 +37,6 @@
       "name": "character2",
       "label": "PLAYER 2",
       "model": "easyocr",
-      "ocr_whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- ",
       "boundaries": {
         "color": [
           192,
