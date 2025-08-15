@@ -22,6 +22,16 @@ class ImageAnalyzer:
                  character2_roi=None, config_file=None,
                  characters_file=None, debug=False,
                  debug_save_dir=None):
+        self._validate_initialization_params(debug, debug_save_dir, config_file)
+        self._initialize_instance_variables(
+            timer_roi, character1_roi, character2_roi, 
+            config_file, characters_file, debug, debug_save_dir
+        )
+        self._setup_resources()
+        self._display_initialization_status()
+
+    def _validate_initialization_params(self, debug, debug_save_dir, config_file):
+        """Validate constructor parameters."""
         if debug and not debug_save_dir:
             raise ValueError("debug_save_dir est requis quand debug=True")
         
@@ -30,43 +40,56 @@ class ImageAnalyzer:
                 "config_file est requis pour charger les métadonnées "
                 "des ROIs (model, whitelist, etc.)"
             )
-        
+
+    def _initialize_instance_variables(self, timer_roi, character1_roi, 
+                                       character2_roi, config_file, 
+                                       characters_file, debug, debug_save_dir):
+        """Initialize all instance variables."""
         self.timer_roi = timer_roi
         self.character1_roi = character1_roi  
         self.character2_roi = character2_roi
         self.debug_save_dir = debug_save_dir
-        
-        self.trocr_processor = None
-        self.trocr_model = None
-        self.trocr_available = False
-        
-        self.easyocr_reader = None
-        self.easyocr_available = False
-        
         self.config_file = config_file
         self.characters_file = characters_file
         self.debug = debug
         self.debug_counter = 0
-        self.image_converter = ImageConverter(debug=debug, output_directory=debug_save_dir)
         
-        if characters_file:
-            self.character_names = self._load_character_names()
-        else:
-            self.character_names = None
-        
+        self._initialize_ocr_variables()
+        self.image_converter = ImageConverter(
+            debug=debug, output_directory=debug_save_dir
+        )
+
+    def _initialize_ocr_variables(self):
+        """Initialize OCR-related variables."""
+        self.trocr_processor = None
+        self.trocr_model = None
+        self.trocr_available = False
+        self.easyocr_reader = None
+        self.easyocr_available = False
+
+    def _setup_resources(self):
+        """Load configuration files and initialize OCR engines."""
+        self.character_names = (
+            self._load_character_names() if self.characters_file else None
+        )
         self.rois = self._load_rois_config()
-            
         self._initialize_trocr()
         self._initialize_easyocr()
+
+    def _display_initialization_status(self):
+        """Display OCR initialization status."""
+        if not self.debug:
+            return
+            
+        trocr_status = '✅' if self.trocr_available else '❌'
+        easyocr_status = '✅' if self.easyocr_available else '❌'
+        print(
+            f"[ImageAnalyzer] Statut OCR - TrOCR: {trocr_status}, "
+            f"EasyOCR: {easyocr_status}"
+        )
         
-        # Show OCR status only once during initialization
-        if self.debug:
-            trocr_status = '✅' if self.trocr_available else '❌'
-            easyocr_status = '✅' if self.easyocr_available else '❌'
-            print(f"[ImageAnalyzer] Statut OCR - TrOCR: {trocr_status}, "
-                  f"EasyOCR: {easyocr_status}")
-            if not self.trocr_available and not self.easyocr_available:
-                print("[ImageAnalyzer] ⚠️ Aucun modèle OCR disponible")
+        if not self.trocr_available and not self.easyocr_available:
+            print("[ImageAnalyzer] ⚠️ Aucun modèle OCR disponible")
 
     def _get_model_cache_kwargs(self, model_name):
         """Prevents model re-downloads by using local cache."""
@@ -295,129 +318,143 @@ class ImageAnalyzer:
 
     def analyze_frame(self, frame, rois_to_analyze=None,
                       preprocessing: PreprocessingStep = PreprocessingStep.NONE):
+        """Analyze frame to extract text from specified ROIs."""
         if rois_to_analyze is None:
             rois_to_analyze = ['timer', 'character1', 'character2']
 
-        detection_results = {}
-
-        for roi_name in rois_to_analyze:
-            roi_image, boundaries = self._extract_roi(frame, roi_name)
-
-            if roi_image is None or boundaries is None:
-                if self.debug:
-                    print(f"[ImageAnalyzer] ROI {roi_name} extraction failed")
-                detection_results[roi_name] = ''
-                continue
-
-            if self.debug:
-                width, height = roi_image.shape[1], roi_image.shape[0]
-                print(
-                    f"[ImageAnalyzer] ⬜ ROI {roi_name} extracted: "
-                    f"{width}x{height} with boundaries={boundaries}"
-                )
-            
-            self.debug_counter += 1
-            
-            roi_info = self._get_roi(roi_name)
-            if roi_info:
-                roi_type = roi_info.get('type', 'ocr')
-            else:
-                roi_type = 'ocr'
-            
-            if roi_type == 'pattern':
-                if self.debug:
-                    print(
-                        f"[ImageAnalyzer] 🔍 ROI '{roi_name}' uses pattern "
-                        f"matching"
-                    )
-                detection_results[roi_name] = self._analyze_pattern_roi(
-                    roi_image, roi_info
-                )
-            else:
-                # Récupérer le modèle OCR à utiliser depuis la config
-                # (EasyOCR par défaut)
-                if roi_info:
-                    ocr_model = roi_info.get('model', 'easyocr')
-                else:
-                    ocr_model = 'easyocr'
-                
-                if self.debug:
-                    print(
-                        f"[ImageAnalyzer] 📝 ROI '{roi_name}' uses OCR "
-                        f"processing with model: {ocr_model}"
-                    )
-                
-                self.initialize_ocr()
-                self.image_converter.set_debug_counter(self.debug_counter)
-                
-                enhanced = self.image_converter.enhance_for_ocr(
-                    roi_image, roi_info, preprocessing
-                )
-                if enhanced is None:
-                    if self.debug:
-                        print(f"[ImageAnalyzer] Enhancement failed for ROI {roi_name}")
-                    detection_results[roi_name] = ''
-                    continue
-                
-                if self.debug:
-                    print(
-                        f"[ImageAnalyzer] 🔍 Enhanced image for "
-                        f"'{roi_name}' ready for {ocr_model.upper()}"
-                    )
-
-                if ocr_model == 'easyocr':
-                    detection_results[roi_name] = (
-                        self._extract_text_with_easyocr(enhanced, roi_info)
-                    )
-                else:  # trocr fallback
-                    if roi_name == 'timer':
-                        detection_results[roi_name] = (
-                            self._extract_timer_digits(enhanced, roi_info)
-                        )
-                    else:
-                        detection_results[roi_name] = (
-                            self._extract_character_name(enhanced, roi_info)
-                        )
-            
-
-        if self.debug:
-            print(
-                f"[ImageAnalyzer] Final detection results: "
-                f"{detection_results}"
-            )
-
-        if self.debug and self.debug_save_dir:
-            annotated_frame = self.annotate_frame_with_rois(
-                frame, 
-                list(detection_results.keys()),
-                show_text=True,
-                detection_results=detection_results
-            )
-            
-            timer_str = detection_results.get('timer', 'XX')
-            char1_str = detection_results.get('character1', 'Unknown')
-            char1_str = char1_str.replace(' ', '_')
-            char2_str = detection_results.get('character2', 'Unknown')
-            char2_str = char2_str.replace(' ', '_')
-            
-            debug_filename = (
-                f"analyzed_frame_{self.debug_counter:04d}_t{timer_str}_"
-                f"{char1_str}_vs_{char2_str}.jpg"
-            )
-            debug_path = os.path.join(self.debug_save_dir, debug_filename)
-            
-            os.makedirs(self.debug_save_dir, exist_ok=True)
-            cv.imwrite(debug_path, annotated_frame)
-            
-            if self.debug:
-                print(
-                    f"[ImageAnalyzer] 💾 Image annotée sauvée: "
-                    f"{debug_filename}"
-                )
-            
-            detection_results['debug_image_filename'] = debug_filename
+        analysis_results = {}
         
-        return detection_results
+        for roi_name in rois_to_analyze:
+            roi_result = self._analyze_single_roi(
+                frame, roi_name, preprocessing
+            )
+            analysis_results[roi_name] = roi_result
+
+        self._log_final_results(analysis_results)
+        self._save_debug_frame(frame, analysis_results)
+        
+        return analysis_results
+
+    def _analyze_single_roi(self, frame, roi_name, preprocessing):
+        """Analyze a single ROI and return the detected text."""
+        roi_image, boundaries = self._extract_roi(frame, roi_name)
+
+        if roi_image is None or boundaries is None:
+            self._log_debug(f"ROI {roi_name} extraction failed")
+            return ''
+
+        self._log_roi_extraction(roi_name, roi_image, boundaries)
+        self.debug_counter += 1
+        
+        roi_info = self._get_roi(roi_name)
+        roi_type = roi_info.get('type', 'ocr') if roi_info else 'ocr'
+        
+        if roi_type == 'pattern':
+            return self._process_pattern_roi(roi_name, roi_image, roi_info)
+        else:
+            return self._process_ocr_roi(
+                roi_name, roi_image, roi_info, preprocessing
+            )
+
+    def _log_roi_extraction(self, roi_name, roi_image, boundaries):
+        """Log ROI extraction details."""
+        if not self.debug:
+            return
+            
+        width, height = roi_image.shape[1], roi_image.shape[0]
+        print(
+            f"[ImageAnalyzer] ⬜ ROI {roi_name} extracted: "
+            f"{width}x{height} with boundaries={boundaries}"
+        )
+
+    def _process_pattern_roi(self, roi_name, roi_image, roi_info):
+        """Process ROI using pattern matching."""
+        self._log_debug(f"ROI '{roi_name}' uses pattern matching")
+        return self._analyze_pattern_roi(roi_image, roi_info)
+
+    def _process_ocr_roi(self, roi_name, roi_image, roi_info, preprocessing):
+        """Process ROI using OCR."""
+        ocr_model = roi_info.get('model', 'easyocr') if roi_info else 'easyocr'
+        
+        self._log_debug(
+            f"ROI '{roi_name}' uses OCR processing with model: {ocr_model}"
+        )
+        
+        enhanced_image = self._enhance_roi_image(
+            roi_image, roi_info, preprocessing
+        )
+        if enhanced_image is None:
+            self._log_debug(f"Enhancement failed for ROI {roi_name}")
+            return ''
+        
+        self._log_debug(
+            f"Enhanced image for '{roi_name}' ready for {ocr_model.upper()}"
+        )
+
+        return self._extract_text_with_ocr_model(
+            enhanced_image, roi_info, ocr_model, roi_name
+        )
+
+    def _enhance_roi_image(self, roi_image, roi_info, preprocessing):
+        """Enhance ROI image for better OCR results."""
+        self.initialize_ocr()
+        self.image_converter.set_debug_counter(self.debug_counter)
+        
+        return self.image_converter.enhance_for_ocr(
+            roi_image, roi_info, preprocessing
+        )
+
+    def _extract_text_with_ocr_model(self, enhanced_image, roi_info, 
+                                     ocr_model, roi_name):
+        """Extract text using the specified OCR model."""
+        if ocr_model == 'easyocr':
+            return self._extract_text_with_easyocr(enhanced_image, roi_info)
+        elif roi_name == 'timer':
+            return self._extract_timer_digits(enhanced_image, roi_info)
+        else:
+            return self._extract_character_name(enhanced_image, roi_info)
+
+    def _log_final_results(self, results):
+        """Log final detection results."""
+        if self.debug:
+            print(f"[ImageAnalyzer] Final detection results: {results}")
+
+    def _save_debug_frame(self, frame, results):
+        """Save annotated debug frame if debug mode is enabled."""
+        if not (self.debug and self.debug_save_dir):
+            return
+            
+        annotated_frame = self.annotate_frame_with_rois(
+            frame, 
+            list(results.keys()),
+            show_text=True,
+            detection_results=results
+        )
+        
+        debug_filename = self._generate_debug_filename(results)
+        debug_path = os.path.join(self.debug_save_dir, debug_filename)
+        
+        os.makedirs(self.debug_save_dir, exist_ok=True)
+        cv.imwrite(debug_path, annotated_frame)
+        
+        self._log_debug(f"Image annotée sauvée: {debug_filename}")
+        results['debug_image_filename'] = debug_filename
+
+    def _generate_debug_filename(self, results):
+        """Generate debug filename based on detection results."""
+        timer_str = results.get('timer', 'XX')
+        char1_str = results.get('character1', 'Unknown').replace(' ', '_')
+        char2_str = results.get('character2', 'Unknown').replace(' ', '_')
+        
+        return (
+            f"analyzed_frame_{self.debug_counter:04d}_t{timer_str}_"
+            f"{char1_str}_vs_{char2_str}.jpg"
+        )
+
+    def _log_debug(self, message):
+        """Log debug message if debug mode is enabled."""
+        if self.debug:
+            print(f"[ImageAnalyzer] {message}")
 
     def visualize_rois(self, image_path, rois_to_show=None):
         if rois_to_show is None:

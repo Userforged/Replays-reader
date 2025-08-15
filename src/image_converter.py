@@ -54,60 +54,43 @@ class ImageConverter:
             print(f"⚠ Error enhancing image: {e}")
             return None
     
-    def _apply_enhancement_pipeline(self, image, region_info=None, preprocessing_steps: PreprocessingStep = PreprocessingStep.AGGRESSIVE):
-        """
-        Applique le pipeline d'amélioration avec les étapes sélectionnées.
-        
-        Args:
-            image: Image à traiter
-            region_info: Informations de la région
-            preprocessing_steps: Étapes de preprocessing (PreprocessingStep enum)
-            
-        Returns:
-            Image améliorée
-        """
+    def _apply_enhancement_pipeline(self, image, region_info=None, 
+                                   preprocessing_steps: PreprocessingStep = PreprocessingStep.AGGRESSIVE):
+        """Apply image enhancement pipeline with selected steps."""
         working_image = image.copy()
         
-        # Appliquer les étapes dans l'ordre logique si elles sont demandées
-        if PreprocessingStep.GRAYSCALE in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Conversion en niveaux de gris")
-            working_image = self._convert_to_grayscale(working_image)
-            
-        if PreprocessingStep.DENOISING in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Débruitage")
-            working_image = self._apply_denoising(working_image)
-            
-        if PreprocessingStep.NORMALIZE in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Normalisation de l'histogramme")
-            working_image = self._apply_histogram_normalization(working_image)
-            
-        if PreprocessingStep.CLAHE in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Enhancement CLAHE")
-            working_image = self._apply_clahe_enhancement(working_image)
-            
-        if PreprocessingStep.THRESHOLD in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Seuillage binaire")
-            working_image = self._apply_binary_thresholding(working_image, region_info)
-            
-        if PreprocessingStep.MORPHOLOGY in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Opérations morphologiques")
-            working_image = self._apply_morphological_operations(working_image, region_info)
-            
-        if PreprocessingStep.UPSCALE in preprocessing_steps:
-            if self.debug:
-                print(f"[ImageConverter] Executing: Upscaling final")
-            working_image = self._apply_upscaling(working_image)
+        pipeline_steps = [
+            (PreprocessingStep.GRAYSCALE, "Conversion en niveaux de gris", 
+             lambda img: self._convert_to_grayscale(img)),
+            (PreprocessingStep.DENOISING, "Débruitage", 
+             lambda img: self._apply_denoising(img)),
+            (PreprocessingStep.NORMALIZE, "Normalisation de l'histogramme", 
+             lambda img: self._apply_histogram_normalization(img)),
+            (PreprocessingStep.CLAHE, "Enhancement CLAHE", 
+             lambda img: self._apply_clahe_enhancement(img)),
+            (PreprocessingStep.THRESHOLD, "Seuillage binaire", 
+             lambda img: self._apply_binary_thresholding(img, region_info)),
+            (PreprocessingStep.MORPHOLOGY, "Opérations morphologiques", 
+             lambda img: self._apply_morphological_operations(img, region_info)),
+            (PreprocessingStep.UPSCALE, "Upscaling final", 
+             lambda img: self._apply_upscaling(img)),
+        ]
+        
+        for step_type, step_name, step_function in pipeline_steps:
+            if step_type in preprocessing_steps:
+                self._log_debug(f"Executing: {step_name}")
+                working_image = step_function(working_image)
         
         if self.debug:
             active_steps = preprocessing_steps.get_step_names()
             print(f"[ImageConverter] Enhancement pipeline complete with steps {active_steps}: {working_image.shape}")
+        
         return working_image
+
+    def _log_debug(self, message):
+        """Log debug message if debug mode is enabled."""
+        if self.debug:
+            print(f"[ImageConverter] {message}")
     
     
     def _convert_to_grayscale(self, image):
