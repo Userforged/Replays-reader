@@ -78,7 +78,7 @@ def _save_results_to_json(analysis_results, json_path):
 def analyze_video(video_file_path, frames_per_minute=12, save_frames=False):
     """Analyze Street Fighter 6 video to extract game data."""
     video_name = os.path.splitext(os.path.basename(video_file_path))[0]
-    json_output_path = os.path.join(OUTPUT_DIRECTORY, f"{video_name}_results.json")
+    json_output_path = os.path.join(OUTPUT_DIRECTORY, f"{video_name}.export.json")
     
     frames_output_dir = _ensure_output_directories_exist(save_frames)
     frame_extractor, analyzer = _create_analyzers(video_file_path, frames_per_minute, save_frames)
