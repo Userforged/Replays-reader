@@ -11,3 +11,4 @@ tqdm>=4.65.0
 notebook>=6.5.4
 ipykernel>=6.23.0
 setuptools<81
+rapidfuzz>=3.6.0

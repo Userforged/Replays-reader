@@ -11,7 +11,7 @@ séparation des responsabilités :
 
 import json
 import os
-from difflib import get_close_matches
+from rapidfuzz import process
 from typing import Optional, List, Union, Dict, Any
 
 
@@ -117,9 +117,9 @@ class TextValidator:
                 return digits
         
         # 3. Correspondance floue sur les timer values
-        close_matches = get_close_matches(cleaned_text, self.timer_values, n=1, cutoff=0.7)
-        if close_matches:
-            best_match = close_matches[0]
+        result = process.extractOne(cleaned_text, self.timer_values, score_cutoff=70)
+        if result:
+            best_match, score, _ = result
             if self.debug:
                 print(f"[TextValidator] ✅ Timer fuzzy match: '{raw_text}' -> '{best_match}'")
             return best_match
@@ -158,12 +158,12 @@ class TextValidator:
             return cleaned_text
         
         # 2. Correspondance floue
-        close_matches = get_close_matches(
-            cleaned_text, self.character_names, n=1, cutoff=0.6
+        result = process.extractOne(
+            cleaned_text, self.character_names, score_cutoff=60
         )
         
-        if close_matches:
-            best_match = close_matches[0]
+        if result:
+            best_match, score, _ = result
             if self.debug:
                 print(f"[TextValidator] ✅ Character fuzzy match: '{raw_text}' -> '{best_match}'")
             return best_match

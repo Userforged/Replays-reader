@@ -3,7 +3,7 @@ import os
 import json
 from PIL import Image
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
-from difflib import get_close_matches
+from rapidfuzz import process
 from .image_converter import ImageConverter
 from .preprocessing_steps import PreprocessingStep
 
