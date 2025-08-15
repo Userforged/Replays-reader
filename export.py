@@ -24,14 +24,15 @@ def _ensure_output_directories_exist(save_frames):
     return frames_output_dir
 
 
-def _create_analyzers(video_source, frames_per_minute, save_frames):
+def _create_analyzers(video_source, frames_per_minute, save_frames, manual_format=None):
     """Initialize frame extractor and image analyzer."""
     frame_extractor = FrameExtractor(
         video_source=video_source,
         output_name=None,
         no_prompt=True,
         frames_per_minute=frames_per_minute,
-        debug=False
+        debug=False,
+        manual_format=manual_format
     )
     
     # Configure ImageAnalyzer debug mode based on save_frames parameter
@@ -75,11 +76,11 @@ def _save_results_to_json(analysis_results, json_path):
         json.dump(analysis_results, json_file, indent=2, ensure_ascii=False)
 
 
-def analyze_video(video_source, frames_per_minute=12, save_frames=False):
+def analyze_video(video_source, frames_per_minute=12, save_frames=False, manual_format=None):
     """Analyze Street Fighter 6 video to extract game data."""
     # For output naming, use the resolved video name from FrameExtractor
     frames_output_dir = _ensure_output_directories_exist(save_frames)
-    frame_extractor, analyzer = _create_analyzers(video_source, frames_per_minute, save_frames)
+    frame_extractor, analyzer = _create_analyzers(video_source, frames_per_minute, save_frames, manual_format)
     
     # Use the output name determined by FrameExtractor for JSON file
     video_name = frame_extractor.output_name
@@ -141,6 +142,10 @@ if __name__ == "__main__":
         '--frames-per-minute', type=int, default=12,
         help='Nombre de frames à analyser par minute (par défaut: 12)'
     )
+    parser.add_argument(
+        '-f', '--format', type=str, default=None,
+        help='Format yt-dlp spécifique à utiliser (bypasse la sélection automatique). Ex: -f 299'
+    )
 
     args = parser.parse_args()
 
@@ -149,27 +154,32 @@ if __name__ == "__main__":
         print("💡 Exemples:")
         print("   python export.py input/match.mp4")
         print("   python export.py https://www.youtube.com/watch?v=VIDEO_ID")
+        print("   python export.py https://www.youtube.com/watch?v=VIDEO_ID -f 312")
+        print("   python export.py https://www.youtube.com/watch?v=VIDEO_ID --format best")
         parser.print_help()
     else:
         save_frames = args.save_frames
         source_type = "URL" if args.video.startswith(('http://', 'https://')) else "fichier"
         print(f"🎯 Analyse du {source_type}: {args.video}")
+        if args.format:
+            print(f"🔧 Format manuel spécifié: {args.format}")
         if save_frames:
             print("🐛 Mode debug: frames sauvegardées dans ImageAnalyzer")
         try:
-            analyze_video(args.video, args.frames_per_minute, save_frames)
+            analyze_video(args.video, args.frames_per_minute, save_frames, args.format)
         except Exception as e:
             print(f"❌ Erreur lors de l'analyse: {e}")
             if args.video.startswith(('http://', 'https://')):
                 print("💡 Vérifiez que yt-dlp peut accéder à cette URL")
 
 
-def process_street_fighter_video_for_data_extraction(video_source, save_frames=False):
+def process_street_fighter_video_for_data_extraction(video_source, save_frames=False, manual_format=None):
     """
     Convenience function for backward compatibility and programmatic use.
     
     Args:
         video_source: Local file path or online video URL
         save_frames: Whether to save debug frames
+        manual_format: Optional manual yt-dlp format specification
     """
-    return analyze_video(video_source, frames_per_minute=12, save_frames=save_frames)
+    return analyze_video(video_source, frames_per_minute=12, save_frames=save_frames, manual_format=manual_format)

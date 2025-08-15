@@ -5,6 +5,7 @@ Module de déduction des matches et rounds à partir des données d'analyse JSON
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Optional
 import json
+from .text_validator import TextValidator
 
 
 class MatchDeductor:
@@ -17,7 +18,8 @@ class MatchDeductor:
                  min_match_gap_seconds=120,
                  timer_tolerance_ratio=0.3,
                  output_fields=None,
-                 debug=False):
+                 debug=False,
+                 characters_file="characters.json"):
         """
         Initialise le déducteur avec les paramètres de tolérance.
         
@@ -27,11 +29,15 @@ class MatchDeductor:
             timer_tolerance_ratio: Ratio de tolérance pour timer manquant (défaut: 30%)
             output_fields: Dict définissant les champs à inclure dans la sortie
             debug: Mode debug pour logs détaillés
+            characters_file: Fichier JSON avec la liste des personnages SF6
         """
         self.min_round_duration = min_round_duration_seconds
         self.min_match_gap = min_match_gap_seconds
         self.timer_tolerance = timer_tolerance_ratio
         self.debug = debug
+        
+        # Initialiser le validateur de texte
+        self.text_validator = TextValidator(characters_file=characters_file, debug=debug)
         
         # Configuration des champs de sortie par défaut
         default_fields = {
@@ -46,7 +52,7 @@ class MatchDeductor:
         Analyse les données de frames pour détecter matches, sets et rounds.
         
         Args:
-            frames_data: Liste des frames avec timestamps et données OCR
+            frames_data: Liste des frames avec timestamps et données OCR (brut)
             
         Returns:
             Dict contenant les matches, sets et rounds détectés
@@ -56,8 +62,16 @@ class MatchDeductor:
             
         self._log_debug(f"Analyse de {len(frames_data)} frames")
         
+        # Validation des textes OCR bruts avec TextValidator
+        validated_frames = self.text_validator.validate_frames_batch(frames_data)
+        
+        if self.debug:
+            # Afficher les statistiques de validation
+            validation_stats = self.text_validator.get_validation_stats(frames_data, validated_frames)
+            self._log_debug(f"Validation stats: {validation_stats}")
+        
         # Parse et valide les données
-        parsed_frames = self._parse_and_validate_frames(frames_data)
+        parsed_frames = self._parse_and_validate_frames(validated_frames)
         
         # Détecte les rounds basés sur les patterns de timer SF6
         detected_rounds = self._detect_timer_sequences(parsed_frames)

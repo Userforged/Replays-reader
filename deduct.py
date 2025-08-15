@@ -15,6 +15,209 @@ import argparse
 from src.match_deductor import MatchDeductor
 
 
+def format_character_name(name):
+    """
+    Formate un nom de personnage : première lettre majuscule, reste minuscule.
+    Gère les cas spéciaux comme "M. BISON", "DEE JAY", etc.
+    """
+    if not name:
+        return "Unknown"
+    
+    name = name.strip()
+    
+    # Cas spéciaux avec points ou espaces
+    if "." in name or " " in name:
+        # Séparer par espaces et traiter chaque partie
+        parts = name.split()
+        formatted_parts = []
+        
+        for part in parts:
+            if "." in part:
+                # Garder les points mais capitaliser : "M." reste "M."
+                formatted_parts.append(part.upper())
+            else:
+                # Première lettre majuscule, reste minuscule
+                formatted_parts.append(part.capitalize())
+        
+        return " ".join(formatted_parts)
+    else:
+        # Cas simple : première lettre majuscule, reste minuscule
+        return name.capitalize()
+
+
+def format_matches_to_human_readable(matches_data):
+    """
+    Convertit les données de matches en format human-readable.
+    
+    Format de sortie: "HH:MM:SS Player1 (Character1) VS Player2 (Character2)"
+    
+    Args:
+        matches_data: Données de résultats contenant les matches
+        
+    Returns:
+        Liste des lignes formatées
+    """
+    lines = []
+    
+    matches = matches_data.get("matches", [])
+    
+    for match in matches:
+        # Pour chaque match, on liste tous ses sets
+        sets = match.get("sets", [])
+        
+        for set_data in sets:
+            timestamp = set_data.get("start_time", "00:00:00")
+            
+            # Formater les noms de personnages : première lettre majuscule, reste minuscule
+            char1_raw = set_data.get("character1", "Unknown")
+            char2_raw = set_data.get("character2", "Unknown")
+            
+            # Gérer les cas spéciaux comme "M. BISON", "E. HONDA", "DEE JAY"
+            char1 = format_character_name(char1_raw)
+            char2 = format_character_name(char2_raw)
+            
+            # Noms des joueurs statiques (placeholders)
+            player1 = "Player1"
+            player2 = "Player2"
+            
+            line = f"{timestamp} {player1} ({char1}) VS {player2} ({char2})"
+            lines.append(line)
+    
+    return lines
+
+
+def enrich_results_with_metadata(results: dict, input_json_path: str, frames_data: list) -> dict:
+    """
+    Enrichit les résultats avec les métadonnées du fichier source.
+    
+    Args:
+        results: Résultats de MatchDeductor
+        input_json_path: Chemin du fichier .export.json
+        frames_data: Données des frames pour calculer la durée
+    
+    Returns:
+        Résultats enrichis avec métadonnées
+    """
+    # Extraire le nom de la vidéo source
+    video_name = extract_video_name_from_path(input_json_path)
+    
+    # Calculer la durée de la vidéo
+    video_duration = calculate_video_duration(frames_data)
+    
+    # Renommer "stats" en "info" et ajouter métadonnées
+    if 'stats' in results:
+        info = results.pop('stats')  # Récupérer et supprimer 'stats'
+    else:
+        info = {}
+    
+    # Ajouter les nouvelles métadonnées au début
+    enriched_info = {
+        'source_file': input_json_path,
+        'video_name': video_name,
+        'video_duration': video_duration,
+        **info  # Ajouter les stats existantes après
+    }
+    
+    results['info'] = enriched_info
+    return results
+
+
+def extract_video_name_from_path(json_path: str) -> str:
+    """
+    Extrait le nom de la vidéo à partir du chemin du fichier .export.json
+    
+    Exemples:
+        EVODay2.export.json → EVODay2
+        path/to/MyVideo.export.json → MyVideo
+        https_youtube_com_watch_v_ABC123.export.json → https_youtube_com_watch_v_ABC123
+    """
+    filename = os.path.basename(json_path)
+    
+    # Enlever l'extension .json
+    if filename.endswith('.json'):
+        filename = filename[:-5]
+    
+    # Enlever .export si présent
+    if filename.endswith('.export'):
+        filename = filename[:-7]
+    
+    return filename
+
+
+def calculate_video_duration(frames_data: list) -> str:
+    """
+    Calcule la durée de la vidéo basée sur le premier et dernier timestamp.
+    
+    Args:
+        frames_data: Liste des frames avec timestamps
+        
+    Returns:
+        Durée au format "HH:MM:SS" ou "Unknown" si impossible à calculer
+    """
+    if not frames_data:
+        return "Unknown"
+    
+    try:
+        # Extraire les timestamps valides
+        timestamps = []
+        for frame in frames_data:
+            timestamp = frame.get('timestamp', '')
+            if timestamp and timestamp != '':
+                timestamps.append(timestamp)
+        
+        if len(timestamps) < 2:
+            return "Unknown"
+        
+        # Premier et dernier timestamp
+        first_time = timestamps[0]
+        last_time = timestamps[-1]
+        
+        # Convertir en secondes
+        first_seconds = timestamp_to_seconds(first_time)
+        last_seconds = timestamp_to_seconds(last_time)
+        
+        if first_seconds is None or last_seconds is None:
+            return "Unknown"
+        
+        # Calculer la durée
+        duration_seconds = last_seconds - first_seconds
+        
+        # Convertir en format HH:MM:SS
+        hours = duration_seconds // 3600
+        minutes = (duration_seconds % 3600) // 60
+        seconds = duration_seconds % 60
+        
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        
+    except Exception:
+        return "Unknown"
+
+
+def timestamp_to_seconds(timestamp: str) -> int:
+    """
+    Convertit un timestamp HH:MM:SS en secondes.
+    
+    Args:
+        timestamp: Format "HH:MM:SS"
+        
+    Returns:
+        Nombre de secondes ou None si erreur
+    """
+    try:
+        parts = timestamp.split(':')
+        if len(parts) != 3:
+            return None
+        
+        hours = int(parts[0])
+        minutes = int(parts[1])  
+        seconds = int(parts[2])
+        
+        return hours * 3600 + minutes * 60 + seconds
+        
+    except (ValueError, IndexError):
+        return None
+
+
 def load_analysis_results(json_path: str) -> list:
     """
     Charge les résultats d'analyse depuis un fichier JSON.
@@ -48,9 +251,55 @@ def load_analysis_results(json_path: str) -> list:
         raise ValueError(f"Erreur de lecture: {e}")
 
 
-def save_deduction_results(results: dict, output_path: str):
+def save_deduction_results_txt(results: dict, output_path: str):
     """
-    Sauvegarde les résultats de déduction dans un fichier JSON.
+    Sauvegarde les résultats de déduction dans un fichier TXT human-readable.
+    
+    Args:
+        results: Résultats de la déduction
+        output_path: Chemin de sortie
+    """
+    try:
+        # Créer le répertoire de sortie si nécessaire
+        output_dir = os.path.dirname(output_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        matches = results.get("matches", [])
+        
+        if not matches:
+            # Cas où aucun match n'est détecté
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write("# Aucun match détecté dans cette vidéo\n")
+                f.write("# \n")
+                f.write("# Causes possibles:\n")
+                f.write("# - Vidéo sans gameplay Street Fighter 6\n")
+                f.write("# - Détection OCR insuffisante (timer/personnages)\n")
+                f.write("# - Paramètres de détection trop stricts\n")
+                f.write("# \n")
+                f.write("# Essayez d'ajuster les paramètres avec --debug pour plus d'infos\n")
+            
+            print(f"📄 Fichier TXT créé (aucun match): {output_path}")
+            return
+        
+        # Convertir au format human-readable
+        lines = format_matches_to_human_readable(results)
+        
+        with open(output_path, 'w', encoding='utf-8') as f:
+            for line in lines:
+                f.write(line + '\n')
+            
+        print(f"📄 Résultats TXT sauvegardés: {output_path}")
+        print(f"📊 {len(lines)} sets détectés")
+        
+    except Exception as e:
+        print(f"❌ Erreur sauvegarde TXT: {e}")
+        raise
+
+
+def save_deduction_results_json(results: dict, output_path: str):
+    """
+    Sauvegarde les résultats de déduction dans un fichier JSON détaillé.
     
     Args:
         results: Résultats de la déduction
@@ -65,32 +314,38 @@ def save_deduction_results(results: dict, output_path: str):
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
             
-        print(f"📄 Résultats sauvegardés: {output_path}")
+        print(f"📄 Résultats JSON sauvegardés: {output_path}")
         
     except Exception as e:
-        print(f"❌ Erreur sauvegarde: {e}")
+        print(f"❌ Erreur sauvegarde JSON: {e}")
         raise
 
 
 def print_analysis_summary(results: dict):
     """Affiche un résumé de l'analyse."""
-    stats = results.get('stats', {})
+    info = results.get('info', {})
     matches = results.get('matches', [])
     
     print(f"\n📊 Résumé de l'analyse:")
     print(f"═" * 50)
     
+    # Métadonnées vidéo
+    video_name = info.get('video_name', 'Unknown')
+    video_duration = info.get('video_duration', 'Unknown')
+    print(f"🎬 Vidéo: {video_name}")
+    print(f"⏱️  Durée: {video_duration}")
+    
     # Statistiques générales
-    print(f"📹 Frames analysées: {stats.get('total_frames_analyzed', 0)}")
-    print(f"⏱️  Frames avec timer: {stats.get('frames_with_valid_timer', 0)} "
-          f"({stats.get('timer_detection_rate', 0):.1%})")
-    print(f"🎮 Matches détectés: {stats.get('total_matches_detected', 0)}")
-    print(f"📦 Sets détectés: {stats.get('total_sets_detected', 0)}")
-    print(f"🥊 Rounds détectés: {stats.get('total_rounds_detected', 0)}")
+    print(f"📹 Frames analysées: {info.get('total_frames_analyzed', 0)}")
+    print(f"🔍 Frames avec timer: {info.get('frames_with_valid_timer', 0)} "
+          f"({info.get('timer_detection_rate', 0):.1%})")
+    print(f"🎮 Matches détectés: {info.get('total_matches_detected', 0)}")
+    print(f"📦 Sets détectés: {info.get('total_sets_detected', 0)}")
+    print(f"🥊 Rounds détectés: {info.get('total_rounds_detected', 0)}")
     
     if matches:
-        avg_sets = stats.get('avg_sets_per_match', 0)
-        avg_rounds = stats.get('avg_rounds_per_set', 0)
+        avg_sets = info.get('avg_sets_per_match', 0)
+        avg_rounds = info.get('avg_rounds_per_set', 0)
         print(f"📈 Moyenne sets/match: {avg_sets:.1f}")
         print(f"📈 Moyenne rounds/set: {avg_rounds:.1f}")
     
@@ -117,7 +372,7 @@ def main():
         epilog="""
 Exemples:
   python deduct.py EVODay2_results.json
-  python deduct.py EVODay2_results.json --output matches.json
+  python deduct.py EVODay2_results.json --output matches.txt
   python deduct.py EVODay2_results.json --debug --min-round-duration 90
         """
     )
@@ -129,7 +384,7 @@ Exemples:
     
     parser.add_argument(
         '-o', '--output',
-        help='Fichier de sortie (défaut: [input].matches.json)'
+        help='Fichier de sortie (défaut: [input].matches.txt)'
     )
     
     parser.add_argument(
@@ -170,7 +425,7 @@ Exemples:
         if base_name.endswith('.export'):
             base_name = base_name[:-7]  # Enlever '.export'
         
-        args.output = f"{base_name}.matches.json"
+        args.output = f"{base_name}.matches.txt"
     
     try:
         print("🚀 Déduction des matches Street Fighter 6")
@@ -204,8 +459,16 @@ Exemples:
         
         results = deductor.analyze_frames(frames_data)
         
-        # Sauvegarder
-        save_deduction_results(results, args.output)
+        # Enrichir avec les métadonnées du fichier
+        results = enrich_results_with_metadata(results, args.input_json, frames_data)
+        
+        # Sauvegarder en format TXT (par défaut)
+        save_deduction_results_txt(results, args.output)
+        
+        # Sauvegarder aussi en JSON si mode debug
+        if args.debug:
+            json_output = args.output.replace('.matches.txt', '.matches.json')
+            save_deduction_results_json(results, json_output)
         
         # Afficher résumé
         print_analysis_summary(results)

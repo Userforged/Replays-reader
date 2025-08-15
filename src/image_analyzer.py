@@ -234,82 +234,6 @@ class ImageAnalyzer:
                 )
             return None
 
-    def _validate_against_expected_values(self, raw_text, expected_values, roi_name):
-        """Valide le texte brut contre les valeurs attendues.
-        
-        Args:
-            raw_text: Résultat OCR brut
-            expected_values: Liste des valeurs autorisées ou None
-            roi_name: Nom de la ROI pour le debug
-        
-        Returns:
-            str: Valeur validée ou chaîne vide
-        """
-        if not expected_values or not raw_text.strip():
-            return raw_text.strip()
-        
-        cleaned_text = raw_text.strip().upper()
-        
-        if self.debug:
-            print(
-                f"[ImageAnalyzer] 🔍 Validation {roi_name}: '{raw_text}' -> '{cleaned_text}'"
-            )
-        
-        # 1. Correspondance exacte
-        if cleaned_text in expected_values:
-            if self.debug:
-                print(
-                    f"[ImageAnalyzer] ✅ Correspondance exacte {roi_name}: '{raw_text}' -> '{cleaned_text}'"
-                )
-            return cleaned_text
-        
-        # 2. Correspondance floue (fuzzy matching)
-        close_matches = get_close_matches(
-            cleaned_text, expected_values, n=1, cutoff=0.6
-        )
-        
-        if close_matches:
-            best_match = close_matches[0]
-            if self.debug:
-                print(
-                    f"[ImageAnalyzer] ✅ Correspondance floue {roi_name}: '{raw_text}' -> '{best_match}'"
-                )
-            return best_match
-        
-        # 3. Logique spécialisée pour les timers (extraction de chiffres)
-        if roi_name == 'timer' and expected_values:
-            # Extraire les chiffres du texte brut
-            digits = ''.join(filter(str.isdigit, cleaned_text))
-            if len(digits) > 0:
-                # Formater sur 2 chiffres si nécessaire
-                if len(digits) == 1:
-                    digits = '0' + digits
-                elif len(digits) > 2:
-                    digits = digits[:2]
-                
-                if digits in expected_values:
-                    if self.debug:
-                        print(
-                            f"[ImageAnalyzer] ✅ Timer formaté {roi_name}: '{raw_text}' -> '{digits}'"
-                        )
-                    return digits
-        
-        # 4. Fallback sur whitelist (backward compatibility)
-        if isinstance(expected_values, str):
-            # expected_values est une string whitelist (ancien format)
-            filtered_text = ''.join(char for char in cleaned_text if char in expected_values)
-            if filtered_text and self.debug:
-                print(
-                    f"[ImageAnalyzer] ✅ Whitelist filter {roi_name}: '{raw_text}' -> '{filtered_text}'"
-                )
-            return filtered_text
-        
-        # 5. Rejet
-        if self.debug:
-            print(
-                f"[ImageAnalyzer] ❌ REJETÉ {roi_name}: '{raw_text}' (pas dans expected_values)"
-            )
-        return ""
 
     def _get_roi(self, roi_name):
         # Fallback to default ROI config if no JSON config loaded
@@ -348,17 +272,16 @@ class ImageAnalyzer:
 
 
     def analyze_frame(self, frame, rois_to_analyze=None,
-                      preprocessing: PreprocessingStep = PreprocessingStep.NONE,
-                      expected_values_map=None):
-        """Analyze frame to extract text from specified ROIs.
+                      preprocessing: PreprocessingStep = PreprocessingStep.NONE):
+        """Extract raw text from specified ROIs without validation.
         
         Args:
             frame: Image à analyser
             rois_to_analyze: Liste des ROIs à analyser
             preprocessing: Étapes de préprocessing
-            expected_values_map: Dict mapping roi_name -> expected_values
-                               ex: {"timer": ["00", "01", ..., "99"], 
-                                    "character1": ["RYU", "CHUN-LI", ...]}
+        
+        Returns:
+            Dict avec texte brut extrait par OCR (sans validation)
         """
         if rois_to_analyze is None:
             rois_to_analyze = ['timer', 'character1', 'character2']
@@ -366,11 +289,8 @@ class ImageAnalyzer:
         analysis_results = {}
         
         for roi_name in rois_to_analyze:
-            expected_values = self._get_expected_values_for_roi(
-                roi_name, expected_values_map
-            )
-            roi_result = self._analyze_single_roi_with_constraints(
-                frame, roi_name, preprocessing, expected_values
+            roi_result = self._analyze_single_roi_raw(
+                frame, roi_name, preprocessing
             )
             analysis_results[roi_name] = roi_result
 
@@ -379,8 +299,8 @@ class ImageAnalyzer:
         
         return analysis_results
 
-    def _analyze_single_roi_with_constraints(self, frame, roi_name, preprocessing, expected_values):
-        """Analyze a single ROI and return the detected text with constraints validation."""
+    def _analyze_single_roi_raw(self, frame, roi_name, preprocessing):
+        """Analyze a single ROI and return raw OCR text without validation."""
         roi_image, boundaries = self._extract_roi(frame, roi_name)
 
         if roi_image is None or boundaries is None:
@@ -396,8 +316,8 @@ class ImageAnalyzer:
         if roi_type == 'pattern':
             return self._process_pattern_roi(roi_name, roi_image, roi_info)
         else:
-            return self._process_ocr_roi_with_constraints(
-                roi_name, roi_image, roi_info, preprocessing, expected_values
+            return self._process_ocr_roi_raw(
+                roi_name, roi_image, roi_info, preprocessing
             )
 
     def _log_roi_extraction(self, roi_name, roi_image, boundaries):
@@ -416,8 +336,8 @@ class ImageAnalyzer:
         self._log_debug(f"ROI '{roi_name}' uses pattern matching")
         return self._analyze_pattern_roi(roi_image, roi_info)
 
-    def _process_ocr_roi_with_constraints(self, roi_name, roi_image, roi_info, preprocessing, expected_values):
-        """Process ROI using OCR with constraints validation."""
+    def _process_ocr_roi_raw(self, roi_name, roi_image, roi_info, preprocessing):
+        """Process ROI using OCR and return raw text without validation."""
         ocr_model = roi_info.get('model', 'easyocr') if roi_info else 'easyocr'
         
         self._log_debug(
@@ -435,8 +355,8 @@ class ImageAnalyzer:
             f"Enhanced image for '{roi_name}' ready for {ocr_model.upper()}"
         )
 
-        return self._extract_text_with_constraints(
-            enhanced_image, roi_info, roi_name, expected_values
+        return self._extract_raw_text_by_model(
+            enhanced_image, roi_info, roi_name
         )
 
     def _enhance_roi_image(self, roi_image, roi_info, preprocessing):
@@ -448,28 +368,24 @@ class ImageAnalyzer:
             roi_image, roi_info, preprocessing
         )
 
-    def _extract_text_with_constraints(self, enhanced_image, roi_info, roi_name, expected_values):
-        """Extrait du texte avec validation contre les valeurs attendues.
+    def _extract_raw_text_by_model(self, enhanced_image, roi_info, roi_name):
+        """Extract raw text using the appropriate OCR model without validation.
         
         Args:
             enhanced_image: Image préprocessée
             roi_info: Configuration ROI
             roi_name: Nom de la ROI
-            expected_values: Liste des valeurs attendues ou None
         
         Returns:
-            str: Texte validé ou chaîne vide si aucune correspondance
+            str: Texte brut de l'OCR sans validation
         """
         ocr_model = roi_info.get('model', 'easyocr') if roi_info else 'easyocr'
         
         # Extraction brute selon le modèle
         if ocr_model == 'trocr':
-            raw_text = self._extract_raw_text_trocr(enhanced_image)
+            return self._extract_raw_text_trocr(enhanced_image)
         else:
-            raw_text = self._extract_raw_text_easyocr(enhanced_image, roi_info)
-        
-        # Validation unifiée avec expected_values
-        return self._validate_against_expected_values(raw_text, expected_values, roi_name)
+            return self._extract_raw_text_easyocr(enhanced_image, roi_info)
 
     def _log_final_results(self, results):
         """Log final detection results."""
@@ -624,50 +540,6 @@ class ImageAnalyzer:
         roi = image[top_y:bottom_y, left_x:right_x]
         return roi, (left_x, top_y, right_x, bottom_y)
     
-    def _get_expected_values_for_roi(self, roi_name, expected_values_map):
-        """Récupère les valeurs attendues pour une ROI avec fallback hiérarchique.
-        
-        Priority:
-        1. expected_values_map paramètre
-        2. expected_values dans rois_config.json
-        3. Génération automatique par défaut
-        """
-        # 1. Paramètre explicit
-        if expected_values_map and roi_name in expected_values_map:
-            return expected_values_map[roi_name]
-        
-        # 2. Configuration ROI
-        roi_info = self._get_roi(roi_name)
-        if roi_info and 'expected_values' in roi_info:
-            config_values = roi_info['expected_values']
-            
-            # Si c'est une string (ancien format whitelist), la retourner telle quelle
-            if isinstance(config_values, str):
-                return config_values
-            
-            # Si c'est une liste, la retourner
-            if isinstance(config_values, list):
-                return config_values
-        
-        # 3. Génération automatique par défaut
-        return self._generate_default_expected_values(roi_name)
-    
-    def _generate_default_expected_values(self, roi_name):
-        """Génère les valeurs attendues par défaut pour une ROI."""
-        if roi_name == 'timer':
-            # Timer : 00-99
-            return [f"{i:02d}" for i in range(100)]
-        
-        elif roi_name in ['character1', 'character2']:
-            # Characters : depuis characters.json si disponible
-            if self.character_names:
-                return self.character_names
-            else:
-                # Fallback: whitelist basique
-                return "ABCDEFGHIJKLMNOPQRSTUVWXYZ.- "
-        
-        # Autres ROIs : pas de contraintes
-        return None
 
     def _extract_roi_from_config(self, image, roi_config):
         """Extrait une ROI à partir d'une configuration directe.

@@ -9,25 +9,32 @@ class FrameExtractor:
     FRAMES_DIR = 'frames'
 
     def __init__(self, video_source, output_name=None, no_prompt=False, 
-                 frames_per_minute=12, debug=False):
+                 frames_per_minute=12, debug=False, manual_format=None):
         self._initialize_basic_properties(
-            video_source, frames_per_minute, debug
+            video_source, frames_per_minute, debug, manual_format
         )
         self._resolve_video_source()
         self._setup_output_configuration(
             video_source, output_name, no_prompt
         )
 
-    def _initialize_basic_properties(self, video_source, frames_per_minute, debug):
+    def _initialize_basic_properties(self, video_source, frames_per_minute, debug, manual_format):
         """Initialize basic extractor properties."""
         self.video_source = video_source
         self.frames_per_minute = frames_per_minute
         self.frame_interval_seconds = 60.0 / frames_per_minute
         self.debug = debug
+        self.manual_format = manual_format
 
     def _resolve_video_source(self):
         """Resolve video source to processable format using VideoResolver."""
-        self.resolver = VideoResolver()
+        # Si format manuel spécifié, créer VideoResolver avec ce format en priorité
+        if self.manual_format:
+            if self.debug:
+                print(f"[FrameExtractor] Using manual format: {self.manual_format}")
+            self.resolver = VideoResolver(preferred_quality=self.manual_format)
+        else:
+            self.resolver = VideoResolver()
         
         if self.debug:
             print(f"[FrameExtractor] Resolving video source: '{self.video_source}'")

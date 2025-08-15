@@ -28,6 +28,39 @@ class VideoResolver:
         """
         self.preferred_quality = preferred_quality
         
+        # Formats prioritaires pour l'OCR (par ordre de préférence)
+        # Logique de dégradation: 1080p60 → 1080p30 → 1080p any → 720p60 → 720p30 → 720p any → fallbacks
+        self.ocr_optimized_formats = [
+            # 1080p 60fps (priorité absolue)
+            "312",           # mp4 1920x1080 60fps ~6339k 
+            "299",           # mp4 1920x1080 60fps ~4993k
+            "617",           # mp4 1920x1080 60fps ~6087k (VP9)
+            
+            # 1080p 30fps (si pas de 60fps)
+            "137",           # mp4 1920x1080 30fps ~4000k
+            "616",           # mp4 1920x1080 30fps (VP9)
+            
+            # 1080p n'importe quel fps (si pas de 30/60)
+            "best[height=1080][ext=mp4][vcodec!*=none]",
+            "best[height=1080][vcodec!*=none]",
+            
+            # 720p 60fps (dégradation résolution)
+            "298",           # mp4 1280x720 60fps ~1788k
+            "302",           # webm 1280x720 60fps (VP9)
+            
+            # 720p 30fps 
+            "136",           # mp4 1280x720 30fps ~3333k
+            "247",           # webm 1280x720 30fps (VP9)
+            
+            # 720p n'importe quel fps
+            "best[height=720][ext=mp4][vcodec!*=none]",
+            "best[height=720][vcodec!*=none]",
+            
+            # Fallbacks génériques
+            "best[height<=1080][ext=mp4][vcodec!*=none]",
+            self.preferred_quality
+        ]
+        
     def is_url(self, source: str) -> bool:
         """Check if source is a URL or local file path."""
         url_pattern = re.compile(
@@ -82,7 +115,31 @@ class VideoResolver:
         """Resolve URL to direct stream using yt-dlp."""
         logger.info(f"Resolving URL with yt-dlp: {url}")
         
-        # yt-dlp command to extract info without downloading (use absolute path)
+        # Si preferred_quality n'est pas dans la liste optimisée, c'est un format manuel
+        if self.preferred_quality not in self.ocr_optimized_formats:
+            logger.info(f"Manual format specified: {self.preferred_quality}")
+            result = self._try_format(url, self.preferred_quality)
+            if result:
+                logger.info(f"Successfully resolved with manual format: {self.preferred_quality}")
+                result['metadata']['quality_selector'] = self.preferred_quality
+                return result
+            else:
+                raise ValueError(f"Manual format {self.preferred_quality} failed for URL: {url}")
+        
+        # Sinon, essayer les formats optimisés pour l'OCR par ordre de priorité
+        for format_spec in self.ocr_optimized_formats:
+            logger.info(f"Trying format: {format_spec}")
+            
+            result = self._try_format(url, format_spec)
+            if result:
+                logger.info(f"Successfully resolved with format: {format_spec}")
+                result['metadata']['quality_selector'] = format_spec
+                return result
+                
+        raise ValueError(f"Failed to resolve URL with any supported format: {url}")
+    
+    def _try_format(self, url: str, format_spec: str) -> Optional[Dict[str, Any]]:
+        """Try to resolve URL with specific format."""
         cmd = [
             '/usr/local/bin/yt-dlp',
             '--quiet',
@@ -92,7 +149,7 @@ class VideoResolver:
             '--print', '%(duration)s',  # Print duration
             '--print', '%(width)s',  # Print width
             '--print', '%(height)s',  # Print height
-            '--format', self.preferred_quality,
+            '--format', format_spec,
             url
         ]
         
@@ -105,11 +162,14 @@ class VideoResolver:
             )
             
             if result.returncode != 0:
-                raise ValueError(f"yt-dlp failed: {result.stderr}")
+                # Format not available or other error
+                logger.debug(f"Format {format_spec} failed: {result.stderr}")
+                return None
                 
             lines = result.stdout.strip().split('\n')
             if len(lines) < 5:
-                raise ValueError("Unexpected yt-dlp output format")
+                logger.debug(f"Unexpected yt-dlp output for format {format_spec}")
+                return None
                 
             direct_url, title, duration, width, height = lines
             
@@ -123,14 +183,16 @@ class VideoResolver:
                     'duration': int(duration) if duration.isdigit() else None,
                     'width': int(width) if width.isdigit() else None,
                     'height': int(height) if height.isdigit() else None,
-                    'quality_selector': self.preferred_quality
+                    'quality_selector': format_spec  # Will be updated by caller
                 }
             }
             
         except subprocess.TimeoutExpired:
-            raise ValueError(f"Timeout while resolving URL: {url}")
+            logger.debug(f"Timeout for format {format_spec}")
+            return None
         except Exception as e:
-            raise ValueError(f"Failed to resolve URL {url}: {str(e)}")
+            logger.debug(f"Error with format {format_spec}: {str(e)}")
+            return None
     
     def get_stream_info(self, source: str) -> Optional[Dict[str, Any]]:
         """
