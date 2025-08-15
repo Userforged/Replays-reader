@@ -62,8 +62,12 @@ class MatchDeductor:
             
         self._log_debug(f"Analyse de {len(frames_data)} frames")
         
-        # Validation des textes OCR bruts avec TextValidator
-        validated_frames = self.text_validator.validate_frames_batch(frames_data)
+        # Interpolation temporelle pour corriger les erreurs OCR ponctuelles
+        self._log_debug("Application de l'interpolation temporelle...")
+        interpolated_frames = self.text_validator.interpolate_frames_temporal(frames_data)
+        
+        # Validation des textes interpolés avec TextValidator
+        validated_frames = self.text_validator.validate_frames_batch(interpolated_frames)
         
         if self.debug:
             # Afficher les statistiques de validation
