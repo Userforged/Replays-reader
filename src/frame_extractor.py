@@ -1,37 +1,73 @@
 import cv2 as cv
 import os
 from datetime import datetime
+from .video_resolver import VideoResolver
 
 class FrameExtractor:
     OUTPUT_FORMAT = 'png'
     OUTPUT_DIR = 'input'
     FRAMES_DIR = 'frames'
 
-    def __init__(self, video_path, output_name=None, no_prompt=False, 
+    def __init__(self, video_source, output_name=None, no_prompt=False, 
                  frames_per_minute=12, debug=False):
         self._initialize_basic_properties(
-            video_path, frames_per_minute, debug
+            video_source, frames_per_minute, debug
         )
+        self._resolve_video_source()
         self._setup_output_configuration(
-            video_path, output_name, no_prompt
+            video_source, output_name, no_prompt
         )
 
-    def _initialize_basic_properties(self, video_path, frames_per_minute, debug):
+    def _initialize_basic_properties(self, video_source, frames_per_minute, debug):
         """Initialize basic extractor properties."""
-        self.video_path = video_path
+        self.video_source = video_source
         self.frames_per_minute = frames_per_minute
         self.frame_interval_seconds = 60.0 / frames_per_minute
         self.debug = debug
 
-    def _setup_output_configuration(self, video_path, output_name, no_prompt):
+    def _resolve_video_source(self):
+        """Resolve video source to processable format using VideoResolver."""
+        self.resolver = VideoResolver()
+        
+        if self.debug:
+            print(f"[FrameExtractor] Resolving video source: '{self.video_source}'")
+            
+        try:
+            self.resolved_source = self.resolver.resolve_source(self.video_source)
+            self.video_path = self.resolved_source['path']
+            self.is_stream = self.resolved_source['is_stream']
+            
+            if self.debug:
+                print(f"[FrameExtractor] Source resolved:")
+                print(f"  Path: '{self.video_path}'")
+                print(f"  Is stream: {self.is_stream}")
+                print(f"  Source type: {self.resolved_source['metadata']['source_type']}")
+                
+        except Exception as e:
+            if self.debug:
+                print(f"[FrameExtractor] Failed to resolve video source: {e}")
+            raise ValueError(f"Cannot resolve video source '{self.video_source}': {e}")
+
+    def _setup_output_configuration(self, video_source, output_name, no_prompt):
         """Setup output directory configuration."""
         self.output_name = self.get_video_name(
-            video_path, output_name, no_prompt
+            video_source, output_name, no_prompt
         )
-        self.output_folder = self._prepare_output_directory()
+        # Don't create directories here - only when actually needed
+        self.output_folder = None
 
-    def get_video_name(self, video_path, folder_name=None, no_prompt=False):
-        default_name = os.path.splitext(os.path.basename(video_path))[0]
+    def get_video_name(self, video_source, folder_name=None, no_prompt=False):
+        # Generate default name based on source type
+        if self.resolver.is_url(video_source):
+            # For URLs, try to get title from metadata or use a sanitized version
+            metadata = self.resolved_source.get('metadata', {})
+            title = metadata.get('title', 'online_video')
+            # Sanitize title for filesystem
+            import re
+            default_name = re.sub(r'[<>:"/\\|?*]', '_', title)[:50]  # Limit length
+        else:
+            default_name = os.path.splitext(os.path.basename(video_source))[0]
+            
         if self.debug:
             print(f"[FrameExtractor] get_video_name: default_name='{default_name}', folder_name='{folder_name}', no_prompt={no_prompt}")
         
@@ -80,8 +116,12 @@ class FrameExtractor:
 
     def extract_frames(self):
         """Extract frames from video and save to disk."""
-        self._log_debug(f"extract_frames: video_path='{self.video_path}'")
-        self._validate_video_file()
+        self._log_debug(f"extract_frames: video_path='{self.video_path}' (stream: {self.is_stream})")
+        self._validate_video_source()
+        
+        # Create output directory only when actually saving files
+        if not self.output_folder:
+            self.output_folder = self._prepare_output_directory()
         
         cap = self._open_video_capture()
         video_info = self._get_video_properties(cap)
@@ -93,8 +133,14 @@ class FrameExtractor:
         self._log_debug("Video capture released")
         print(f"\nExtraction terminée. {saved_count} images sauvegardées dans {self.output_folder}")
 
-    def _validate_video_file(self):
-        """Validate video file exists and has correct format."""
+    def _validate_video_source(self):
+        """Validate video source (file or stream) is accessible."""
+        if self.is_stream:
+            # For streams, we already validated via VideoResolver
+            self._log_debug(f"Stream source validated: '{self.video_path}'")
+            return
+            
+        # For local files, check existence and format
         if not os.path.exists(self.video_path):
             self._log_debug(f"Video file not found: '{self.video_path}'")
             raise FileNotFoundError(f"Le fichier vidéo '{self.video_path}' n'existe pas.")
@@ -136,7 +182,10 @@ class FrameExtractor:
 
     def _display_extraction_info(self, video_info):
         """Display extraction configuration information."""
-        print(f"\nExtracting frames from: {self.video_path}")
+        source_type = "stream" if self.is_stream else "file"
+        print(f"\nExtracting frames from {source_type}: {self.video_source}")
+        if self.is_stream and self.resolved_source['metadata'].get('title'):
+            print(f"Title: {self.resolved_source['metadata']['title']}")
         print(f"Output directory: {self.output_folder}")
         print(f"FPS: {video_info['fps']}")
         print(f"Durée totale: {video_info['duration']:.2f} secondes")
@@ -195,17 +244,11 @@ class FrameExtractor:
             tuple: (frame, timestamp_seconds, formatted_timestamp)
         """
         if self.debug:
-            print(f"[FrameExtractor] generate_frames: Starting frame generation from '{self.video_path}'")
+            source_type = "stream" if self.is_stream else "file"
+            print(f"[FrameExtractor] generate_frames: Starting frame generation from {source_type} '{self.video_source}'")
         
-        if not os.path.exists(self.video_path):
-            if self.debug:
-                print(f"[FrameExtractor] Video file not found: '{self.video_path}'")
-            raise FileNotFoundError(f"Le fichier vidéo '{self.video_path}' n'existe pas.")
-
-        if not self.video_path.lower().endswith('.mp4'):
-            if self.debug:
-                print(f"[FrameExtractor] Invalid file format: '{self.video_path}'")
-            raise ValueError("Le fichier doit être au format MP4.")
+        # Validate source (already resolved during initialization)
+        self._validate_video_source()
 
         cap = cv.VideoCapture(self.video_path)
         if not cap.isOpened():

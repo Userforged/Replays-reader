@@ -24,10 +24,10 @@ def _ensure_output_directories_exist(save_frames):
     return frames_output_dir
 
 
-def _create_analyzers(video_path, frames_per_minute, save_frames):
+def _create_analyzers(video_source, frames_per_minute, save_frames):
     """Initialize frame extractor and image analyzer."""
     frame_extractor = FrameExtractor(
-        video_path=video_path,
+        video_source=video_source,
         output_name=None,
         no_prompt=True,
         frames_per_minute=frames_per_minute,
@@ -75,18 +75,23 @@ def _save_results_to_json(analysis_results, json_path):
         json.dump(analysis_results, json_file, indent=2, ensure_ascii=False)
 
 
-def analyze_video(video_file_path, frames_per_minute=12, save_frames=False):
+def analyze_video(video_source, frames_per_minute=12, save_frames=False):
     """Analyze Street Fighter 6 video to extract game data."""
-    video_name = os.path.splitext(os.path.basename(video_file_path))[0]
-    json_output_path = os.path.join(OUTPUT_DIRECTORY, f"{video_name}.export.json")
-    
+    # For output naming, use the resolved video name from FrameExtractor
     frames_output_dir = _ensure_output_directories_exist(save_frames)
-    frame_extractor, analyzer = _create_analyzers(video_file_path, frames_per_minute, save_frames)
+    frame_extractor, analyzer = _create_analyzers(video_source, frames_per_minute, save_frames)
+    
+    # Use the output name determined by FrameExtractor for JSON file
+    video_name = frame_extractor.output_name
+    json_output_path = os.path.join(OUTPUT_DIRECTORY, f"{video_name}.export.json")
     
     analysis_results = []
     frame_count = 0
     
-    print(f"🎬 Analyse de la vidéo: {video_file_path}")
+    source_type = "stream" if frame_extractor.is_stream else "fichier"
+    print(f"🎬 Analyse du {source_type}: {video_source}")
+    if frame_extractor.is_stream and frame_extractor.resolved_source['metadata'].get('title'):
+        print(f"📺 Titre: {frame_extractor.resolved_source['metadata']['title']}")
     print(
         f"⏱️  Intervalle: {frame_extractor.frame_interval_seconds:.1f}s "
         f"({frames_per_minute} frames/minute)"
@@ -126,7 +131,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         'video', type=str, nargs='?',
-        help='Chemin vers la vidéo à analyser'
+        help='Chemin vers la vidéo locale ou URL en ligne à analyser'
     )
     parser.add_argument(
         '--save-frames', action='store_true',
@@ -140,13 +145,31 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.video:
-        print("❌ Erreur: Veuillez spécifier un fichier vidéo à analyser.")
+        print("❌ Erreur: Veuillez spécifier un fichier vidéo ou une URL à analyser.")
+        print("💡 Exemples:")
+        print("   python export.py input/match.mp4")
+        print("   python export.py https://www.youtube.com/watch?v=VIDEO_ID")
         parser.print_help()
-    elif not os.path.exists(args.video):
-        print(f"❌ Erreur: Le fichier vidéo '{args.video}' n'existe pas.")
     else:
         save_frames = args.save_frames
-        print(f"🎯 Analyse de la vidéo: {args.video}")
+        source_type = "URL" if args.video.startswith(('http://', 'https://')) else "fichier"
+        print(f"🎯 Analyse du {source_type}: {args.video}")
         if save_frames:
             print("🐛 Mode debug: frames sauvegardées dans ImageAnalyzer")
-        analyze_video(args.video, args.frames_per_minute, save_frames)
+        try:
+            analyze_video(args.video, args.frames_per_minute, save_frames)
+        except Exception as e:
+            print(f"❌ Erreur lors de l'analyse: {e}")
+            if args.video.startswith(('http://', 'https://')):
+                print("💡 Vérifiez que yt-dlp peut accéder à cette URL")
+
+
+def process_street_fighter_video_for_data_extraction(video_source, save_frames=False):
+    """
+    Convenience function for backward compatibility and programmatic use.
+    
+    Args:
+        video_source: Local file path or online video URL
+        save_frames: Whether to save debug frames
+    """
+    return analyze_video(video_source, frames_per_minute=12, save_frames=save_frames)

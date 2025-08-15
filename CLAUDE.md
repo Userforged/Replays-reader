@@ -91,29 +91,37 @@ pip install -r system/backend/requirements.txt
 
 1. **Frame Extraction** (`src/frame_extractor.py`)
    - `FrameExtractor` class handles video processing
+   - Supports both local video files and online video streams (via yt-dlp)
    - Extracts frames at configurable intervals (default: 12 frames/minute)
    - Supports both saving frames to disk and generating frames in-memory
 
-2. **Image Analysis** (`src/image_analyzer.py`)
+2. **Video Resolution** (`src/video_resolver.py`)
+   - `VideoResolver` class handles automatic detection of local files vs URLs
+   - Integrates yt-dlp for online stream resolution
+   - Extracts metadata (title, duration) from online videos
+   - Provides direct stream URLs for OpenCV processing
+
+3. **Image Analysis** (`src/image_analyzer.py`)
    - `ImageAnalyzer` class performs OCR on extracted frames
    - Supports dual OCR engines: TrOCR (Microsoft) and EasyOCR
    - Uses Region of Interest (ROI) system for targeted analysis
    - Configurable preprocessing pipelines
 
-3. **ROI Management** (`src/roi_manager.py`)
+4. **ROI Management** (`src/roi_manager.py`)
    - `RoiManager` class centralizes ROI configuration
    - Handles loading/saving ROI configurations from JSON
    - Provides validation and preview capabilities
 
-4. **Image Processing** (`src/image_converter.py`)
+5. **Image Processing** (`src/image_converter.py`)
    - `ImageConverter` class handles preprocessing for OCR
    - Configurable enhancement pipelines using `PreprocessingStep` enum
    - Supports grayscale, denoising, CLAHE, thresholding, morphological operations
 
 ### Data Flow
-1. Video input → `FrameExtractor` → Frame sequences
-2. Frames → `ImageAnalyzer` → ROI extraction → OCR processing → Text detection
-3. Results → JSON output with timestamps and detected data
+1. Video input (local file or URL) → `VideoResolver` → Direct stream URL or validated file path
+2. Resolved source → `FrameExtractor` → Frame sequences (streaming or file-based)
+3. Frames → `ImageAnalyzer` → ROI extraction → OCR processing → Text detection
+4. Results → JSON output with timestamps and detected data
 
 ## Key Configuration Files
 
@@ -138,16 +146,24 @@ Contains list of valid SF6 character names for matching detected text against kn
 
 #### Step 1: Extract Raw Data
 ```bash
-# Analyze a video with frame saving (debug mode)
+# LOCAL FILES
+# Analyze a local video file with frame saving (debug mode)
 python export.py input/match_video.mp4 --save-frames
 
-# Fast analysis without saving frames (production mode)
+# Fast analysis without saving frames (production mode)  
 python export.py input/match_video.mp4
 
 # Custom frame rate (frames per minute)
 python export.py input/match_video.mp4 --frames-per-minute 6
 
-# Output: video_name.export.json (raw OCR data)
+# ONLINE VIDEOS (URLs)
+# Analyze YouTube/Twitch/online video directly
+python export.py "https://www.youtube.com/watch?v=VIDEO_ID" --save-frames
+
+# Stream analysis with custom frame rate
+python export.py "https://www.twitch.tv/videos/VIDEO_ID" --frames-per-minute 6
+
+# Output: video_name.export.json (raw OCR data with sanitized filename)
 ```
 
 #### Step 2: Deduce Matches Structure
@@ -244,6 +260,27 @@ timer_roi = roi_manager.get_roi_for_image_analyzer('timer')
 roi_manager.update_roi_boundaries('timer', {
     'left': 0.46, 'top': 0.04, 'right': 0.54, 'bottom': 0.18
 })
+```
+
+### Video Source Resolution
+```python
+from src.video_resolver import VideoResolver
+
+# Initialize resolver
+resolver = VideoResolver(preferred_quality="best[height<=1080]")
+
+# Test source type
+url = "https://www.youtube.com/watch?v=VIDEO_ID"
+if resolver.is_url(url):
+    print("This is a URL")
+elif resolver.is_local_file(url):
+    print("This is a local file")
+
+# Resolve any source to processable format
+result = resolver.resolve_source(url)
+print(f"Direct stream URL: {result['path']}")
+print(f"Is stream: {result['is_stream']}")
+print(f"Title: {result['metadata']['title']}")
 ```
 
 ### Image Analysis
