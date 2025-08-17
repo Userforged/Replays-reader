@@ -19,6 +19,7 @@ try:
     from .player_provider import PlayerProvider
     PLAYER_PROVIDER_AVAILABLE = True
 except ImportError:
+    PlayerProvider = None
     PLAYER_PROVIDER_AVAILABLE = False
 
 
@@ -106,7 +107,7 @@ class TextValidator:
         """Génère la liste des valeurs de timer valides (00-99)."""
         return [f"{i:02d}" for i in range(100)]
     
-    def _initialize_player_provider(self) -> Optional[PlayerProvider]:
+    def _initialize_player_provider(self) -> Optional['PlayerProvider']:
         """Initialise le PlayerProvider pour validation des joueurs."""
         if not PLAYER_PROVIDER_AVAILABLE:
             if self.debug:
@@ -174,7 +175,7 @@ class TextValidator:
                                 fuzzy_score_threshold=60, extract_digits=False)
     
     def validate_player(self, raw_text: str, expected_values: Optional[List[str]] = None, 
-                       threshold: float = 0.5) -> str:
+                       threshold: float = 0.5, context_character: str = "") -> str:
         """
         Valide et nettoie un nom de joueur OCR en utilisant PlayerProvider.
 
@@ -182,6 +183,7 @@ class TextValidator:
             raw_text: Texte brut de l'OCR (ex: "DAIGO", "JUSTIN WONG", "801 STRIDER")
             expected_values: Liste optionnelle des noms de joueurs attendus (défaut: PlayerProvider)
             threshold: Seuil pour correspondance floue (0.0-1.0)
+            context_character: Personnage joué pour validation croisée (optionnel)
 
         Returns:
             Nom de joueur validé ou chaîne vide si invalide
@@ -264,29 +266,84 @@ class TextValidator:
                     print(f"[TextValidator] ✅ Exact player match: '{cleaned_text}' -> '{player}'")
                 return player
         
-        # 2. Correspondance floue avec PlayerProvider si disponible
+        # 2. Si contexte personnage disponible, prioriser les joueurs qui jouent ce personnage
+        character_consistent_matches = []
+        if context_character and self.player_provider:
+            try:
+                character_players = self.player_provider.find_players_by_character(context_character)
+                if character_players:
+                    # Chercher parmi les joueurs qui jouent ce personnage
+                    char_result = process.extractOne(cleaned_text, character_players, score_cutoff=int(threshold * 100))
+                    if char_result:
+                        character_consistent_matches.append((char_result[0], char_result[1], "character_consistent"))
+                        if self.debug:
+                            print(f"[TextValidator] 🎯 Character-consistent match: '{raw_text}' -> '{char_result[0]}' "
+                                  f"(score: {char_result[1]:.1f}, plays {context_character})")
+            except Exception as e:
+                if self.debug:
+                    print(f"[TextValidator] ⚠️ Error in character-consistent search: {e}")
+
+        # 3. Correspondance floue avec PlayerProvider (tous joueurs)
+        all_player_matches = []
         if self.player_provider:
             try:
                 matches = self.player_provider.search_player(cleaned_text, threshold=threshold)
                 if matches:
-                    best_match = matches[0]
-                    if self.debug:
-                        print(f"[TextValidator] ✅ Fuzzy player match: '{raw_text}' -> '{best_match}'")
-                    return best_match
+                    # Ajouter le score de correspondance pour le premier match
+                    fuzzy_result = process.extractOne(cleaned_text, [matches[0]], score_cutoff=int(threshold * 100))
+                    if fuzzy_result:
+                        all_player_matches.append((matches[0], fuzzy_result[1], "provider_fuzzy"))
             except Exception as e:
                 if self.debug:
                     print(f"[TextValidator] ⚠️ Error in player fuzzy search: {e}")
         
-        # 3. Correspondance floue avec rapidfuzz en fallback
+        # 4. Correspondance floue avec rapidfuzz (tous joueurs)
         fuzzy_threshold = int(threshold * 100)
         result = process.extractOne(cleaned_text, player_values, score_cutoff=fuzzy_threshold)
         if result:
-            best_match, score, _ = result
-            if self.debug:
-                print(f"[TextValidator] ✅ Rapidfuzz player match: '{raw_text}' -> '{best_match}' (score: {score:.1f})")
-            return best_match
+            all_player_matches.append((result[0], result[1], "rapidfuzz"))
         
-        # 4. Rejet - retourner texte original nettoyé
+        # 5. Sélectionner le meilleur match en priorisant la cohérence personnage
+        all_matches = character_consistent_matches + all_player_matches
+        
+        if all_matches:
+            # Appliquer un bonus aux matches cohérents avec le personnage
+            scored_matches = []
+            for match_name, score, match_type in all_matches:
+                adjusted_score = score
+                
+                # Bonus pour cohérence personnage (+20 points)
+                if match_type == "character_consistent":
+                    adjusted_score += 20
+                # Léger malus pour incohérence (-10 points max)
+                elif context_character and self.player_provider:
+                    try:
+                        is_consistent = self.player_provider.validate_player_character_combination(
+                            match_name, context_character
+                        )
+                        if not is_consistent:
+                            adjusted_score -= 10
+                            if self.debug:
+                                expected_char = self.player_provider.get_player_main_character(match_name)
+                                print(f"[TextValidator] ⚠️ Player-character mismatch: '{match_name}' "
+                                      f"mains '{expected_char}' but detected with '{context_character}' "
+                                      f"(score penalty: {score:.1f} -> {adjusted_score:.1f})")
+                    except Exception:
+                        pass
+                
+                scored_matches.append((match_name, adjusted_score, match_type))
+            
+            # Prendre le meilleur match ajusté
+            best_match = max(scored_matches, key=lambda x: x[1])
+            match_name, final_score, match_type = best_match
+            
+            if self.debug:
+                print(f"[TextValidator] ✅ Best player match: '{raw_text}' -> '{match_name}' "
+                      f"(final score: {final_score:.1f}, type: {match_type})")
+            
+            return match_name
+        
+        # 6. Rejet - retourner texte original nettoyé
         if self.debug:
             print(f"[TextValidator] ❌ Player text rejected: '{raw_text}' (no match in known players)")
         return cleaned_text
@@ -397,15 +454,17 @@ class TextValidator:
                 frame_data["character2"]
             )
         
-        # Valider les noms de joueurs si présents
+        # Valider les noms de joueurs avec contexte des personnages
         if "player1" in frame_data:
+            context_char = validated_frame.get("character1", "")
             validated_frame["player1"] = self.validate_player(
-                frame_data["player1"]
+                frame_data["player1"], context_character=context_char
             )
 
         if "player2" in frame_data:
+            context_char = validated_frame.get("character2", "")
             validated_frame["player2"] = self.validate_player(
-                frame_data["player2"]
+                frame_data["player2"], context_character=context_char
             )
 
         # Préserver les autres champs tels quels (timestamp, etc.)
@@ -435,6 +494,141 @@ class TextValidator:
             print("[TextValidator] ✅ Batch validation completed")
 
         return validated_frames
+
+    def suggest_players_for_character(self, character_name: str, limit: int = 5) -> List[str]:
+        """
+        Suggère des joueurs probables basés sur le personnage détecté.
+        
+        Args:
+            character_name: Nom du personnage détecté
+            limit: Nombre maximum de suggestions
+            
+        Returns:
+            Liste des joueurs qui jouent ce personnage
+        """
+        if not self.player_provider or not character_name:
+            return []
+        
+        try:
+            players = self.player_provider.find_players_by_character(character_name)
+            return players[:limit]
+        except Exception as e:
+            if self.debug:
+                print(f"[TextValidator] ⚠️ Error getting player suggestions for {character_name}: {e}")
+            return []
+
+    def enhance_player_detection_with_character_context(
+        self, frames_data: List[Dict[str, Any]], confidence_threshold: float = 0.8
+    ) -> List[Dict[str, Any]]:
+        """
+        Améliore la détection des joueurs en utilisant le contexte des personnages.
+        
+        Cette méthode post-traite les frames validées pour améliorer la précision
+        des noms de joueurs en se basant sur les correspondances joueur-personnage connues.
+        
+        Args:
+            frames_data: Frames déjà validées
+            confidence_threshold: Seuil de confiance pour suggérer automatiquement
+            
+        Returns:
+            Frames avec détection améliorée des joueurs
+        """
+        if not self.player_provider:
+            return frames_data
+        
+        enhanced_frames = []
+        
+        # Analyser les patterns joueur-personnage dans toutes les frames
+        character_player_patterns = self._analyze_character_player_patterns(frames_data)
+        
+        for frame in frames_data:
+            enhanced_frame = frame.copy()
+            
+            # Améliorer player1 avec character1
+            char1 = frame.get('character1', '')
+            player1 = frame.get('player1', '')
+            
+            if char1:
+                if not player1:
+                    # Pas de joueur détecté -> suggérer le plus probable
+                    suggested = self._suggest_most_likely_player(char1, character_player_patterns)
+                    if suggested and self.debug:
+                        print(f"[TextValidator] 💡 Auto-suggestion for {char1}: {suggested}")
+                        enhanced_frame['player1'] = suggested
+                elif player1:
+                    # Re-valider avec contexte personnage pour améliorer la précision
+                    improved = self.validate_player(player1, context_character=char1, threshold=0.4)
+                    if improved and improved != player1:
+                        if self.debug:
+                            print(f"[TextValidator] 🔧 Player1 improved: '{player1}' -> '{improved}' (with {char1} context)")
+                        enhanced_frame['player1'] = improved
+            
+            # Améliorer player2 avec character2  
+            char2 = frame.get('character2', '')
+            player2 = frame.get('player2', '')
+            
+            if char2:
+                if not player2:
+                    suggested = self._suggest_most_likely_player(char2, character_player_patterns)
+                    if suggested and self.debug:
+                        print(f"[TextValidator] 💡 Auto-suggestion for {char2}: {suggested}")
+                        enhanced_frame['player2'] = suggested
+                elif player2:
+                    improved = self.validate_player(player2, context_character=char2, threshold=0.4)
+                    if improved and improved != player2:
+                        if self.debug:
+                            print(f"[TextValidator] 🔧 Player2 improved: '{player2}' -> '{improved}' (with {char2} context)")
+                        enhanced_frame['player2'] = improved
+            
+            enhanced_frames.append(enhanced_frame)
+        
+        return enhanced_frames
+    
+    def _analyze_character_player_patterns(self, frames_data: List[Dict[str, Any]]) -> Dict[str, Dict[str, int]]:
+        """
+        Analyse les patterns joueur-personnage dans les frames pour détecter les associations fréquentes.
+        
+        Returns:
+            Dict[character] -> Dict[player] -> count
+        """
+        patterns = {}
+        
+        for frame in frames_data:
+            char1 = frame.get('character1', '').strip()
+            player1 = frame.get('player1', '').strip()
+            char2 = frame.get('character2', '').strip()
+            player2 = frame.get('player2', '').strip()
+            
+            # Compter les associations character1 -> player1
+            if char1 and player1:
+                if char1 not in patterns:
+                    patterns[char1] = {}
+                patterns[char1][player1] = patterns[char1].get(player1, 0) + 1
+            
+            # Compter les associations character2 -> player2
+            if char2 and player2:
+                if char2 not in patterns:
+                    patterns[char2] = {}
+                patterns[char2][player2] = patterns[char2].get(player2, 0) + 1
+        
+        return patterns
+    
+    def _suggest_most_likely_player(self, character: str, patterns: Dict[str, Dict[str, int]]) -> str:
+        """
+        Suggère le joueur le plus probable pour un personnage basé sur les patterns détectés.
+        """
+        if character not in patterns:
+            # Pas de pattern détecté -> utiliser mainCharacter database
+            suggestions = self.suggest_players_for_character(character, limit=1)
+            return suggestions[0] if suggestions else ""
+        
+        # Prendre le joueur le plus fréquent pour ce personnage
+        player_counts = patterns[character]
+        if player_counts:
+            most_frequent = max(player_counts.items(), key=lambda x: x[1])
+            return most_frequent[0]
+        
+        return ""
 
     def get_validation_stats(
         self,

@@ -129,6 +129,8 @@ class PlayerProvider:
                                             player_obj['originalName'] = str(item['originalName']).strip()
                                         if item.get('country'):
                                             player_obj['country'] = str(item['country']).strip()
+                                        if item.get('mainCharacter'):
+                                            player_obj['mainCharacter'] = str(item['mainCharacter']).strip()
                                         
                                         page_players.append(player_obj)
                     elif '@graph' in data:  # JSON-LD format
@@ -151,6 +153,8 @@ class PlayerProvider:
                                             player_obj['originalName'] = str(item['originalName']).strip()
                                         if item.get('country'):
                                             player_obj['country'] = str(item['country']).strip()
+                                        if item.get('mainCharacter'):
+                                            player_obj['mainCharacter'] = str(item['mainCharacter']).strip()
                                         
                                         page_players.append(player_obj)
                     else:
@@ -308,6 +312,78 @@ class PlayerProvider:
         # Filter by threshold and return names only
         return [match[0] for match in matches if match[1] >= threshold * 100]
     
+    def get_player_main_character(self, player_name: str) -> str:
+        """
+        Get the main character for a specific player.
+        
+        Args:
+            player_name: Name of the player to look up
+            
+        Returns:
+            Main character name or empty string if not found
+        """
+        api_players = self.config.get('players', [])
+        
+        for player in api_players:
+            if isinstance(player, dict):
+                # Check all name variations
+                player_names = []
+                if player.get('name'):
+                    player_names.append(player['name'])
+                if player.get('shortName'):
+                    player_names.append(player['shortName'])
+                if player.get('originalName'):
+                    player_names.append(player['originalName'])
+                
+                # Case-insensitive match
+                for name in player_names:
+                    if name.upper() == player_name.upper():
+                        return player.get('mainCharacter', '')
+        
+        return ''
+    
+    def find_players_by_character(self, character_name: str) -> List[str]:
+        """
+        Find all players who main a specific character.
+        
+        Args:
+            character_name: Character name to search for
+            
+        Returns:
+            List of player names who main this character
+        """
+        matching_players = []
+        api_players = self.config.get('players', [])
+        
+        for player in api_players:
+            if isinstance(player, dict):
+                main_char = player.get('mainCharacter', '')
+                if main_char.upper() == character_name.upper():
+                    if player.get('name'):
+                        matching_players.append(player['name'])
+        
+        return matching_players
+    
+    def validate_player_character_combination(self, player_name: str, character_name: str) -> bool:
+        """
+        Validate if a player-character combination is consistent with known data.
+        
+        Args:
+            player_name: Name of the player
+            character_name: Character being played
+            
+        Returns:
+            True if combination is consistent or unknown, False if inconsistent
+        """
+        main_character = self.get_player_main_character(player_name)
+        
+        # If we don't have main character data, assume valid
+        if not main_character:
+            return True
+        
+        # Case-insensitive comparison
+        return main_character.upper() == character_name.upper()
+
     def get_cache_info(self) -> Dict:
         """Get information about the current cache."""
         is_valid = self._is_cache_valid()
@@ -325,12 +401,14 @@ class PlayerProvider:
         # Count unique players (objects) vs total names (including variations)
         api_players = self.config.get('players', [])
         unique_player_objects = len([p for p in api_players if isinstance(p, dict)])
+        players_with_main_char = len([p for p in api_players if isinstance(p, dict) and p.get('mainCharacter')])
         
         return {
             'is_valid': is_valid,
             'last_updated': last_updated,
             'days_since_update': days_since_update,
             'unique_players': unique_player_objects,
+            'players_with_main_character': players_with_main_char,
             'static_player_count': len(self.config.get('static_players', [])),
             'total_names': len(self.get_all_players())
         }

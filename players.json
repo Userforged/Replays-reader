@@ -1,0 +1,5543 @@
+{
+  "url": "https://street-fighter-6.anagraph.org/api/players.jsonld",
+  "last_updated": "2025-08-17",
+  "players": [
+    {
+      "name": "801 Strider",
+      "shortName": "Strider",
+      "country": "US",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Acqua",
+      "originalName": "あくあ",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Afii"
+    },
+    {
+      "name": "Aiai",
+      "country": "JP"
+    },
+    {
+      "name": "AkaJones",
+      "country": "GB",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Akainu",
+      "country": "FR",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Akami",
+      "country": "MA",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Akim",
+      "country": "FR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Akira",
+      "originalName": "あきら",
+      "country": "JP"
+    },
+    {
+      "name": "Alice",
+      "originalName": "ありす",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Alphen",
+      "country": "FR",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Andou"
+    },
+    {
+      "name": "AngryBird",
+      "country": "JO",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Asase"
+    },
+    {
+      "name": "B"
+    },
+    {
+      "name": "Banja"
+    },
+    {
+      "name": "BigBird",
+      "country": "AE",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "BioLiem",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Bonchan",
+      "originalName": "ボンちゃん",
+      "country": "JP",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Broski",
+      "country": "GB",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Bryan-D",
+      "country": "DO"
+    },
+    {
+      "name": "Caba",
+      "country": "DO"
+    },
+    {
+      "name": "CatWolf"
+    },
+    {
+      "name": "Cerberrus"
+    },
+    {
+      "name": "Chris Tatarian",
+      "shortName": "Chris T.",
+      "country": "US",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "NYChrisG",
+      "shortName": "ChrisG",
+      "country": "US"
+    },
+    {
+      "name": "Classic Bou Oji"
+    },
+    {
+      "name": "Cojiro"
+    },
+    {
+      "name": "Cuongster",
+      "country": "FR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "DingChunQiu",
+      "shortName": "DCQ",
+      "country": "CN",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Umehara Daigo",
+      "shortName": "Daigo",
+      "originalName": "ウメハラ",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Dankadillas"
+    },
+    {
+      "name": "Darlin"
+    },
+    {
+      "name": "Diaphone",
+      "country": "US",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Dogura",
+      "originalName": "どぐら",
+      "country": "JP",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Dragoi"
+    },
+    {
+      "name": "Eita",
+      "originalName": "えいた",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "El Chakotay",
+      "country": "US",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "El Doylero",
+      "country": "IE",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Ending Walker",
+      "shortName": "EndingWalker",
+      "country": "GB",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "Esmerlda"
+    },
+    {
+      "name": "Fenritti",
+      "originalName": "フェンリっち",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Ferdi",
+      "country": "FR"
+    },
+    {
+      "name": "Fidan"
+    },
+    {
+      "name": "Fierce",
+      "country": "US"
+    },
+    {
+      "name": "Filipino Champ",
+      "shortName": "Fchamp",
+      "country": "US",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Fiti"
+    },
+    {
+      "name": "FlawlessDeku",
+      "country": "GB"
+    },
+    {
+      "name": "Freeser",
+      "country": "AU",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "FreyaWanmei",
+      "country": "FR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Fujimura",
+      "originalName": "藤村",
+      "country": "JP"
+    },
+    {
+      "name": "Fuudo",
+      "originalName": "ふ～ど",
+      "country": "JP"
+    },
+    {
+      "name": "GTFlames"
+    },
+    {
+      "name": "Gachikun",
+      "originalName": "ガチくん",
+      "country": "JP",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Gagapa",
+      "country": "FR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Gamer Bee",
+      "country": "TW",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Gen1us",
+      "country": "FR"
+    },
+    {
+      "name": "GhostChips",
+      "country": "NZ",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "GigaChad"
+    },
+    {
+      "name": "GO1",
+      "country": "JP",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Gorimuso"
+    },
+    {
+      "name": "GouverneurParis",
+      "country": "FR"
+    },
+    {
+      "name": "Gunfight",
+      "country": "FR"
+    },
+    {
+      "name": "Haitani",
+      "country": "JP",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Hameko",
+      "country": "JP",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Hei Yu",
+      "country": "GB",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "HibikiTheBeast",
+      "shortName": "Hibiki",
+      "originalName": "ひびき",
+      "country": "JP",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Hide"
+    },
+    {
+      "name": "Higuchi",
+      "originalName": "ひぐち",
+      "country": "JP",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Hisakin"
+    },
+    {
+      "name": "HotDog29",
+      "shortName": "HotDog",
+      "country": "HK",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Human Bomb",
+      "country": "HK"
+    },
+    {
+      "name": "Huriah"
+    },
+    {
+      "name": "Hurricane",
+      "country": "CM",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "IAmChuan",
+      "country": "MY",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Ian McTetly",
+      "country": "IE",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Ice"
+    },
+    {
+      "name": "Ikahe"
+    },
+    {
+      "name": "ImStillDaDaddy",
+      "country": "GB",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Isoudw",
+      "country": "FR",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Itabashi Zangief",
+      "shortName": "Itazan",
+      "originalName": "板橋ザンギエフ",
+      "country": "JP",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Itsukick",
+      "country": "JP",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "JabhiM",
+      "country": "ZA"
+    },
+    {
+      "name": "Jamie_TTM",
+      "country": "NL",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Jazzy",
+      "originalName": "じゃじい",
+      "country": "JP"
+    },
+    {
+      "name": "Jester Power"
+    },
+    {
+      "name": "JoKeR JoKeZ",
+      "country": "GB",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "John Takeuchi",
+      "shortName": "Takeuchi",
+      "originalName": "竹内ジョン",
+      "country": "JP",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "Johnny",
+      "originalName": "ジョニィ",
+      "country": "JP",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Juicy joe",
+      "shortName": "JuicyJoe",
+      "country": "SE",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Juni",
+      "country": "FR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "JuniorLeo",
+      "country": "FR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "JustAKid",
+      "shortName": "JAK",
+      "country": "US",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Justin Wong",
+      "shortName": "Jwong",
+      "country": "US"
+    },
+    {
+      "name": "KEI.B",
+      "country": "JP"
+    },
+    {
+      "name": "KS Funeral",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Kabe",
+      "country": "JP"
+    },
+    {
+      "name": "Kakeru",
+      "originalName": "翔",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Kawano",
+      "originalName": "カワノ",
+      "country": "JP"
+    },
+    {
+      "name": "Kayne",
+      "country": "FR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Kazunoko",
+      "originalName": "かずのこ",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Kichipa",
+      "country": "JP"
+    },
+    {
+      "name": "Kilzyou",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Kishiri",
+      "country": "JP"
+    },
+    {
+      "name": "Kiuzol",
+      "country": "FR",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Krown",
+      "country": "AU"
+    },
+    {
+      "name": "Kudo",
+      "country": "JP"
+    },
+    {
+      "name": "Kusanagi",
+      "country": "FR",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "L1nz",
+      "country": "EG",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Latif",
+      "country": "SA",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Layo",
+      "country": "FR"
+    },
+    {
+      "name": "Le bouillaveur",
+      "country": "FR"
+    },
+    {
+      "name": "Leffen",
+      "country": "SE"
+    },
+    {
+      "name": "Lensta"
+    },
+    {
+      "name": "Lif3s",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Linkexelo",
+      "country": "FR"
+    },
+    {
+      "name": "LionHeart",
+      "country": "FR",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Lord Venom",
+      "country": "PL",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "LordG"
+    },
+    {
+      "name": "Louffy086",
+      "shortName": "Luffy",
+      "country": "FR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "MOV",
+      "country": "JP"
+    },
+    {
+      "name": "Machabo",
+      "originalName": "まちゃぼー",
+      "country": "JP"
+    },
+    {
+      "name": "Mago2dGod",
+      "shortName": "Mago",
+      "originalName": "マゴ",
+      "country": "JP",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "MalDominant",
+      "country": "FR",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Marvisto"
+    },
+    {
+      "name": "Matsu"
+    },
+    {
+      "name": "Melon Soda"
+    },
+    {
+      "name": "MenaRD",
+      "country": "DO",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Mister Crimson",
+      "country": "FR",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Mizuha",
+      "originalName": "水派",
+      "country": "JP"
+    },
+    {
+      "name": "Moke",
+      "originalName": "もけ",
+      "country": "JP",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Mokochan"
+    },
+    {
+      "name": "Momochi",
+      "originalName": "ももち",
+      "country": "JP"
+    },
+    {
+      "name": "Mono",
+      "country": "PR"
+    },
+    {
+      "name": "Moruto",
+      "country": "JP",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "MuscleNoob",
+      "country": "GB",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Myrken",
+      "country": "PL",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Mystic Smash",
+      "country": "GB",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "NL",
+      "country": "KR"
+    },
+    {
+      "name": "Narikun",
+      "originalName": "ナリ君",
+      "country": "JP",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Naruo",
+      "originalName": "なるお",
+      "country": "JP",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "Nassim Claw",
+      "country": "FR"
+    },
+    {
+      "name": "Nasty Nas",
+      "country": "FR"
+    },
+    {
+      "name": "Nauman",
+      "originalName": "ナウマン",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Nemo",
+      "originalName": "ねも",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Nephew",
+      "country": "US",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Nishikin",
+      "originalName": "ニシキン",
+      "country": "JP",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Noble",
+      "country": "JP",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "NuckleDuDang",
+      "shortName": "NuckleDu",
+      "country": "US",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Nuki",
+      "country": "JP"
+    },
+    {
+      "name": "Numéro",
+      "country": "FR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Nyangari"
+    },
+    {
+      "name": "Nylial"
+    },
+    {
+      "name": "Obo",
+      "country": "JP",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Oil King",
+      "country": "TW",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Omnislash",
+      "country": "FR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Oniki",
+      "country": "JP",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Onitsu"
+    },
+    {
+      "name": "Oshin"
+    },
+    {
+      "name": "Otani",
+      "originalName": "大谷",
+      "country": "JP"
+    },
+    {
+      "name": "Packz"
+    },
+    {
+      "name": "Pahnda",
+      "country": "AU",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Phenom",
+      "country": "NO",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Pogo1"
+    },
+    {
+      "name": "PoongKo",
+      "country": "KR",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Popi",
+      "country": "SE",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Problem X",
+      "country": "GB",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Pugera",
+      "originalName": "ぷげら",
+      "country": "JP"
+    },
+    {
+      "name": "PunkDaGod",
+      "shortName": "Punk",
+      "country": "US",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "ROF",
+      "country": "AU",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Randumb",
+      "country": "DE",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Renegad",
+      "country": "FR",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Rikemansbarnet",
+      "country": "SE",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Ryukichi",
+      "originalName": "りゅうきち",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Ryusei",
+      "originalName": "りゅうせい",
+      "country": "JP",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Sakaguchi",
+      "country": "JP",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Sakonoko",
+      "shortName": "Sako",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Santarou"
+    },
+    {
+      "name": "Sasamo",
+      "originalName": "ササモ",
+      "country": "JP"
+    },
+    {
+      "name": "SchiacciSempre",
+      "country": "IT",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Senor Power",
+      "country": "FR",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Sevelei"
+    },
+    {
+      "name": "Shakz",
+      "country": "GB"
+    },
+    {
+      "name": "Shine",
+      "country": "US",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Shuto",
+      "originalName": "シュート",
+      "country": "JP",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Sizzla",
+      "country": "FR"
+    },
+    {
+      "name": "Slexx"
+    },
+    {
+      "name": "Snake Eyez",
+      "country": "US",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Solidjin",
+      "country": "FR",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "Sonic Fox",
+      "country": "US"
+    },
+    {
+      "name": "Soualiho",
+      "country": "FR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Steveyo",
+      "country": "AU",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "StickyFingers",
+      "country": "US",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "StormKubo",
+      "country": "JP",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Suleymon",
+      "country": "GB",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Suntsun",
+      "country": "FR",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "TB",
+      "country": "AU",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "TKR",
+      "country": "FR"
+    },
+    {
+      "name": "Tachikawa",
+      "originalName": "立川",
+      "country": "JP",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "Takamura",
+      "country": "BE",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "The4philzz",
+      "country": "GB",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "TiredDount"
+    },
+    {
+      "name": "Toi"
+    },
+    {
+      "name": "Tokido",
+      "originalName": "ときど",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Torimeshi",
+      "originalName": "鶏めし",
+      "country": "JP",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Trashbox",
+      "originalName": "トラボ",
+      "country": "JP"
+    },
+    {
+      "name": "Travis Styles",
+      "country": "AU",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Uriuri"
+    },
+    {
+      "name": "Valmaster",
+      "country": "FR",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Vanao"
+    },
+    {
+      "name": "Vegapatch",
+      "country": "ES",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Vegetimes",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Verdoyance",
+      "country": "FR"
+    },
+    {
+      "name": "Vxbao",
+      "country": "CN"
+    },
+    {
+      "name": "Wess",
+      "country": "SA"
+    },
+    {
+      "name": "WolfGang"
+    },
+    {
+      "name": "Xian",
+      "originalName": "贤",
+      "country": "SG",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Xiao hai",
+      "originalName": "曾卓君",
+      "country": "CN"
+    },
+    {
+      "name": "Xuses",
+      "country": "GB"
+    },
+    {
+      "name": "YHC-Mochi",
+      "originalName": "YHC-餅",
+      "country": "JP",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Yamaguchi",
+      "originalName": "ヤマグチ",
+      "country": "JP",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Yamazaki93",
+      "country": "FR",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Yanai",
+      "originalName": "ヤナイ",
+      "country": "JP",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Yasha",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Yossan",
+      "originalName": "よっさん",
+      "country": "JP",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Youshikibi",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Zhen",
+      "country": "CN",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Zhifter",
+      "country": "FR",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Zombat"
+    },
+    {
+      "name": "iDom",
+      "country": "US",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "koiwai bampi no"
+    },
+    {
+      "name": "FlashMetroid",
+      "country": "US",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Brian_F",
+      "country": "US"
+    },
+    {
+      "name": "Hsien",
+      "country": "US"
+    },
+    {
+      "name": "Masoma",
+      "country": "US"
+    },
+    {
+      "name": "SoundBoi",
+      "country": "GB",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "LinkNova",
+      "country": "GB",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Palmyto",
+      "country": "FR"
+    },
+    {
+      "name": "Khamsay",
+      "country": "FR",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Ryuuk",
+      "country": "FR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Ryuzettsu",
+      "country": "FR",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "LaVieDeReve",
+      "country": "FR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Khloey",
+      "country": "FR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "RMK_Fast",
+      "country": "FR",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Dai569",
+      "country": "FR"
+    },
+    {
+      "name": "BKSama",
+      "country": "AU"
+    },
+    {
+      "name": "Zarzob",
+      "country": "NZ"
+    },
+    {
+      "name": "MKusanagi",
+      "country": "MX"
+    },
+    {
+      "name": "GranTODAKAI",
+      "shortName": "Todakai",
+      "country": "PA",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "SolVNG",
+      "country": "MX"
+    },
+    {
+      "name": "RogerFGC",
+      "country": "MX"
+    },
+    {
+      "name": "Shanks",
+      "country": "ES"
+    },
+    {
+      "name": "Zeno",
+      "country": "PT"
+    },
+    {
+      "name": "Samoel",
+      "country": "ES"
+    },
+    {
+      "name": "The Sticky",
+      "country": "FR",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Launch",
+      "country": "GB",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Cecilia",
+      "country": "FR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Maskeyy",
+      "country": "FR",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Maitre Poulet",
+      "country": "TN",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Reynald",
+      "country": "US",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "JB",
+      "country": "CA",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "ChrisCCH",
+      "country": "US",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Samurai",
+      "country": "US",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Semy28",
+      "country": "DE",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Shady Impostor",
+      "shortName": "ShadyImpostor",
+      "country": "PL",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Quiggy",
+      "country": "GB"
+    },
+    {
+      "name": "Centuripe",
+      "country": "FR"
+    },
+    {
+      "name": "Kieran93",
+      "country": "FR"
+    },
+    {
+      "name": "UltraDoomer",
+      "country": "FR",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Lexx",
+      "country": "HN",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Brickterium",
+      "country": "IE",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Saisak",
+      "country": "HK",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Seo",
+      "country": "SG",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Book",
+      "country": "TH",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "DublexCity",
+      "country": "HK"
+    },
+    {
+      "name": "Dookie",
+      "country": "AR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Shaka22",
+      "country": "AR",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Younghou",
+      "country": "CL",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Bekitos",
+      "country": "CL",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Celfcool",
+      "country": "AR"
+    },
+    {
+      "name": "Yurei",
+      "country": "CL"
+    },
+    {
+      "name": "Moise",
+      "country": "CL"
+    },
+    {
+      "name": "Blaz11",
+      "shortName": "Blaz",
+      "country": "CL"
+    },
+    {
+      "name": "Arismania",
+      "country": "GB",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Albla",
+      "country": "FR",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "LeTigre",
+      "country": "CH",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Rastacool",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Vagabond",
+      "country": "US",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Coach Steve",
+      "country": "US"
+    },
+    {
+      "name": "BananaKen",
+      "country": "US",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Joey",
+      "country": "US"
+    },
+    {
+      "name": "CrossoverRD",
+      "country": "DO"
+    },
+    {
+      "name": "FluxWaveZ",
+      "country": "CA",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Noah The Prodigy",
+      "shortName": "NoahTheProdigy",
+      "country": "US",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Pshuuu",
+      "country": "DE",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Veggey",
+      "country": "NO",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Megaraz",
+      "country": "SE",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Xerna",
+      "country": "NL",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Libbro",
+      "country": "IT",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Geeck-O",
+      "originalName": "Geecko",
+      "country": "IT",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "S4ltyKid",
+      "country": "BE"
+    },
+    {
+      "name": "Semensatch",
+      "country": "IT"
+    },
+    {
+      "name": "Chris Wong",
+      "country": "HK"
+    },
+    {
+      "name": "LeShar",
+      "country": "KR",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Uma327",
+      "shortName": "Uma",
+      "country": "TW",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Jaeger94",
+      "country": "DE",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "MZA"
+    },
+    {
+      "name": "Mossmossmoss"
+    },
+    {
+      "name": "NWA54",
+      "shortName": "Nwa",
+      "country": "FR",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Valwing",
+      "country": "DE",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Khezmen",
+      "country": "DE",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Dual Kevin",
+      "country": "US",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Dapvip",
+      "country": "US",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Kintyo-ru",
+      "shortName": "Kintyo",
+      "originalName": "きんちょーる",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Orarin",
+      "originalName": "おらりん",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "AxL",
+      "country": "MX",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Excelancer",
+      "country": "MX"
+    },
+    {
+      "name": "Jazdero",
+      "country": "MX"
+    },
+    {
+      "name": "Uriel Velorio",
+      "country": "MX"
+    },
+    {
+      "name": "Jasshi",
+      "shortName": "jaccy",
+      "originalName": "ジャッシー",
+      "country": "JP",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Namikaze",
+      "country": "BR",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Keoma",
+      "country": "BR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Stunner",
+      "country": "BR",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "RonaldinhoBR",
+      "country": "BR",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Caio",
+      "country": "BR"
+    },
+    {
+      "name": "Zydani",
+      "country": "BR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Juninho-RAS",
+      "shortName": "Juninho",
+      "country": "BR"
+    },
+    {
+      "name": "Lendiaviva",
+      "country": "BR",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "NBNHMR",
+      "country": "US",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Zeke",
+      "country": "US",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "NecroUndine",
+      "country": "US",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "LuisThePanda",
+      "country": "US",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Abood",
+      "country": "AE"
+    },
+    {
+      "name": "Hamood",
+      "country": "AE"
+    },
+    {
+      "name": "Will2Pac",
+      "country": "FR",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Skyll",
+      "country": "FR"
+    },
+    {
+      "name": "Delta End",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "ITGMAYO",
+      "country": "KR"
+    },
+    {
+      "name": "Armperor",
+      "country": "KR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Tynahan",
+      "country": "KR",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Canontree",
+      "country": "KR",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Cosco",
+      "country": "KR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Wrestlingman",
+      "country": "KR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Champo",
+      "country": "PH",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Daddy Nas",
+      "country": "PH",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Turkido",
+      "country": "PH",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Marv",
+      "country": "PH",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Rainpro",
+      "country": "CN",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": ".exe",
+      "country": "DE",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "GKayn",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "GGHalibel",
+      "shortName": "Halibel",
+      "country": "DE",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "MarkTheShark",
+      "country": "ZA"
+    },
+    {
+      "name": "Ren",
+      "country": "ZA"
+    },
+    {
+      "name": "Will Bartness",
+      "country": "ZA"
+    },
+    {
+      "name": "Nat-Su-Kao",
+      "country": "MZ",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "NarutoRsa",
+      "country": "ZA"
+    },
+    {
+      "name": "Ajax Fidelity",
+      "country": "PR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Jochy",
+      "country": "DO"
+    },
+    {
+      "name": "Dawwed",
+      "country": "FR",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "DeDg",
+      "country": "FR"
+    },
+    {
+      "name": "Radiant Truth",
+      "country": "FR"
+    },
+    {
+      "name": "PR Balrog",
+      "country": "US",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Mopuulapoo",
+      "country": "IE",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "KxGenocide",
+      "country": "DZ",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "LordDVD",
+      "country": "FR",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "ZeBesth9",
+      "country": "FR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Densetchu",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Naji",
+      "country": "US",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Space Boy",
+      "country": "US"
+    },
+    {
+      "name": "Crispe117",
+      "country": "US"
+    },
+    {
+      "name": "Burkish",
+      "country": "US",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Alex Smith",
+      "country": "US",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Grorobo",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Hitofox",
+      "country": "FR",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Zaferino",
+      "shortName": "Zaf",
+      "country": "US",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Gondo",
+      "country": "JP",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Gillstolemyride",
+      "country": "PT",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Daikoku",
+      "originalName": "だいこく",
+      "country": "JP",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Beslem",
+      "country": "FR",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Diegubis",
+      "country": "PR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "MrChupy01",
+      "shortName": "Chupy",
+      "country": "PR",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "PrBigButtJackson",
+      "shortName": "Jackson",
+      "country": "PR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "ScrawtVermillion",
+      "country": "US",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Garnet",
+      "country": "IT",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Heiwa",
+      "country": "FR",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Flashnukle",
+      "country": "FR",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Nozar",
+      "country": "FR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Word",
+      "country": "CN"
+    },
+    {
+      "name": "K4ll3pro",
+      "country": "DE",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Rass",
+      "country": "NL",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Hikaru",
+      "originalName": "ひかる",
+      "country": "JP",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Solemn Swift",
+      "shortName": "Sole",
+      "country": "KW",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "BalrogRD",
+      "country": "DO",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Jimmy DR",
+      "country": "CA",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "MaidenLinz",
+      "shortName": "Linz",
+      "country": "EG",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Gangryong",
+      "country": "DE",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "LuGabo",
+      "country": "MX",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Liquid_o",
+      "country": "MX",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Gama",
+      "country": "MX",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Julio Fuentes",
+      "country": "US",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Shadoken",
+      "country": "IN",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Joe Umerogan",
+      "country": "CA",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "DespairKing",
+      "originalName": "龙珠",
+      "country": "CN",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "DestroyGodz",
+      "country": "PA",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Fandroid",
+      "country": "KW"
+    },
+    {
+      "name": "Bravery",
+      "country": "SG",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "MikeX",
+      "country": "CA",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "NeroTheBoxer",
+      "country": "PE",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Sayff",
+      "country": "CA",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "vWsym",
+      "country": "SA",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Flaquito",
+      "country": "US",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "Filipinoman",
+      "country": "US",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Prophet",
+      "country": "US"
+    },
+    {
+      "name": "Li",
+      "country": "US",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Teiga",
+      "country": "TT",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Gibby",
+      "country": "GB",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Ritchy",
+      "country": "FR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Légu",
+      "country": "FR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Tesstary",
+      "country": "FR",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Edriss",
+      "country": "DZ",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "GameIn",
+      "country": "BE",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "TomoeCunha",
+      "shortName": "Tomoe",
+      "country": "PT",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Lord STB",
+      "country": "EG",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "STB Chico",
+      "shortName": "Chico",
+      "country": "EG"
+    },
+    {
+      "name": "Remlike",
+      "country": "FR",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "RapiD",
+      "country": "GB",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "ScytheLDN",
+      "shortName": "Scythe",
+      "country": "GB",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Akutagawa",
+      "originalName": "あくたがわ",
+      "country": "JP",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Enzothehokage",
+      "shortName": "Enzo",
+      "country": "US",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "FireCat"
+    },
+    {
+      "name": "CeBonVieuxPoring",
+      "shortName": "Poring",
+      "country": "FR"
+    },
+    {
+      "name": "EnPetard",
+      "shortName": "KDL",
+      "country": "FR",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Snakeules"
+    },
+    {
+      "name": "Yunus"
+    },
+    {
+      "name": "Kokosaap"
+    },
+    {
+      "name": "Lowdog83"
+    },
+    {
+      "name": "Bald 'n Brash",
+      "country": "GB",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Joulaks"
+    },
+    {
+      "name": "JeremyRay"
+    },
+    {
+      "name": "Ullie"
+    },
+    {
+      "name": "Fire Hurricane"
+    },
+    {
+      "name": "Jimbo"
+    },
+    {
+      "name": "Alex Sieg"
+    },
+    {
+      "name": "Orim"
+    },
+    {
+      "name": "ShinYaiba"
+    },
+    {
+      "name": "Gabrienator"
+    },
+    {
+      "name": "Roozu"
+    },
+    {
+      "name": "Murshid"
+    },
+    {
+      "name": "Oni BGP"
+    },
+    {
+      "name": "JeanMichel Bagar"
+    },
+    {
+      "name": "Cozak"
+    },
+    {
+      "name": "Chaton"
+    },
+    {
+      "name": "Rudy"
+    },
+    {
+      "name": "FrDonn",
+      "country": "FR",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Dr Tomcool"
+    },
+    {
+      "name": "Sathonvy"
+    },
+    {
+      "name": "Shivs",
+      "country": "GB",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Tikivik",
+      "country": "FI",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "ParmeSean",
+      "country": "SE",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "STCKMASTER",
+      "country": "FI",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Tjake",
+      "country": "FI"
+    },
+    {
+      "name": "vaalix",
+      "country": "FI"
+    },
+    {
+      "name": "Jalis",
+      "country": "FI"
+    },
+    {
+      "name": "DrGulag",
+      "country": "FI",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Prodigal Son",
+      "shortName": "Ryan Hart",
+      "country": "GB",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Dj_SonnyB"
+    },
+    {
+      "name": "Xewar"
+    },
+    {
+      "name": "MOTHMAN",
+      "country": "US"
+    },
+    {
+      "name": "Kobayan",
+      "originalName": "こばやん",
+      "country": "JP",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "KatarnOutcast"
+    },
+    {
+      "name": "TheSaltySultan"
+    },
+    {
+      "name": "Squarepheus"
+    },
+    {
+      "name": "Arydoon",
+      "country": "DZ",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "NVAvenger"
+    },
+    {
+      "name": "Joxero",
+      "country": "ES",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Gumius",
+      "country": "ES",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Lord Of Karma"
+    },
+    {
+      "name": "MasterMT"
+    },
+    {
+      "name": "GuyGuy",
+      "country": "US",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "GalaxyButter",
+      "country": "CA"
+    },
+    {
+      "name": "Mortsy",
+      "country": "CA"
+    },
+    {
+      "name": "Riddles",
+      "country": "CA",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Sickle",
+      "country": "US",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "AzizSensei",
+      "country": "US",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Melbu",
+      "country": "US",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "PeteaVayd",
+      "country": "GB",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "HeyyPepito",
+      "country": "FR",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Kyuki",
+      "country": "BR",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "LizardRoad",
+      "country": "FR",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Seanwhy",
+      "country": "US"
+    },
+    {
+      "name": "Pnoy",
+      "country": "US",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Leizy",
+      "country": "US"
+    },
+    {
+      "name": "Endabio"
+    },
+    {
+      "name": "Yonangel",
+      "country": "DE",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "ManosDelMar",
+      "country": "US",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "Tropics",
+      "country": "US",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "100Scrupuls",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Kery971",
+      "country": "FR"
+    },
+    {
+      "name": "GoldenBl4ck",
+      "country": "FR"
+    },
+    {
+      "name": "Rhumbo",
+      "country": "FR"
+    },
+    {
+      "name": "Just Joe",
+      "country": "US"
+    },
+    {
+      "name": "Drizzt",
+      "country": "US"
+    },
+    {
+      "name": "Shaka",
+      "country": "JP",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Kuzuha",
+      "originalName": "葛葉",
+      "country": "JP",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Donpisha",
+      "originalName": "ドンピシャ",
+      "country": "JP",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Futonchan",
+      "originalName": "布団ちゃん",
+      "country": "JP",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Kanae",
+      "originalName": "叶",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Shinjisan",
+      "originalName": "しんじさん",
+      "country": "JP",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Junior",
+      "shortName": "Jr.",
+      "country": "JP",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Sasatikk",
+      "country": "JP",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "JumboTurbo",
+      "country": "US"
+    },
+    {
+      "name": "Foonk",
+      "country": "US"
+    },
+    {
+      "name": "FoxRain",
+      "country": "KR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "JeonDDing",
+      "country": "KR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Yunjabes",
+      "country": "KR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Tempest",
+      "country": "US",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Genghis",
+      "country": "US",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "BlkWolverine",
+      "country": "US"
+    },
+    {
+      "name": "JAAKUL",
+      "country": "US"
+    },
+    {
+      "name": "Ilija",
+      "country": "US",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Slice",
+      "country": "CA",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Paladin",
+      "country": "US",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "iPeru",
+      "country": "US",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Hatemani",
+      "country": "IL",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Raigeki",
+      "shortName": "Raiga",
+      "country": "TN",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "b_HAUNT",
+      "country": "IN"
+    },
+    {
+      "name": "Prince",
+      "country": "IN",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Whitey",
+      "country": "IN",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Chief",
+      "country": "IN"
+    },
+    {
+      "name": "sephi22",
+      "country": "IN"
+    },
+    {
+      "name": "GupShup",
+      "country": "IN",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Miyazawa",
+      "country": "JP",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Zco"
+    },
+    {
+      "name": "Situacao"
+    },
+    {
+      "name": "Osiris"
+    },
+    {
+      "name": "Ganainy",
+      "country": "EG",
+      "mainCharacter": "terry"
+    },
+    {
+      "name": "Jerres",
+      "country": "DE",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Angelo"
+    },
+    {
+      "name": "Toapsingh"
+    },
+    {
+      "name": "K-Brad",
+      "country": "US",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Zhenox"
+    },
+    {
+      "name": "MOMOLewahar"
+    },
+    {
+      "name": "Chuu"
+    },
+    {
+      "name": "Dabekes",
+      "country": "IL",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Yamcher",
+      "country": "PT",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Bjoebro"
+    },
+    {
+      "name": "ApplePie"
+    },
+    {
+      "name": "Surini",
+      "originalName": "스린이",
+      "country": "KR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Yagami",
+      "country": "SG",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Andrej",
+      "country": "LB",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Tomyotoul"
+    },
+    {
+      "name": "Schmix"
+    },
+    {
+      "name": "Raging Coco",
+      "country": "FR",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Belmondieu",
+      "country": "FR",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Jiewa",
+      "country": "CN",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Crayvex"
+    },
+    {
+      "name": "King Cheung"
+    },
+    {
+      "name": "Izanagi"
+    },
+    {
+      "name": "Sephiroth"
+    },
+    {
+      "name": "ElTocaor"
+    },
+    {
+      "name": "EbenX"
+    },
+    {
+      "name": "Cross99"
+    },
+    {
+      "name": "Rozuu"
+    },
+    {
+      "name": "Teabite"
+    },
+    {
+      "name": "AryaStark",
+      "country": "IL",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Abuyoshi",
+      "country": "NL",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Vetrix"
+    },
+    {
+      "name": "Tundierri"
+    },
+    {
+      "name": "BonsOfSteel"
+    },
+    {
+      "name": "Plucksy"
+    },
+    {
+      "name": "Acryptic"
+    },
+    {
+      "name": "Sosa"
+    },
+    {
+      "name": "Twizzlers"
+    },
+    {
+      "name": "Ozcar"
+    },
+    {
+      "name": "Twizzler"
+    },
+    {
+      "name": "SimpleTricks",
+      "country": "US",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "SmugDaBeast",
+      "shortName": "Smug",
+      "country": "US",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Yujiro",
+      "originalName": "雄次郎",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "KojiKOG",
+      "shortName": "KOG",
+      "originalName": "小路KOG",
+      "country": "JP",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "imoaN/Naomi",
+      "shortName": "Naomi",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "ts",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Chuni no futago",
+      "shortName": "Murasaki",
+      "originalName": "中2の双子兄(弟)",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Jojotaro",
+      "originalName": "ジョジョ太郎",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "naooonn",
+      "originalName": "なおーん",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Zukudemon",
+      "originalName": "ずくどもん",
+      "country": "JP",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Harumi",
+      "originalName": "はるみー",
+      "country": "JP",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Yuto",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Bongi",
+      "originalName": "ぼんぎ",
+      "country": "JP",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Suzuki We",
+      "shortName": "Suzuki",
+      "originalName": "スズキwe",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Uryo",
+      "originalName": "うりょ",
+      "country": "JP",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Osugi",
+      "originalName": "オスギ",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Cosa",
+      "country": "JP",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Jimmy1",
+      "shortName": "Jimmy",
+      "country": "JP",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "Kamikura",
+      "originalName": "カミクラ",
+      "country": "JP",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Edamakoto",
+      "originalName": "まこちゃん",
+      "country": "JP",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Tayu Tayu",
+      "originalName": "たゆたゆ",
+      "country": "JP",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Garu",
+      "originalName": "がる",
+      "country": "JP",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Daizo",
+      "originalName": "ダイゾウ",
+      "country": "JP",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "OMew",
+      "originalName": "おMew",
+      "country": "JP",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Inaba",
+      "originalName": "稲葉",
+      "country": "JP",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Satoru",
+      "originalName": "サトル",
+      "country": "JP",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "KEY",
+      "country": "JP",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Marumi",
+      "originalName": "まるみ",
+      "country": "JP",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Shuji",
+      "originalName": "シュウジ",
+      "country": "JP",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Minagi",
+      "originalName": "みなぎ",
+      "country": "JP",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "SivaKaeru",
+      "originalName": "しばかえる",
+      "country": "JP",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Zabeth",
+      "originalName": "ザベス",
+      "country": "JP",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Tomorock",
+      "originalName": "トモロック",
+      "country": "JP",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Domi X Nation"
+    },
+    {
+      "name": "Jedeye"
+    },
+    {
+      "name": "Kermi"
+    },
+    {
+      "name": "Zepox"
+    },
+    {
+      "name": "Zagloul",
+      "country": "DZ",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Makrouta"
+    },
+    {
+      "name": "Uzuraka"
+    },
+    {
+      "name": "Ixion",
+      "country": "SE",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Raihan",
+      "country": "BD"
+    },
+    {
+      "name": "True Mystic",
+      "country": "BD"
+    },
+    {
+      "name": "Noobrito",
+      "country": "BD",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Efarjeon",
+      "country": "BD",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Baadshah_Miya",
+      "country": "BD",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "DevilSim",
+      "country": "IN",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Si Anik",
+      "country": "BD",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Zade",
+      "country": "FR",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Oni64"
+    },
+    {
+      "name": "Rexus"
+    },
+    {
+      "name": "Eodart"
+    },
+    {
+      "name": "Fhn'v",
+      "shortName": "Fhnv",
+      "country": "NL",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Deiver",
+      "country": "ES",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "Passy"
+    },
+    {
+      "name": "Tiger",
+      "country": "CN",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Maddox"
+    },
+    {
+      "name": "GrooveboxVJ"
+    },
+    {
+      "name": "EvilVash"
+    },
+    {
+      "name": "KazaKEN",
+      "country": "RU",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Miyazono"
+    },
+    {
+      "name": "Barracuda"
+    },
+    {
+      "name": "WesleySama"
+    },
+    {
+      "name": "XFrame"
+    },
+    {
+      "name": "Essex The Sinner",
+      "shortName": "Essex",
+      "country": "FR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Envy"
+    },
+    {
+      "name": "Yuzeko"
+    },
+    {
+      "name": "Lmoudir"
+    },
+    {
+      "name": "Scotteh"
+    },
+    {
+      "name": "Artijay"
+    },
+    {
+      "name": "RB",
+      "country": "TW",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Micky",
+      "country": "HK",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "YimYams",
+      "country": "DE",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Ding",
+      "country": "US",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Chuchu",
+      "country": "BR",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Brayan_Job",
+      "country": "BR",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Dragon_Legend",
+      "country": "BR"
+    },
+    {
+      "name": "DidimoKOF",
+      "country": "BR",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Renameless",
+      "country": "BR"
+    },
+    {
+      "name": "Mimam",
+      "country": "BR"
+    },
+    {
+      "name": "Moz",
+      "country": "za",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Dims",
+      "country": "FR",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "LuckyHara"
+    },
+    {
+      "name": "LilFox"
+    },
+    {
+      "name": "Joabach"
+    },
+    {
+      "name": "Tomatotti"
+    },
+    {
+      "name": "Yas",
+      "country": "JP",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "JNS",
+      "country": "SE",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Jumbo",
+      "country": "NL",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "hakousullyvahn"
+    },
+    {
+      "name": "Abdu"
+    },
+    {
+      "name": "Snoopoop",
+      "country": "IL",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Magne"
+    },
+    {
+      "name": "White-Ashx",
+      "shortName": "Ashx",
+      "country": "QA",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Morotomi",
+      "country": "FR",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Mwouisman",
+      "country": "FR",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Streakz",
+      "country": "GB",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Sky Nugget",
+      "country": "ES",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Zangief_Bolado",
+      "shortName": "Bolado",
+      "country": "BR",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Keekuma",
+      "country": "HK",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Mocchii",
+      "originalName": "もっちー",
+      "country": "JP"
+    },
+    {
+      "name": "Minerva"
+    },
+    {
+      "name": "Kanou"
+    },
+    {
+      "name": "CrossedMoon"
+    },
+    {
+      "name": "Lanikeu"
+    },
+    {
+      "name": "Rstayle"
+    },
+    {
+      "name": "Frosssty"
+    },
+    {
+      "name": "Vicarious"
+    },
+    {
+      "name": "Adou"
+    },
+    {
+      "name": "Felpzera",
+      "country": "BR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Bogoers",
+      "country": "QA",
+      "mainCharacter": "juri"
+    },
+    {
+      "name": "Chuya"
+    },
+    {
+      "name": "ByTheThroat"
+    },
+    {
+      "name": "Khaan",
+      "shortName": "Neskin",
+      "country": "FR",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "LuiMan20",
+      "shortName": "LuiMan",
+      "country": "DO"
+    },
+    {
+      "name": "ALI"
+    },
+    {
+      "name": "JimmyPinguin"
+    },
+    {
+      "name": "Rappz"
+    },
+    {
+      "name": "StickBrokeVega"
+    },
+    {
+      "name": "Nightmare"
+    },
+    {
+      "name": "Oopsie"
+    },
+    {
+      "name": "Chells"
+    },
+    {
+      "name": "Oszcar"
+    },
+    {
+      "name": "Nonstopxs"
+    },
+    {
+      "name": "Stigma"
+    },
+    {
+      "name": "RedRaven"
+    },
+    {
+      "name": "Ren Lee"
+    },
+    {
+      "name": "MrNoveto",
+      "shortName": "Noveto",
+      "country": "FR",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Boltstrike",
+      "country": "gb"
+    },
+    {
+      "name": "OneStepLayered",
+      "country": "gb"
+    },
+    {
+      "name": "Wheat"
+    },
+    {
+      "name": "Uriche",
+      "country": "FR",
+      "mainCharacter": "marisa"
+    },
+    {
+      "name": "Booce_Lee",
+      "shortName": "Booce",
+      "country": "US",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Psycho",
+      "country": "us",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Brutus",
+      "country": "CA",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "ShadePrince",
+      "country": "us",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "NoProbTay"
+    },
+    {
+      "name": "RFL Kharsonist"
+    },
+    {
+      "name": "Magnegro"
+    },
+    {
+      "name": "DoomJuicy"
+    },
+    {
+      "name": "BuddyLikeFriend"
+    },
+    {
+      "name": "CamPaine",
+      "country": "US"
+    },
+    {
+      "name": "Specktra"
+    },
+    {
+      "name": "Choco"
+    },
+    {
+      "name": "Lingas"
+    },
+    {
+      "name": "Kitsune"
+    },
+    {
+      "name": "Emptysys",
+      "country": "DE",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Pchs"
+    },
+    {
+      "name": "Cenzo"
+    },
+    {
+      "name": "MDZ_jimmY",
+      "country": "de",
+      "mainCharacter": "ryu"
+    },
+    {
+      "name": "Yosh"
+    },
+    {
+      "name": "Zeslo"
+    },
+    {
+      "name": "BoxerMain"
+    },
+    {
+      "name": "Justmiles"
+    },
+    {
+      "name": "Dedoume"
+    },
+    {
+      "name": "Weldope"
+    },
+    {
+      "name": "Daweed"
+    },
+    {
+      "name": "StayGold"
+    },
+    {
+      "name": "GinoDacampo"
+    },
+    {
+      "name": "Glorith"
+    },
+    {
+      "name": "Hyde"
+    },
+    {
+      "name": "Xeo"
+    },
+    {
+      "name": "FatCat"
+    },
+    {
+      "name": "Coal91"
+    },
+    {
+      "name": "Lukima"
+    },
+    {
+      "name": "Geto"
+    },
+    {
+      "name": "GratDemamu"
+    },
+    {
+      "name": "E5CUD0"
+    },
+    {
+      "name": "Railgun",
+      "country": "DE"
+    },
+    {
+      "name": "Rock Bottom"
+    },
+    {
+      "name": "Fhassa"
+    },
+    {
+      "name": "Evil Yves"
+    },
+    {
+      "name": "MDTeach (YouVSYou)"
+    },
+    {
+      "name": "Demulant"
+    },
+    {
+      "name": "Marko"
+    },
+    {
+      "name": "Reza"
+    },
+    {
+      "name": "Boukem"
+    },
+    {
+      "name": "Masenko"
+    },
+    {
+      "name": "Citizen",
+      "country": "gb",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Maciek"
+    },
+    {
+      "name": "BaronVonFisto"
+    },
+    {
+      "name": "SprintGod"
+    },
+    {
+      "name": "Overlord"
+    },
+    {
+      "name": "Hydro"
+    },
+    {
+      "name": "Showl"
+    },
+    {
+      "name": "KingQuaka"
+    },
+    {
+      "name": "Sunny",
+      "country": "za",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Noodles",
+      "country": "za",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Peanut Jujubean",
+      "shortName": "Jujubean",
+      "country": "za",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "BillyDate",
+      "country": "za",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "Sekwele",
+      "country": "za"
+    },
+    {
+      "name": "Baki",
+      "country": "fr",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "Docta Afrikan.ex",
+      "shortName": "Docta Afrikan",
+      "country": "us",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "DonBingo",
+      "country": "us",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "ShiraiRyuZee",
+      "country": "us",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Cheepz.EX",
+      "shortName": "Cheepz",
+      "country": "us",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "AtomicBravo",
+      "country": "us",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Cold Ramen",
+      "country": "us",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Quote.ex",
+      "shortName": "Quote",
+      "country": "us",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Elzaki",
+      "country": "fr",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Hyorvenn",
+      "country": "fr",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Tito_G",
+      "country": "us",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Leith",
+      "country": "fr",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Bolognaise",
+      "country": "fr",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Ajiro"
+    },
+    {
+      "name": "Aciird"
+    },
+    {
+      "name": "Osu"
+    },
+    {
+      "name": "Gros G"
+    },
+    {
+      "name": "SatsuiNoAdou"
+    },
+    {
+      "name": "Yourself"
+    },
+    {
+      "name": "Fang",
+      "country": "SE",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "MisFortune",
+      "country": "RU",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "MackCock"
+    },
+    {
+      "name": "Gabou",
+      "country": "fr"
+    },
+    {
+      "name": "MaximeGunBlow"
+    },
+    {
+      "name": "Jirolondon"
+    },
+    {
+      "name": "Apone"
+    },
+    {
+      "name": "Hattori-Enzo"
+    },
+    {
+      "name": "SettingUp"
+    },
+    {
+      "name": "Kingjaro"
+    },
+    {
+      "name": "Hakosuka"
+    },
+    {
+      "name": "Dossantos"
+    },
+    {
+      "name": "Griffith"
+    },
+    {
+      "name": "BobbyDaBob"
+    },
+    {
+      "name": "Layfon"
+    },
+    {
+      "name": "Hanzo"
+    },
+    {
+      "name": "Vinpetrolium",
+      "country": "ZA",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Chibi_K"
+    },
+    {
+      "name": "ErefaanPearce",
+      "country": "ZA",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "ApolloCPT"
+    },
+    {
+      "name": "Mack"
+    },
+    {
+      "name": "GuN__SLinGa"
+    },
+    {
+      "name": "Infexious",
+      "country": "GB"
+    },
+    {
+      "name": "NoID"
+    },
+    {
+      "name": "Sultan"
+    },
+    {
+      "name": "Gibbo"
+    },
+    {
+      "name": "TeenyTinyTony"
+    },
+    {
+      "name": "Somalia"
+    },
+    {
+      "name": "Grim"
+    },
+    {
+      "name": "Bionic2307"
+    },
+    {
+      "name": "3nab1e"
+    },
+    {
+      "name": "Akuroi",
+      "country": "fr",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "BelaidiHichem"
+    },
+    {
+      "name": "Real Kensou"
+    },
+    {
+      "name": "GillStollMyRide"
+    },
+    {
+      "name": "TimRud"
+    },
+    {
+      "name": "Shrabikus"
+    },
+    {
+      "name": "Buuuster MX"
+    },
+    {
+      "name": "Solomon",
+      "country": "KW",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Rekhiem"
+    },
+    {
+      "name": "Kimaf"
+    },
+    {
+      "name": "KingCheung"
+    },
+    {
+      "name": "Smoki"
+    },
+    {
+      "name": "Taiji",
+      "originalName": "たいじ",
+      "country": "JP",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Ceros",
+      "country": "JP",
+      "mainCharacter": "rashid"
+    },
+    {
+      "name": "HandScar",
+      "country": "IT",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "FiveJaw",
+      "country": "CH",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "KAME",
+      "shortName": "KAM",
+      "country": "FR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Davsnot",
+      "country": "FR",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Kamh"
+    },
+    {
+      "name": "Wasim-782"
+    },
+    {
+      "name": "Lightstorm"
+    },
+    {
+      "name": "Septasonium"
+    },
+    {
+      "name": "Yaneq"
+    },
+    {
+      "name": "Bryzee"
+    },
+    {
+      "name": "Dive"
+    },
+    {
+      "name": "Maumas",
+      "country": "LT",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "takera",
+      "country": "JP"
+    },
+    {
+      "name": "Mike Ross",
+      "country": "US",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "GutsBoom",
+      "country": "TW",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Hope.",
+      "country": "TW",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "ScareCrab",
+      "originalName": "驚嚇螃蟹",
+      "country": "TW",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Tourin",
+      "country": "TW"
+    },
+    {
+      "name": "cola321",
+      "country": "TW"
+    },
+    {
+      "name": "Sarz",
+      "originalName": "阿捏喔",
+      "country": "TW"
+    },
+    {
+      "name": "Yoro",
+      "country": "TW"
+    },
+    {
+      "name": "Bloo",
+      "country": "US",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Squall"
+    },
+    {
+      "name": "Solo"
+    },
+    {
+      "name": "Amelitha"
+    },
+    {
+      "name": "Vicarivs"
+    },
+    {
+      "name": "zouzelin"
+    },
+    {
+      "name": "EnREEE"
+    },
+    {
+      "name": "TTF_Delux"
+    },
+    {
+      "name": "MatchaPacha"
+    },
+    {
+      "name": "Dapielova",
+      "country": "US"
+    },
+    {
+      "name": "GarlicBread",
+      "country": "US"
+    },
+    {
+      "name": "EnterNewName"
+    },
+    {
+      "name": "SebbyRed",
+      "country": "US"
+    },
+    {
+      "name": "Aisusoul"
+    },
+    {
+      "name": "Frezzer",
+      "country": "MA",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Tchang",
+      "country": "FR",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Boomi",
+      "country": "US"
+    },
+    {
+      "name": "Alex_dotdot",
+      "shortName": "Alex..",
+      "country": "US"
+    },
+    {
+      "name": "Harms",
+      "country": "US"
+    },
+    {
+      "name": "Deznere",
+      "country": "US"
+    },
+    {
+      "name": "Big Mo"
+    },
+    {
+      "name": "MissedInput.exe"
+    },
+    {
+      "name": "chrisymandias"
+    },
+    {
+      "name": "Grustle Grindset",
+      "shortName": "Grindset",
+      "country": "US"
+    },
+    {
+      "name": "Davy",
+      "country": "US"
+    },
+    {
+      "name": "NovaSpec",
+      "country": "US"
+    },
+    {
+      "name": "Gen",
+      "country": "US"
+    },
+    {
+      "name": "Tinibari",
+      "country": "US"
+    },
+    {
+      "name": "Espadah",
+      "country": "US"
+    },
+    {
+      "name": "Shoes"
+    },
+    {
+      "name": "LX Sniper",
+      "shortName": "Sniper",
+      "country": "US"
+    },
+    {
+      "name": "Holo"
+    },
+    {
+      "name": "Tigerlily92"
+    },
+    {
+      "name": "Craime",
+      "country": "CL"
+    },
+    {
+      "name": "Nain Jr"
+    },
+    {
+      "name": "Prismo"
+    },
+    {
+      "name": "Evgen-Chocoman",
+      "shortName": "Chocoman",
+      "country": "RU",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Nouryu",
+      "country": "MA",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Zxiri",
+      "shortName": "Zxiri",
+      "originalName": "张昔日",
+      "country": "CN",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Yashi846",
+      "country": "JP",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "dresscode"
+    },
+    {
+      "name": "ZJZ",
+      "country": "TW",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Berserk-Y"
+    },
+    {
+      "name": "Kamiki C"
+    },
+    {
+      "name": "Qiuqiu"
+    },
+    {
+      "name": "plaster king"
+    },
+    {
+      "name": "HSN"
+    },
+    {
+      "name": "Tyrannosaurus Gex"
+    },
+    {
+      "name": "TODAYCEO"
+    },
+    {
+      "name": "Sahara",
+      "originalName": "さはら",
+      "country": "JP"
+    },
+    {
+      "name": "Liangliang"
+    },
+    {
+      "name": "Pedro"
+    },
+    {
+      "name": "Kosaku"
+    },
+    {
+      "name": "Anonymax",
+      "country": "CG"
+    },
+    {
+      "name": "Trey",
+      "country": "GA"
+    },
+    {
+      "name": "Boss final",
+      "country": "CI"
+    },
+    {
+      "name": "Blader",
+      "country": "GA"
+    },
+    {
+      "name": "Foxy Grampa",
+      "country": "CM",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "Allmighty",
+      "country": "CD"
+    },
+    {
+      "name": "Arespada",
+      "country": "MA",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Watchyou",
+      "country": "GA"
+    },
+    {
+      "name": "Dady Master",
+      "country": "GA",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Edwardting",
+      "country": "DO"
+    },
+    {
+      "name": "Thunder DeLangis",
+      "shortName": "DeLangis",
+      "country": "CA",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "Neko to wakai",
+      "shortName": "Nekoto",
+      "originalName": "ネコと和解せよ",
+      "country": "JP",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "2BASSA"
+    },
+    {
+      "name": "Bean",
+      "country": "US"
+    },
+    {
+      "name": "Chainsaw",
+      "country": "US"
+    },
+    {
+      "name": "BadNewsBear",
+      "country": "US"
+    },
+    {
+      "name": "tako956402",
+      "shortName": "Tako",
+      "country": "JP",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "b3lLz",
+      "country": "TH",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "JaycetheAce"
+    },
+    {
+      "name": "Uchiha_FZ"
+    },
+    {
+      "name": "Music4friends"
+    },
+    {
+      "name": "Pikoro"
+    },
+    {
+      "name": "Zykles"
+    },
+    {
+      "name": "Kami"
+    },
+    {
+      "name": "Chris D"
+    },
+    {
+      "name": "Fatality",
+      "country": "US",
+      "mainCharacter": "deejay"
+    },
+    {
+      "name": "Wan21"
+    },
+    {
+      "name": "-ISI-"
+    },
+    {
+      "name": "rufianMX",
+      "country": "US"
+    },
+    {
+      "name": "MJ_Gama",
+      "shortName": "Gama",
+      "country": "MX"
+    },
+    {
+      "name": "Supergrenas"
+    },
+    {
+      "name": "UltraViolet",
+      "country": "US"
+    },
+    {
+      "name": "TLKashima"
+    },
+    {
+      "name": "Cantarelle"
+    },
+    {
+      "name": "Riles Barkley",
+      "country": "US"
+    },
+    {
+      "name": "Oneironaut",
+      "country": "US"
+    },
+    {
+      "name": "Coldramune"
+    },
+    {
+      "name": "Maxninja"
+    },
+    {
+      "name": "Chewieface"
+    },
+    {
+      "name": "Juanito"
+    },
+    {
+      "name": "Peterix"
+    },
+    {
+      "name": "Bberry"
+    },
+    {
+      "name": "Cyrus"
+    },
+    {
+      "name": "SolidXPanda",
+      "country": "US"
+    },
+    {
+      "name": "Dro"
+    },
+    {
+      "name": "Marv.Ex",
+      "country": "US"
+    },
+    {
+      "name": "King-Raichu"
+    },
+    {
+      "name": "SantiFinnese"
+    },
+    {
+      "name": "NeoJudai"
+    },
+    {
+      "name": "Dknock"
+    },
+    {
+      "name": "Jahzz0"
+    },
+    {
+      "name": "BLORTH"
+    },
+    {
+      "name": "jakethetiredman"
+    },
+    {
+      "name": "kon"
+    },
+    {
+      "name": "Wanheda"
+    },
+    {
+      "name": "Kite"
+    },
+    {
+      "name": "AdrianNY"
+    },
+    {
+      "name": "Isolixx"
+    },
+    {
+      "name": "TheFatManatee"
+    },
+    {
+      "name": "ElderGoose"
+    },
+    {
+      "name": "Lazyboredom"
+    },
+    {
+      "name": "vibe"
+    },
+    {
+      "name": "Ugang",
+      "country": "TW",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "aza_belmont"
+    },
+    {
+      "name": "Hokuto"
+    },
+    {
+      "name": "secta tpc| ISI"
+    },
+    {
+      "name": "Monsper",
+      "country": "TW",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "SunMate"
+    },
+    {
+      "name": "Chunk"
+    },
+    {
+      "name": "Friesen"
+    },
+    {
+      "name": "Katsuragi"
+    },
+    {
+      "name": "NoGoodCitizen"
+    },
+    {
+      "name": "vWind"
+    },
+    {
+      "name": "MisterRelu"
+    },
+    {
+      "name": "Species"
+    },
+    {
+      "name": "Vasiliek"
+    },
+    {
+      "name": "Dabuz"
+    },
+    {
+      "name": "Itachislegacy"
+    },
+    {
+      "name": "Ultrasnance"
+    },
+    {
+      "name": "JakeRyan"
+    },
+    {
+      "name": "Fitt3dcap"
+    },
+    {
+      "name": "PRO7OTYPE"
+    },
+    {
+      "name": "Kharsonist"
+    },
+    {
+      "name": "AmericanKirby"
+    },
+    {
+      "name": "B.Son"
+    },
+    {
+      "name": "Ghosttoast"
+    },
+    {
+      "name": "SpencerTheSavage"
+    },
+    {
+      "name": "NeloAlchemist"
+    },
+    {
+      "name": "Pacman"
+    },
+    {
+      "name": "The Designer"
+    },
+    {
+      "name": "Zackbozz"
+    },
+    {
+      "name": "Saado"
+    },
+    {
+      "name": "kingnothing"
+    },
+    {
+      "name": "Morjimaru"
+    },
+    {
+      "name": "Doolulb"
+    },
+    {
+      "name": "Pop Magoot"
+    },
+    {
+      "name": "Azan"
+    },
+    {
+      "name": "DBGen13"
+    },
+    {
+      "name": "Adexios"
+    },
+    {
+      "name": "Sigma_Male"
+    },
+    {
+      "name": "JettSett"
+    },
+    {
+      "name": "Harouto"
+    },
+    {
+      "name": "Freezie"
+    },
+    {
+      "name": "Ker"
+    },
+    {
+      "name": "BedlessSleeper"
+    },
+    {
+      "name": "Genxa"
+    },
+    {
+      "name": "Fangrear"
+    },
+    {
+      "name": "Rumours"
+    },
+    {
+      "name": "Lordrak"
+    },
+    {
+      "name": "Joanny"
+    },
+    {
+      "name": "ZANTETSUKEN"
+    },
+    {
+      "name": "Xave",
+      "country": "AU",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Rank E",
+      "country": "AU",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "ShaUTa_Foxe",
+      "country": "AU",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Jobbly",
+      "country": "AU",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Takechanman57",
+      "shortName": "Chanman",
+      "country": "AU",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Suzu520",
+      "country": "AU",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "WhyZee"
+    },
+    {
+      "name": "Pippin"
+    },
+    {
+      "name": "Shinakumalvl2"
+    },
+    {
+      "name": "Fadel"
+    },
+    {
+      "name": "Nestlequick"
+    },
+    {
+      "name": "Kenzo"
+    },
+    {
+      "name": "SoSickNashFan"
+    },
+    {
+      "name": "DomaXD"
+    },
+    {
+      "name": "LoddiDadeee"
+    },
+    {
+      "name": "Plains"
+    },
+    {
+      "name": "LegendaryKad"
+    },
+    {
+      "name": "Lord_float"
+    },
+    {
+      "name": "wtfalcon"
+    },
+    {
+      "name": "InconsiderateRaccoon"
+    },
+    {
+      "name": "TheMidWestboxer"
+    },
+    {
+      "name": "Mia"
+    },
+    {
+      "name": "Mew"
+    },
+    {
+      "name": "Crazy Diamond"
+    },
+    {
+      "name": "rave"
+    },
+    {
+      "name": "Kamarill"
+    },
+    {
+      "name": "TRUNKS"
+    },
+    {
+      "name": "anonymousprime"
+    },
+    {
+      "name": "COMPLEX90"
+    },
+    {
+      "name": "ElSeco"
+    },
+    {
+      "name": "GoodBad:)"
+    },
+    {
+      "name": "OneTrueSnorlax"
+    },
+    {
+      "name": "Kndall"
+    },
+    {
+      "name": "DuragSage"
+    },
+    {
+      "name": "Gater"
+    },
+    {
+      "name": "RFELLA"
+    },
+    {
+      "name": "Whensmahvel1"
+    },
+    {
+      "name": "KidFrost"
+    },
+    {
+      "name": "BLOO BLAYZER"
+    },
+    {
+      "name": "Turbulentgamer"
+    },
+    {
+      "name": "Ursinox"
+    },
+    {
+      "name": "Abbs"
+    },
+    {
+      "name": "Fiesty"
+    },
+    {
+      "name": "Ludovic"
+    },
+    {
+      "name": "G"
+    },
+    {
+      "name": "Ultra118",
+      "country": "FR",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Feelgy"
+    },
+    {
+      "name": "JinJuriki"
+    },
+    {
+      "name": "Grocktopus"
+    },
+    {
+      "name": "Jake"
+    },
+    {
+      "name": "Scykoh"
+    },
+    {
+      "name": "Onyx"
+    },
+    {
+      "name": "Blook"
+    },
+    {
+      "name": "Sledge"
+    },
+    {
+      "name": "Snapplecap"
+    },
+    {
+      "name": "Zealum"
+    },
+    {
+      "name": "waterlee"
+    },
+    {
+      "name": "Airbirdieman187"
+    },
+    {
+      "name": "Dodger"
+    },
+    {
+      "name": "Pato"
+    },
+    {
+      "name": "Carlos EMA"
+    },
+    {
+      "name": "Kolibri"
+    },
+    {
+      "name": "Mozart"
+    },
+    {
+      "name": "daze"
+    },
+    {
+      "name": "BlackStar"
+    },
+    {
+      "name": "hippo"
+    },
+    {
+      "name": "Servo"
+    },
+    {
+      "name": "Axel"
+    },
+    {
+      "name": "dijon"
+    },
+    {
+      "name": "Kapricorn"
+    },
+    {
+      "name": "Petrafied"
+    },
+    {
+      "name": "docmorales24"
+    },
+    {
+      "name": "MixupCity"
+    },
+    {
+      "name": "O-V-Hoe"
+    },
+    {
+      "name": "Ehundred"
+    },
+    {
+      "name": "Slungus"
+    },
+    {
+      "name": "Wetkunai"
+    },
+    {
+      "name": "FizzyTheTizzy"
+    },
+    {
+      "name": "iWolfbro"
+    },
+    {
+      "name": "DragonVonDoom"
+    },
+    {
+      "name": "walnutcon"
+    },
+    {
+      "name": "Fame"
+    },
+    {
+      "name": "Danny"
+    },
+    {
+      "name": "lexytron3000"
+    },
+    {
+      "name": "801Poppacap"
+    },
+    {
+      "name": "Stealth"
+    },
+    {
+      "name": "ElitheCurry"
+    },
+    {
+      "name": "Ramsey",
+      "country": "US",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Razmakazi"
+    },
+    {
+      "name": "Pancakes"
+    },
+    {
+      "name": "onset!"
+    },
+    {
+      "name": "Møkū"
+    },
+    {
+      "name": "BerryYall"
+    },
+    {
+      "name": "Beluga"
+    },
+    {
+      "name": "Whea7s"
+    },
+    {
+      "name": "Brit"
+    },
+    {
+      "name": "Threemist"
+    },
+    {
+      "name": "Darksidezoom"
+    },
+    {
+      "name": "Easter"
+    },
+    {
+      "name": "Greasy Feet"
+    },
+    {
+      "name": "og_killakam"
+    },
+    {
+      "name": "TotesMakotes"
+    },
+    {
+      "name": "Murim"
+    },
+    {
+      "name": "2Shirts"
+    },
+    {
+      "name": "TwoMixups"
+    },
+    {
+      "name": "YungTate"
+    },
+    {
+      "name": "Bagmen"
+    },
+    {
+      "name": "sneakyscarab"
+    },
+    {
+      "name": "Zaf"
+    },
+    {
+      "name": "HRT Newports"
+    },
+    {
+      "name": "Glypherson"
+    },
+    {
+      "name": "Infinite147"
+    },
+    {
+      "name": "CD!"
+    },
+    {
+      "name": "KaijuNo.1"
+    },
+    {
+      "name": "Dasmir"
+    },
+    {
+      "name": "bryant"
+    },
+    {
+      "name": "JuniorJunes"
+    },
+    {
+      "name": "BlackEndGalaxy"
+    },
+    {
+      "name": "Frickin Terry"
+    },
+    {
+      "name": "Plains47"
+    },
+    {
+      "name": "vs. Kite"
+    },
+    {
+      "name": "Zangetsu"
+    },
+    {
+      "name": "Pulgaa"
+    },
+    {
+      "name": "JDCooper"
+    },
+    {
+      "name": "Wemai"
+    },
+    {
+      "name": "Luckii"
+    },
+    {
+      "name": "Elias Snake"
+    },
+    {
+      "name": "Clept"
+    },
+    {
+      "name": "Coffers"
+    },
+    {
+      "name": "JSH3LLZ"
+    },
+    {
+      "name": "Nenopekin1"
+    },
+    {
+      "name": "HawaiianShirtMan"
+    },
+    {
+      "name": "Caprlclous"
+    },
+    {
+      "name": "RobTV"
+    },
+    {
+      "name": "davey"
+    },
+    {
+      "name": "MetsuCoOk"
+    },
+    {
+      "name": "tiredman"
+    },
+    {
+      "name": "Alpho King"
+    },
+    {
+      "name": "Khadeeja"
+    },
+    {
+      "name": "Zathee"
+    },
+    {
+      "name": "Cloud57"
+    },
+    {
+      "name": "krrust"
+    },
+    {
+      "name": "Notorious"
+    },
+    {
+      "name": "ChilledNoir"
+    },
+    {
+      "name": "EmpathicHarmony"
+    },
+    {
+      "name": "Iceberg"
+    },
+    {
+      "name": "NeoVanquisher"
+    },
+    {
+      "name": "scambolini_"
+    },
+    {
+      "name": "OnlyEatRice"
+    },
+    {
+      "name": "ZisNuts"
+    },
+    {
+      "name": "Thunderkilam"
+    },
+    {
+      "name": "SPEARtw"
+    },
+    {
+      "name": "Groovebox"
+    },
+    {
+      "name": "Starks"
+    },
+    {
+      "name": "DeadMK"
+    },
+    {
+      "name": "Gohan Blanco"
+    },
+    {
+      "name": "Gamble"
+    },
+    {
+      "name": "non-EuclidIan"
+    },
+    {
+      "name": "NeuralArch"
+    },
+    {
+      "name": "v_star"
+    },
+    {
+      "name": "Papin"
+    },
+    {
+      "name": "Pan glocks"
+    },
+    {
+      "name": "Tagsz"
+    },
+    {
+      "name": "JIMENEZ 357"
+    },
+    {
+      "name": "Iriam Games"
+    },
+    {
+      "name": "K7 Showoff"
+    },
+    {
+      "name": "gut0w"
+    },
+    {
+      "name": "southpaw flash"
+    },
+    {
+      "name": "JOX-"
+    },
+    {
+      "name": "Astral_Faust"
+    },
+    {
+      "name": "Sky"
+    },
+    {
+      "name": "apology boy"
+    },
+    {
+      "name": "BigMacCombo98"
+    },
+    {
+      "name": "La_grasa01"
+    },
+    {
+      "name": "Glitch"
+    },
+    {
+      "name": "jewelman-_-"
+    },
+    {
+      "name": "Mojo"
+    },
+    {
+      "name": "MarDonX-9"
+    },
+    {
+      "name": "TheAlmightyHippo"
+    },
+    {
+      "name": "OfyBurger"
+    },
+    {
+      "name": "Hali"
+    },
+    {
+      "name": "onlydreams"
+    },
+    {
+      "name": "stun"
+    },
+    {
+      "name": "ISI"
+    },
+    {
+      "name": "BreezyMan"
+    },
+    {
+      "name": "ZIDANICO"
+    },
+    {
+      "name": "psxsquall"
+    },
+    {
+      "name": "WraithFGC"
+    },
+    {
+      "name": "MichMex"
+    },
+    {
+      "name": "GemIcarus"
+    },
+    {
+      "name": "Taemoon"
+    },
+    {
+      "name": "depressedmetfan"
+    },
+    {
+      "name": "Grahmpa"
+    },
+    {
+      "name": "MTL_Rami"
+    },
+    {
+      "name": "Angel Bagz"
+    },
+    {
+      "name": "Sythe"
+    },
+    {
+      "name": "Fate"
+    },
+    {
+      "name": "AwildLLAMA"
+    },
+    {
+      "name": "Dragon"
+    },
+    {
+      "name": "StrawberryTofu"
+    },
+    {
+      "name": "PokkeDex"
+    },
+    {
+      "name": "Jd"
+    },
+    {
+      "name": "iPlayPad"
+    },
+    {
+      "name": "In4war"
+    },
+    {
+      "name": "Teru"
+    },
+    {
+      "name": "Nekky"
+    },
+    {
+      "name": "Grimz"
+    },
+    {
+      "name": "Grabbagool"
+    },
+    {
+      "name": "Dust"
+    },
+    {
+      "name": "Eutro"
+    },
+    {
+      "name": "Render"
+    },
+    {
+      "name": "SirSlush"
+    },
+    {
+      "name": "Jeese"
+    },
+    {
+      "name": "Angel"
+    },
+    {
+      "name": "Stream Monsters"
+    },
+    {
+      "name": "SaltyWarrior"
+    },
+    {
+      "name": "Trilogy"
+    },
+    {
+      "name": "BadStoned"
+    },
+    {
+      "name": "Trix"
+    },
+    {
+      "name": "SegaTron"
+    },
+    {
+      "name": "Rafa16"
+    },
+    {
+      "name": "ZachInABox"
+    },
+    {
+      "name": "Eric C"
+    },
+    {
+      "name": "ManosDeDarach"
+    },
+    {
+      "name": "HOTLINE"
+    },
+    {
+      "name": "Gauln"
+    },
+    {
+      "name": "KrisRon"
+    },
+    {
+      "name": "UTJ"
+    },
+    {
+      "name": "Stephen"
+    },
+    {
+      "name": "TwoD"
+    },
+    {
+      "name": "Alexis Pinto"
+    },
+    {
+      "name": "Cory Bell"
+    },
+    {
+      "name": "KongFuHustle"
+    },
+    {
+      "name": "BSIDA"
+    },
+    {
+      "name": "Marss"
+    },
+    {
+      "name": "Mr. PIB"
+    },
+    {
+      "name": "GimR"
+    },
+    {
+      "name": "Nusfut"
+    },
+    {
+      "name": "Ramsaur"
+    },
+    {
+      "name": "Chuck Steak"
+    },
+    {
+      "name": "Xeno_prod"
+    },
+    {
+      "name": "HmongThaiLegend"
+    },
+    {
+      "name": "free_zenny"
+    },
+    {
+      "name": "H-DOPE"
+    },
+    {
+      "name": "Danair"
+    },
+    {
+      "name": "K-TOP"
+    },
+    {
+      "name": "Bob Razowsky"
+    },
+    {
+      "name": "cFive"
+    },
+    {
+      "name": "AWP"
+    },
+    {
+      "name": "Insta"
+    },
+    {
+      "name": "Lu'Cie"
+    },
+    {
+      "name": "Rivarsal"
+    },
+    {
+      "name": "Jinchiku"
+    },
+    {
+      "name": "digos25",
+      "shortName": "Digos",
+      "country": "PT",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Dizflash"
+    },
+    {
+      "name": "M2Cloud"
+    },
+    {
+      "name": "DeathViper"
+    },
+    {
+      "name": "Abomition"
+    },
+    {
+      "name": "Eben-X"
+    },
+    {
+      "name": "Dormammu",
+      "country": "CM",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Litoshi",
+      "country": "CM",
+      "mainCharacter": "ed"
+    },
+    {
+      "name": "Culti237",
+      "shortName": "Culti",
+      "country": "CM",
+      "mainCharacter": "luke"
+    },
+    {
+      "name": "Update",
+      "country": "CM",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "KG l'hybride",
+      "country": "CM"
+    },
+    {
+      "name": "Maitre 47",
+      "country": "CM",
+      "mainCharacter": "honda"
+    },
+    {
+      "name": "Black Ivy",
+      "country": "CM",
+      "mainCharacter": "manon"
+    },
+    {
+      "name": "Junot",
+      "country": "CM",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Tonko"
+    },
+    {
+      "name": "Melmac"
+    },
+    {
+      "name": "ShadyManiac"
+    },
+    {
+      "name": "Donteyyy"
+    },
+    {
+      "name": "Tooru",
+      "country": "FR",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Snoboi"
+    },
+    {
+      "name": "Mochii",
+      "originalName": "もっちー",
+      "country": "JP",
+      "mainCharacter": "akuma"
+    },
+    {
+      "name": "RH Chris",
+      "country": "MX",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Cast_Kenneth",
+      "country": "MX",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Koopatj",
+      "country": "MX",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "secto",
+      "country": "MX",
+      "mainCharacter": "zangief"
+    },
+    {
+      "name": "Ragna"
+    },
+    {
+      "name": "Gondola"
+    },
+    {
+      "name": "Lukey"
+    },
+    {
+      "name": "Magicarper",
+      "country": "SE"
+    },
+    {
+      "name": "ZaiLis",
+      "country": "GB",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "Frozze",
+      "country": "ES",
+      "mainCharacter": "dictator"
+    },
+    {
+      "name": "Tundi"
+    },
+    {
+      "name": "Santos"
+    },
+    {
+      "name": "DAZ"
+    },
+    {
+      "name": "Cherobuk"
+    },
+    {
+      "name": "BMRando"
+    },
+    {
+      "name": "Kukure"
+    },
+    {
+      "name": "Rstayl"
+    },
+    {
+      "name": "Divinesword"
+    },
+    {
+      "name": "Gesnake"
+    },
+    {
+      "name": "Sabibotage"
+    },
+    {
+      "name": "Jaeger"
+    },
+    {
+      "name": "Terapevt",
+      "country": "RU",
+      "mainCharacter": "kimberly"
+    },
+    {
+      "name": "Akibi"
+    },
+    {
+      "name": "Wasim"
+    },
+    {
+      "name": "Yimbo",
+      "country": "GB",
+      "mainCharacter": "mai"
+    },
+    {
+      "name": "Salvatore",
+      "country": "VE",
+      "mainCharacter": "cammy"
+    },
+    {
+      "name": "Limestone",
+      "country": "CO",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Mod"
+    },
+    {
+      "name": "Mob"
+    },
+    {
+      "name": "Ka7al"
+    },
+    {
+      "name": "Reekee"
+    },
+    {
+      "name": "Guile"
+    },
+    {
+      "name": "BansheeBomb"
+    },
+    {
+      "name": "JumpyChateau"
+    },
+    {
+      "name": "POMM3"
+    },
+    {
+      "name": "Itona"
+    },
+    {
+      "name": "Qdeff"
+    },
+    {
+      "name": "exe"
+    },
+    {
+      "name": "Leovath"
+    },
+    {
+      "name": "Duck"
+    },
+    {
+      "name": "Nyanpi",
+      "originalName": "にゃんぴ",
+      "country": "JP",
+      "mainCharacter": "aki"
+    },
+    {
+      "name": "WhiteBl4ck",
+      "country": "FR"
+    },
+    {
+      "name": "DucDesHiboux"
+    },
+    {
+      "name": "Airjordan43"
+    },
+    {
+      "name": "NonoBlcK"
+    },
+    {
+      "name": "Faccboi"
+    },
+    {
+      "name": "Drizzel"
+    },
+    {
+      "name": "DarkSword",
+      "country": "MA",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Tetard"
+    },
+    {
+      "name": "Cocofou"
+    },
+    {
+      "name": "Mr.DF"
+    },
+    {
+      "name": "Halarik"
+    },
+    {
+      "name": "Gorgoroth"
+    },
+    {
+      "name": "Mr DF"
+    },
+    {
+      "name": "Faisal"
+    },
+    {
+      "name": "Kingsvega",
+      "country": "JP",
+      "mainCharacter": "blanka"
+    },
+    {
+      "name": "Kujou",
+      "country": "JP",
+      "mainCharacter": "lily"
+    },
+    {
+      "name": "Axela",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Tantanmen",
+      "originalName": "タンタンメン",
+      "country": "JP"
+    },
+    {
+      "name": "Miguelito"
+    },
+    {
+      "name": "Seichi-P"
+    },
+    {
+      "name": "Monsterjujuju",
+      "shortName": "Jujuju",
+      "country": "JP",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Eguto",
+      "country": "JP",
+      "mainCharacter": "mai"
+    },
+    {
+      "name": "Middle School Elder Twin",
+      "shortName": "Elder Twin",
+      "originalName": "中2の双子(兄)",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Sakimori",
+      "originalName": "さきもり",
+      "country": "JP",
+      "mainCharacter": "guile"
+    },
+    {
+      "name": "Honda"
+    },
+    {
+      "name": "Rocks"
+    },
+    {
+      "name": "Kofski",
+      "country": "MA",
+      "mainCharacter": "dhalsim"
+    },
+    {
+      "name": "Keito"
+    },
+    {
+      "name": "Gain",
+      "country": "JP",
+      "mainCharacter": "jp"
+    },
+    {
+      "name": "Uchuu Mama",
+      "shortName": "Uchumama",
+      "originalName": "宇宙ママ",
+      "country": "JP"
+    },
+    {
+      "name": "Owaechan",
+      "country": "JP",
+      "mainCharacter": "chunli"
+    },
+    {
+      "name": "Buggy",
+      "originalName": "バギーー",
+      "country": "JP",
+      "mainCharacter": "mai"
+    },
+    {
+      "name": "HIKAWA"
+    },
+    {
+      "name": "Sunhui"
+    },
+    {
+      "name": "YONOI"
+    },
+    {
+      "name": "ADM"
+    },
+    {
+      "name": "AceGodShingo"
+    },
+    {
+      "name": "Честер"
+    },
+    {
+      "name": "Nests Kyo"
+    },
+    {
+      "name": "Vezmo"
+    },
+    {
+      "name": "Mel"
+    },
+    {
+      "name": "Yuzero"
+    },
+    {
+      "name": "NotPedro",
+      "country": "BR",
+      "mainCharacter": "ken"
+    },
+    {
+      "name": "Eltannousss"
+    },
+    {
+      "name": "Laggia"
+    },
+    {
+      "name": "Sarkfighter"
+    },
+    {
+      "name": "Seiya",
+      "country": "JP"
+    },
+    {
+      "name": "おわえちゃん"
+    },
+    {
+      "name": "Takokasu",
+      "country": "JP"
+    },
+    {
+      "name": "Dennis",
+      "country": "IN",
+      "mainCharacter": "jamie"
+    },
+    {
+      "name": "QLP",
+      "country": "IN",
+      "mainCharacter": "blanka"
+    }
+  ]
+}
