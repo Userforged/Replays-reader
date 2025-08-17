@@ -18,8 +18,24 @@
       }
     },
     {
-      "name": "character1",
+      "name": "player1",
       "label": "PLAYER 1",
+      "model": "easyocr",
+      "boundaries": {
+        "color": [
+          92,
+          0,
+          210
+        ],
+        "top": 0.0,
+        "bottom": 0.05,
+        "left": 0.10,
+        "right": 0.4
+      }
+    },
+    {
+      "name": "character1",
+      "label": "CHARACTER 1",
       "model": "easyocr",
       "boundaries": {
         "color": [
@@ -34,8 +50,24 @@
       }
     },
     {
-      "name": "character2",
+      "name": "player2",
       "label": "PLAYER 2",
+      "model": "easyocr",
+      "boundaries": {
+        "color": [
+          192,
+          106,
+          35
+        ],
+        "top": 0.0,
+        "bottom": 0.05,
+        "left": 0.6,
+        "right": 0.90
+      }
+    },
+    {
+      "name": "character2",
+      "label": "CHARACTER 2",
       "model": "easyocr",
       "boundaries": {
         "color": [
