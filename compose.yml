@@ -7,7 +7,6 @@ services:
     user: "1000:100"
     volumes:
       - .:/app
-      - pycache:/app/__pycache__
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /mnt/wslg:/mnt/wslg
     working_dir: /app
@@ -17,7 +16,7 @@ services:
       - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
       - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
       - PULSE_SERVER=${PULSE_SERVER}
-      - PYTHONPYCACHEPREFIX=/app/__pycache__
+      - PYTHONPYCACHEPREFIX=/tmp/pycache
     deploy:
       resources:
         reservations:
@@ -52,6 +51,7 @@ services:
       - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
       - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
       - PULSE_SERVER=${PULSE_SERVER}
+      - PYTHONPYCACHEPREFIX=/tmp/pycache
     deploy:
       resources:
         reservations:
@@ -63,4 +63,3 @@ services:
 
 volumes:
   jupyter_config:
-  pycache:
