@@ -37,6 +37,106 @@ Keep track of ideas and improvements to implement:
 - [ ] Implement automated round winner detection
 - [ ] Add support for tournament bracket tracking
 - [ ] Create web interface for match analysis visualization
+
+### Match Detection Issues to Fix
+
+**Problème identifié avec EvoTop8 :** La logique de déduction des matches ne respecte pas parfaitement la structure SF6.
+
+**Exemple concret - Match Kakeru vs Fuudo :**
+- **Réalité** : 4 sets courts (2-3 rounds chacun)
+  - Set 1 (00:00:54) : Kakeru (JP) vs Fuudo (ED) - 2 rounds
+  - Set 2 (~00:03:15) : Kakeru (JP) vs Fuudo (BLANKA) - 2 rounds  
+  - Set 3 (~00:05:31) : Kakeru (JP) vs Fuudo (DEE JAY) - 2 rounds
+  - Set 4 (~00:07:07) : Kakeru (JP) vs Fuudo (DEE JAY) - 3 rounds
+- **Détection actuelle** : 1 set long de 4 rounds + attribution erronée du match suivant
+
+**Todo List pour correction :**
+- [ ] Identifier pourquoi l'extraction des joueurs récupère les mauvais noms
+- [ ] Vérifier que la logique de cohérence des joueurs fonctionne
+- [ ] Analyser les gaps temporels entre Kakeru/Fuudo et MenaRD/Phenom  
+- [ ] Créer un test pour valider la séparation des matches
+
+**Root cause :** L'extraction des noms de joueurs attribue incorrectement "Kakeru/Fuudo" au match MenaRD (BLANKA) vs Phenom (CAMMY) à 00:11:14.
+
+**✅ RÉSOLU :** Marges temporelles réduites (-30s, +2min au lieu de -1min, +5min) pour éviter les débordements.
+
+## Flow de Déduction des Matches - Formats de Discussion
+
+### Format 1 : Arbre de Décision (pour logique métier)
+
+```
+📊 PIPELINE CHARACTERS FIRST - DÉDUCTION MATCHES SF6
+
+Phase 1: FRAME PROCESSING (Characters First)
+├── Character Detection (Priorité 1 - Données les plus fiables)
+├── Timer Refinement (Contexte personnages)
+└── Player Detection (Contexte personnages + timers)
+
+Phase 2: ROUND DETECTION
+├── IF timer ∈ [95-99] ET gap_temporel > 30s → NOUVEAU ROUND (conf: 0.9)
+├── ELSE IF timer_saut > 20 points → NOUVEAU ROUND (conf: 0.8)
+├── ELSE IF timer < 50 PUIS timer ≥ 80 → NOUVEAU ROUND (conf: 0.95)
+└── VALIDATION: durée ≥ 120s ET confiance ≥ 0.5
+
+Phase 3: SET GROUPING
+├── IF personnages_identiques ET gap_temporel ≤ 300s → MÊME SET
+└── ELSE → NOUVEAU SET
+└── VALIDATION: rounds_count ≥ 2 ET cohérence_personnages ≥ 0.5
+
+Phase 4: MATCH GROUPING
+├── IF gap_temporel ≤ 180s ET joueurs_cohérents ET 1_seul_perso_change → MÊME MATCH
+├── ELSE IF 2_persos_changent → NOUVEAU MATCH (règle SF6)
+└── ELSE → NOUVEAU MATCH
+└── VALIDATION: (sets ≥ 2) OU (sets = 1 ET rounds ≥ 3)
+```
+
+### Format 5 : État-Transition (pour flow temporel)
+
+```
+MACHINE À ÉTATS - DÉTECTION MATCHES SF6
+
+┌─────────────────┐  timer~99 détecté   ┌─────────────────┐
+│   IDLE_VIDEO    │ ──────────────────► │  POTENTIAL_ROUND│
+│ (aucun timer)   │     après gap       │ (timer élevé +  │
+└─────────────────┘                     │  personnages)   │
+        ▲                               └─────────────────┘
+        │                                        │
+        │ timeout (60s sans timer)               │ validation OK
+        │                                        ▼
+┌─────────────────┐                   ┌─────────────────┐
+│ INTER_MATCH_GAP │                   │   ROUND_ACTIVE  │◄──┐
+│(entre 2 matchs)│                   │ (timer 99→0...) │   │
+└─────────────────┘                   └─────────────────┘   │
+        ▲                                      │            │
+        │                                      │ nouveau    │ même
+        │ joueurs différents                   │ timer~99   │ perso
+        │ OU gap > 180s                        ▼            │
+┌─────────────────┐               ┌─────────────────┐       │
+│   MATCH_END     │               │   ROUND_END     │───────┘
+│ (fin confirmée) │               │ (timer→bas)     │
+└─────────────────┘               └─────────────────┘
+        ▲                                  │
+        │                                  │ analyse changements
+        │                                  ▼
+        │                       ┌─────────────────┐
+        │                       │ CHARACTER_CHECK │
+        │                       │ (règle SF6)     │
+        │                       └─────────────────┘
+        │                            │         │
+        │ 2 persos changent          │         │ 0-1 perso change
+        │ (nouveau match)            ▼         ▼
+        │                  ┌─────────────────┐
+        │                  │    SET_END      │
+        │                  │ (nouveau set)   │
+        │                  └─────────────────┘
+        │                           │
+        └───────────────────────────┘
+```
+
+**Usage des formats :**
+- **Format 1 (Arbre)** : Affiner seuils, conditions, priorités, debug
+- **Format 5 (États)** : Gérer transitions temporelles, timeouts, retours aux états d'attente
+
 - [ ] Add support for other fighting games (Tekken, Mortal Kombat)
 
 *Note: When an item is completed, remove it from this list. Add new ideas as they come up.*
