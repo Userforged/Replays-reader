@@ -28,9 +28,10 @@ COPY --from=python-build /usr/share/ffmpeg /usr/share/ffmpeg
 
 # Install yt-dlp for video downloading capabilities
 RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    apt-get install -y curl ca-certificates && \
+    curl -L -f --retry 3 --retry-delay 5 https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod +x /usr/local/bin/yt-dlp && \
+    yt-dlp --version && \
     apt-get remove -y curl && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
