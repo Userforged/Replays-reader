@@ -977,8 +977,11 @@ class MatchDeductor:
         player2_counts = {}
         frames_analyzed = 0
         
-        # Utiliser seulement les frames validées dans la période du match
-        validated_frames = getattr(self, 'current_validated_frames', [])
+        # Utiliser les frames avec joueurs validés par le pipeline (phases 1-3)
+        validated_frames = getattr(self, 'player_validated_frames', [])
+        if not validated_frames:
+            # Fallback vers les frames validées de base si les données du pipeline ne sont pas disponibles
+            validated_frames = getattr(self, 'current_validated_frames', [])
         
         for frame_data in validated_frames:
             # Vérifier si la frame est dans la période du match
@@ -1034,8 +1037,11 @@ class MatchDeductor:
         player2_counts = {}
         frames_analyzed = 0
         
-        # Utiliser seulement les frames validées dans la période du set
-        validated_frames = getattr(self, 'current_validated_frames', [])
+        # Utiliser les frames avec joueurs validés par le pipeline (phases 1-3)
+        validated_frames = getattr(self, 'player_validated_frames', [])
+        if not validated_frames:
+            # Fallback vers les frames validées de base si les données du pipeline ne sont pas disponibles
+            validated_frames = getattr(self, 'current_validated_frames', [])
         
         for frame_data in validated_frames:
             # Vérifier si la frame est dans la période du set
