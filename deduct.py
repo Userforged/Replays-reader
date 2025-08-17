@@ -76,9 +76,9 @@ def format_matches_to_human_readable(matches_data):
             char1 = format_character_name(char1_raw)
             char2 = format_character_name(char2_raw)
             
-            # Noms des joueurs statiques (placeholders)
-            player1 = "Player1"
-            player2 = "Player2"
+            # Noms des joueurs depuis les données du match
+            player1 = match.get('player1', 'Player1')
+            player2 = match.get('player2', 'Player2')
             
             line = f"{timestamp} {player1} ({char1}) VS {player2} ({char2})"
             lines.append(line)
@@ -354,14 +354,51 @@ def print_analysis_summary(results: dict):
         print(f"\n🏆 Détail des matches:")
         for i, match in enumerate(matches):
             sets = match.get('sets', [])
-            print(f"  Match {i+1}: {match['start_time']} ({len(sets)} sets)")
+            player1 = match.get('player1', '')
+            player2 = match.get('player2', '')
+            total_rounds = match.get('total_rounds', 0)
+            winner = match.get('winner')
             
-            # Afficher chaque set
+            # En-tête du match - format enrichi
+            match_header = f"  Match {i+1}: {match['start_time']}"
+            if player1 and player2:
+                match_header += f" {player1} VS {player2}"
+            if winner:
+                match_header += f" (Winner: {winner})"
+            match_header += f" - {len(sets)} sets, {total_rounds} rounds"
+            
+            print(match_header)
+            
+            # Afficher chaque set avec toutes les informations
             for j, set_data in enumerate(sets):
                 char1 = set_data.get('character1', '')
                 char2 = set_data.get('character2', '')
                 rounds_count = set_data.get('rounds_count', 0)
-                print(f"    Set {j+1}: {char1} vs {char2} ({rounds_count} rounds)")
+                set_player1 = set_data.get('player1', '')
+                set_player2 = set_data.get('player2', '')
+                set_start = set_data.get('start_time', '')
+                
+                # Utiliser les joueurs du set s'ils existent, sinon ceux du match
+                display_player1 = set_player1 if set_player1 else player1
+                display_player2 = set_player2 if set_player2 else player2
+                
+                # Format enrichi : "Set X: TIME Player1 (Character1) VS Player2 (Character2) (N rounds)"
+                set_line = f"    Set {j+1}: {set_start}"
+                if display_player1 and display_player2:
+                    set_line += f" {display_player1} ({char1}) VS {display_player2} ({char2})"
+                else:
+                    set_line += f" {char1} vs {char2}"
+                set_line += f" ({rounds_count} rounds)"
+                
+                print(set_line)
+                
+                # Optionnel : afficher les rounds individuels si debug activé
+                if False:  # Changez en True pour afficher les rounds
+                    rounds = set_data.get('rounds', [])
+                    for k, round_data in enumerate(rounds):
+                        round_start = round_data.get('start_time', '')
+                        confidence = round_data.get('confidence', 0)
+                        print(f"      Round {k+1}: {round_start} (confidence: {confidence:.2f})")
 
 
 def main():
@@ -414,6 +451,13 @@ Exemples:
         help='Tolérance pour timer manquant (0.0-1.0, défaut: 0.3)'
     )
     
+    parser.add_argument(
+        '--player-list',
+        type=str,
+        default='players.json',
+        help='Fichier JSON contenant la liste des joueurs (défaut: players.json)'
+    )
+    
     args = parser.parse_args()
     
     # Générer le nom de sortie par défaut
@@ -447,7 +491,8 @@ Exemples:
             min_match_gap_seconds=args.min_match_gap,
             timer_tolerance_ratio=args.timer_tolerance,
             output_fields=output_config,
-            debug=args.debug
+            debug=args.debug,
+            restricted_players_file=args.player_list if args.player_list != 'players.json' else None
         )
         
         # Analyser

@@ -384,6 +384,78 @@ class PlayerProvider:
         # Case-insensitive comparison
         return main_character.upper() == character_name.upper()
 
+    def resolve_restricted_players(self, restricted_names: List[str]) -> List[str]:
+        """
+        Résout une liste restreinte de noms vers leurs données complètes avec variations.
+        
+        Args:
+            restricted_names: Liste de noms simples ['MenaRD', 'Kakeru', 'Xiaohai']
+            
+        Returns:
+            Liste enrichie avec toutes les variations trouvées dans la base complète
+        """
+        if not restricted_names:
+            return []
+        
+        print(f"🔍 Résolution de {len(restricted_names)} joueurs restreints...")
+        
+        # Charger la base complète (players.json)
+        full_provider = PlayerProvider('players.json')
+        all_players = full_provider.config.get('players', [])
+        static_players = full_provider.config.get('static_players', [])
+        
+        enriched_names = set()
+        
+        # Pour chaque nom de la liste restreinte
+        for target_name in restricted_names:
+            target_upper = target_name.strip().upper()
+            found = False
+            
+            # Chercher dans les joueurs API avec métadonnées
+            for player in all_players:
+                if isinstance(player, dict):
+                    # Vérifier toutes les variations de nom
+                    variations = []
+                    if player.get('name'):
+                        variations.append(player['name'])
+                    if player.get('shortName'):
+                        variations.append(player['shortName'])
+                    if player.get('originalName'):
+                        variations.append(player['originalName'])
+                    
+                    # Chercher correspondance (case insensitive)
+                    for variation in variations:
+                        if variation.strip().upper() == target_upper:
+                            # Ajouter toutes les variations de ce joueur
+                            for var in variations:
+                                if var.strip():
+                                    enriched_names.add(var.strip())
+                            found = True
+                            print(f"  ✅ {target_name} → {len(variations)} variations")
+                            break
+                    
+                    if found:
+                        break
+            
+            # Chercher dans les joueurs statiques
+            if not found:
+                for static_player in static_players:
+                    if isinstance(static_player, str) and static_player.strip().upper() == target_upper:
+                        enriched_names.add(static_player.strip())
+                        found = True
+                        print(f"  ✅ {target_name} → trouvé dans static_players")
+                        break
+            
+            # Si pas trouvé, ajouter tel quel
+            if not found:
+                enriched_names.add(target_name.strip())
+                print(f"  ⚠️ {target_name} → ajouté tel quel (non trouvé dans la base)")
+        
+        result = sorted(list(enriched_names))
+        print(f"📋 Résolution terminée: {len(restricted_names)} → {len(result)} noms enrichis")
+        
+        return result
+    
     def get_cache_info(self) -> Dict:
         """Get information about the current cache."""
         is_valid = self._is_cache_valid()
