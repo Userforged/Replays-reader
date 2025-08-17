@@ -4,7 +4,6 @@ Module de déduction des matches et rounds à partir des données d'analyse JSON
 
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Optional
-import json
 from .text_validator import TextValidator
 
 
@@ -19,7 +18,8 @@ class MatchDeductor:
                  timer_tolerance_ratio=0.3,
                  output_fields=None,
                  debug=False,
-                 characters_file="characters.json"):
+                 characters_file="characters.json",
+                 players_config_file="players.json"):
         """
         Initialise le déducteur avec les paramètres de tolérance.
         
@@ -30,14 +30,19 @@ class MatchDeductor:
             output_fields: Dict définissant les champs à inclure dans la sortie
             debug: Mode debug pour logs détaillés
             characters_file: Fichier JSON avec la liste des personnages SF6
+            players_config_file: Fichier JSON avec la configuration des joueurs et API
         """
         self.min_round_duration = min_round_duration_seconds
         self.min_match_gap = min_match_gap_seconds
         self.timer_tolerance = timer_tolerance_ratio
         self.debug = debug
         
-        # Initialiser le validateur de texte
-        self.text_validator = TextValidator(characters_file=characters_file, debug=debug)
+        # Initialiser le validateur de texte avec support des joueurs
+        self.text_validator = TextValidator(
+            characters_file=characters_file, 
+            players_config_file=players_config_file,
+            debug=debug
+        )
         
         # Configuration des champs de sortie par défaut
         default_fields = {
@@ -68,6 +73,9 @@ class MatchDeductor:
         
         # Validation des textes interpolés avec TextValidator
         validated_frames = self.text_validator.validate_frames_batch(interpolated_frames)
+        
+        # Stocker les frames validées pour accès dans _extract_player_names
+        self.current_validated_frames = validated_frames
         
         if self.debug:
             # Afficher les statistiques de validation
@@ -114,7 +122,9 @@ class MatchDeductor:
                     'timer_value': timer_value,
                     'timer_raw': timer_str,
                     'character1': frame.get('character1', ''),
-                    'character2': frame.get('character2', '')
+                    'character2': frame.get('character2', ''),
+                    'player1': frame.get('player1', ''),
+                    'player2': frame.get('player2', '')
                 })
                 
             except Exception as e:
@@ -431,35 +441,47 @@ class MatchDeductor:
     
     def _group_sets_into_matches(self, sets: List[Dict]) -> List[Dict]:
         """
-        Groupe les sets en matches. Un match = série de sets consécutifs
-        (les personnages peuvent changer entre sets mais c'est la même opposition de joueurs).
+        Groupe les sets en matches basé sur les changements de joueurs et les gaps temporels.
+        Un match = série de sets consécutifs avec les mêmes joueurs.
         """
         if not sets:
             return []
         
-        matches = []
-        current_match_sets = [sets[0]]
+        # D'abord, extraire les joueurs pour chaque set
+        sets_with_players = []
+        for set_data in sets:
+            players = self._extract_player_names_for_set(set_data)
+            set_with_players = set_data.copy()
+            set_with_players['_players'] = players
+            sets_with_players.append(set_with_players)
+            self._log_debug(f"Set {set_data.get('set_number', '?')}: "
+                           f"{players['player1']} vs {players['player2']} "
+                           f"({set_data['character1']} vs {set_data['character2']})")
         
-        for i in range(1, len(sets)):
-            prev_set = sets[i-1]
-            curr_set = sets[i]
+        matches = []
+        current_match_sets = [sets_with_players[0]]
+        
+        for i in range(1, len(sets_with_players)):
+            prev_set = sets_with_players[i-1]
+            curr_set = sets_with_players[i]
             
-            # Calculer le gap entre sets en utilisant les données brutes
-            prev_end = prev_set['_raw_end_time']
-            curr_start = curr_set['_raw_start_time']
-            gap_seconds = (curr_start - prev_end).total_seconds()
+            gap_seconds = self._calculate_gap_seconds(prev_set, curr_set)
+            should_separate = self._should_separate_matches(
+                prev_set, curr_set, gap_seconds, 
+                prev_set['_players'], curr_set['_players']
+            )
             
-            if gap_seconds >= self.min_match_gap:
-                # Gap important -> nouveau match
+            if should_separate:
+                # Nouveau match
                 if current_match_sets and self._is_valid_match(current_match_sets):
                     match = self._create_match_from_sets(current_match_sets, len(matches) + 1)
                     matches.append(match)
-                    self._log_debug(f"Match valide créé avec {len(current_match_sets)} sets")
+                    self._log_debug(f"Match séparé: {len(current_match_sets)} sets")
                 elif current_match_sets:
-                    self._log_debug(f"Match rejeté: {len(current_match_sets)} sets - minimum requis non atteint")
+                    self._log_debug(f"Match rejeté: {len(current_match_sets)} sets")
                 current_match_sets = [curr_set]
             else:
-                # Même match (opposition continue)
+                # Même match (mêmes joueurs, gap acceptable)
                 current_match_sets.append(curr_set)
         
         # Ajouter le dernier match
@@ -492,9 +514,15 @@ class MatchDeductor:
         if 'sets_count' in match_fields:
             match_data['sets_count'] = len(sets)
         
-        # Extraire les noms des joueurs si nécessaire
+        # Extraire les noms des joueurs depuis le premier set (ils sont identiques dans tout le match)
         if 'player1' in match_fields or 'player2' in match_fields:
-            player_names = self._extract_player_names(sets)
+            if '_players' in sets[0]:
+                # Utiliser les joueurs déjà extraits
+                player_names = sets[0]['_players']
+            else:
+                # Fallback : extraction manuelle
+                player_names = self._extract_player_names(sets)
+            
             if 'player1' in match_fields:
                 match_data['player1'] = player_names['player1']
             if 'player2' in match_fields:
@@ -718,7 +746,7 @@ class MatchDeductor:
         """
         Extrait les noms des joueurs pour un match donné.
         
-        Utilise les noms de personnages les plus fréquents dans tous les sets du match.
+        Utilise les noms de joueurs les plus fréquents dans la période temporelle du match.
         
         Args:
             sets: Liste des sets du match
@@ -729,29 +757,131 @@ class MatchDeductor:
         if not sets:
             return {'player1': '', 'player2': ''}
         
-        # Collecter tous les personnages des sets
-        char1_counts = {}
-        char2_counts = {}
+        # Déterminer la période temporelle du match
+        match_start = sets[0]['start_time']
+        match_end = sets[-1]['start_time']
         
-        for set_data in sets:
-            char1 = set_data.get('character1', '').strip()
-            char2 = set_data.get('character2', '').strip()
+        # Ajouter une marge pour capturer plus de frames du match
+        from datetime import timedelta
+        if isinstance(match_start, str):
+            match_start = self._parse_timestamp(match_start)
+        if isinstance(match_end, str):
+            match_end = self._parse_timestamp(match_end)
             
-            if char1:
-                char1_counts[char1] = char1_counts.get(char1, 0) + 1
-            if char2:
-                char2_counts[char2] = char2_counts.get(char2, 0) + 1
+        match_start_with_margin = match_start - timedelta(minutes=1)
+        match_end_with_margin = match_end + timedelta(minutes=5)
         
-        # Prendre les personnages les plus fréquents comme représentants des joueurs
-        player1 = max(char1_counts.items(), key=lambda x: x[1])[0] if char1_counts else ''
-        player2 = max(char2_counts.items(), key=lambda x: x[1])[0] if char2_counts else ''
+        # Collecter les noms de joueurs depuis les frames validées dans cette période
+        player1_counts = {}
+        player2_counts = {}
+        frames_analyzed = 0
         
-        self._log_debug(f"Joueurs extraits du match: {player1} vs {player2}")
+        # Utiliser seulement les frames validées dans la période du match
+        validated_frames = getattr(self, 'current_validated_frames', [])
+        
+        for frame_data in validated_frames:
+            # Vérifier si la frame est dans la période du match
+            frame_timestamp_str = frame_data.get('timestamp_str', frame_data.get('timestamp', ''))
+            frame_timestamp = self._parse_timestamp(frame_timestamp_str)
+            
+            if match_start_with_margin <= frame_timestamp <= match_end_with_margin:
+                frames_analyzed += 1
+                player1_name = frame_data.get('player1', '').strip()
+                player2_name = frame_data.get('player2', '').strip()
+                
+                if player1_name:
+                    player1_counts[player1_name] = player1_counts.get(player1_name, 0) + 1
+                if player2_name:
+                    player2_counts[player2_name] = player2_counts.get(player2_name, 0) + 1
+        
+        # Prendre les noms les plus fréquents
+        player1 = max(player1_counts.items(), key=lambda x: x[1])[0] if player1_counts else ''
+        player2 = max(player2_counts.items(), key=lambda x: x[1])[0] if player2_counts else ''
+        
+        self._log_debug(f"Joueurs extraits du match ({frames_analyzed} frames analysées, "
+                       f"période {match_start.strftime('%H:%M:%S')}-{match_end.strftime('%H:%M:%S')}): "
+                       f"{player1} vs {player2}")
         
         return {
             'player1': player1,
             'player2': player2
         }
+    
+    def _extract_player_names_for_set(self, set_data: Dict) -> Dict[str, str]:
+        """
+        Extrait les noms des joueurs pour un set spécifique.
+        
+        Analyse seulement les frames dans la période temporelle du set.
+        
+        Args:
+            set_data: Données du set avec _raw_start_time et _raw_end_time
+            
+        Returns:
+            Dict avec 'player1' et 'player2'
+        """
+        # Récupérer la période temporelle du set
+        set_start = set_data['_raw_start_time']
+        set_end = set_data['_raw_end_time']
+        
+        # Ajouter une petite marge pour capturer les frames du set
+        from datetime import timedelta
+        set_start_with_margin = set_start - timedelta(seconds=30)
+        set_end_with_margin = set_end + timedelta(seconds=30)
+        
+        # Collecter les noms de joueurs depuis les frames validées dans cette période
+        player1_counts = {}
+        player2_counts = {}
+        frames_analyzed = 0
+        
+        # Utiliser seulement les frames validées dans la période du set
+        validated_frames = getattr(self, 'current_validated_frames', [])
+        
+        for frame_data in validated_frames:
+            # Vérifier si la frame est dans la période du set
+            frame_timestamp_str = frame_data.get('timestamp_str', frame_data.get('timestamp', ''))
+            frame_timestamp = self._parse_timestamp(frame_timestamp_str)
+            
+            if set_start_with_margin <= frame_timestamp <= set_end_with_margin:
+                frames_analyzed += 1
+                player1_name = frame_data.get('player1', '').strip()
+                player2_name = frame_data.get('player2', '').strip()
+                
+                if player1_name:
+                    player1_counts[player1_name] = player1_counts.get(player1_name, 0) + 1
+                if player2_name:
+                    player2_counts[player2_name] = player2_counts.get(player2_name, 0) + 1
+        
+        # Prendre les noms les plus fréquents
+        player1 = max(player1_counts.items(), key=lambda x: x[1])[0] if player1_counts else ''
+        player2 = max(player2_counts.items(), key=lambda x: x[1])[0] if player2_counts else ''
+        
+        return {
+            'player1': player1,
+            'player2': player2
+        }
+    
+    def _should_separate_matches(self, prev_set: Dict, curr_set: Dict, 
+                               gap_seconds: float, prev_players: Dict, curr_players: Dict) -> bool:
+        if not self._both_players_detected(prev_players, curr_players):
+            return self._has_temporal_gap(gap_seconds)
+        
+        return self._has_temporal_gap(gap_seconds) or self._players_changed(prev_players, curr_players)
+    
+    def _both_players_detected(self, prev_players: Dict, curr_players: Dict) -> bool:
+        return (self._players_valid(prev_players) and self._players_valid(curr_players))
+    
+    def _players_valid(self, players: Dict) -> bool:
+        return bool(players['player1'].strip() and players['player2'].strip())
+    
+    def _has_temporal_gap(self, gap_seconds: float) -> bool:
+        return gap_seconds >= self.min_match_gap
+    
+    def _players_changed(self, prev_players: Dict, curr_players: Dict) -> bool:
+        return (prev_players['player1'] != curr_players['player1'] or 
+                prev_players['player2'] != curr_players['player2'])
+    
+    def _calculate_gap_seconds(self, prev_set: Dict, curr_set: Dict) -> float:
+        return (curr_set['_raw_start_time'] - prev_set['_raw_end_time']).total_seconds()
     
     def _determine_match_winner(self, sets: List[Dict]) -> Optional[str]:
         """

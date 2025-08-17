@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Todo List
+
+Keep track of ideas and improvements to implement:
+
+- [ ] Create PlayerProvider class to read players.json and fetch player data from URLs
+- [ ] Integrate PlayerProvider with TextValidator for player name validation
+- [ ] Add support for multiple video resolutions and UI scaling
+- [ ] Optimize OCR performance for real-time analysis
+- [ ] Add match statistics export (win rates, character usage, etc.)
+- [ ] Implement automated round winner detection
+- [ ] Add support for tournament bracket tracking
+- [ ] Create web interface for match analysis visualization
+- [ ] Add support for other fighting games (Tekken, Mortal Kombat)
+
+*Note: When an item is completed, remove it from this list. Add new ideas as they come up.*
+
 ## Project Overview
 
 This is a **Street Fighter 6 replay analysis tool** that extracts game data from video replays using computer vision and OCR. The system can analyze match videos to detect:
@@ -578,6 +594,92 @@ git rebase -i HEAD~3
 - **Bug fixes**: `fix/ocr-character-detection`  
 - **Docs**: `docs/update-sf6-business-rules`
 - **Refactor**: `refactor/extract-frame-analysis`
+
+### Pre-Commit Requirements
+
+**CRITICAL: Before committing, ALWAYS follow this procedure:**
+
+1. **Code Quality Analysis - Run AST Analysis Script:**
+```bash
+# Run this in container to detect unused imports and variables
+docker compose exec backend python -c "
+import ast
+import os
+from typing import Set, List
+
+def analyze_file(filepath: str):
+    print(f'\\n=== Analyse de {filepath} ===')
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            source = f.read()
+        
+        tree = ast.parse(source)
+        
+        # Variables définies vs utilisées
+        defined_vars = set()
+        used_vars = set()
+        imported_modules = set()
+        used_modules = set()
+        
+        # Parcourir l'AST
+        for node in ast.walk(tree):
+            # Imports
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imported_modules.add(alias.name)
+            elif isinstance(node, ast.ImportFrom):
+                for alias in node.names:
+                    if alias.name != '*':
+                        imported_modules.add(alias.name)
+            
+            # Variables assignées
+            elif isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        defined_vars.add(target.id)
+            
+            # Variables utilisées
+            elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+                used_vars.add(node.id)
+            
+            # Modules utilisés (attributs)
+            elif isinstance(node, ast.Attribute):
+                if isinstance(node.value, ast.Name):
+                    used_modules.add(node.value.id)
+        
+        # Chercher imports non utilisés
+        unused_imports = imported_modules - used_modules - used_vars
+        if unused_imports:
+            for imp in unused_imports:
+                print(f'  ⚠️  Import non utilisé: {imp}')
+        
+        # Chercher variables non utilisées (sauf celles qui commencent par _)
+        unused_vars = defined_vars - used_vars
+        unused_vars = {v for v in unused_vars if not v.startswith('_')}
+        if unused_vars:
+            for var in unused_vars:
+                print(f'  ⚠️  Variable non utilisée: {var}')
+        
+        if not unused_imports and not unused_vars:
+            print('  ✅ Aucun problème détecté')
+            
+    except Exception as e:
+        print(f'  ❌ Erreur: {str(e)}')
+
+# Analyser tous les fichiers Python
+import glob
+python_files = glob.glob('src/*.py') + glob.glob('*.py')
+for file in python_files:
+    if os.path.exists(file):
+        analyze_file(file)
+"
+```
+
+2. **Fix Issues:** Correct any unused imports or variables detected by the script
+
+3. **Run Tests:** Test the classes that were impacted by the code cleaning
+
+4. **Git Operations:** Proceed with standard git workflow
 
 ### Commit Attribution
 All commits should include proper attribution:
