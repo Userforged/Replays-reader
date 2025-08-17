@@ -8,15 +8,24 @@ from typing import List, Dict
 class PlayerProvider:
     """Provides SF6 player names from API sources with local caching."""
     
-    def __init__(self, config_file: str = "players.json"):
+    def __init__(self, database_file: str = "players.json", restricted_file: str = None):
         """
-        Initialize PlayerProvider with configuration file.
+        Initialize PlayerProvider with player database and optional restricted list.
         
         Args:
-            config_file: Path to players.json configuration file
+            database_file: Path to full player database (players.json with API config)
+            restricted_file: Path to restricted player list (e.g., evo_players.json) - OPTIONAL
+                           If provided, PlayerProvider will ONLY work with these players
         """
-        self.config_file = config_file
+        self.config_file = database_file
+        self.restricted_file = restricted_file
         self.config = self._load_config()
+        
+        # Build final player list: database + restricted fusion
+        self._final_player_list = self._build_final_player_list()
+        
+        # Build final player data (with character info) for restricted players
+        self._final_player_data = self._build_final_player_data()
         
     def _load_config(self) -> Dict:
         """Load configuration from players.json file."""
@@ -38,6 +47,111 @@ class PlayerProvider:
             raise FileNotFoundError(f"Player configuration file '{self.config_file}' not found")
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in config file '{self.config_file}': {e}")
+    
+    def _build_final_player_list(self) -> List[str]:
+        """
+        Build the final player list that this PlayerProvider will work with.
+        
+        If restricted_file is provided: ONLY use players from restricted list
+        If restricted_file is None: use full database list
+        
+        Returns:
+            List[str]: Final list of player names (NEVER exposes full database if restricted)
+        """
+        if not self.restricted_file:
+            # No restriction: use full database (API + cached players)
+            return self._get_full_database_players()
+        
+        # Restriction mode: ONLY use restricted players
+        try:
+            with open(self.restricted_file, 'r', encoding='utf-8') as f:
+                restricted_data = json.load(f)
+            
+            # Extract player names from different possible structures
+            restricted_players = []
+            
+            # Handle evo_players.json structure: {"players": [...], "static_players": [...]}
+            if 'players' in restricted_data:
+                for player in restricted_data['players']:
+                    if isinstance(player, dict) and 'name' in player:
+                        restricted_players.append(player['name'])
+                    elif isinstance(player, str):
+                        restricted_players.append(player)
+            
+            if 'static_players' in restricted_data:
+                restricted_players.extend(restricted_data['static_players'])
+            
+            # Handle simple list structure: {"player_names": [...]}
+            if 'player_names' in restricted_data:
+                restricted_players.extend(restricted_data['player_names'])
+            
+            # Handle direct list structure: [...]
+            if isinstance(restricted_data, list):
+                restricted_players.extend(restricted_data)
+            
+            if not restricted_players:
+                raise ValueError(f"No players found in restricted file: {self.restricted_file}")
+            
+            print(f"[PlayerProvider] 🔒 Restricted mode: {len(restricted_players)} players only")
+            return list(set(restricted_players))  # Remove duplicates
+            
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Restricted player file not found: {self.restricted_file}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in restricted file '{self.restricted_file}': {e}")
+    
+    def _get_full_database_players(self) -> List[str]:
+        """Get all players from the full database (used when no restriction)."""
+        # Get cached players + API players
+        all_names = []
+        
+        # Add cached players from config (extract names from dict objects)
+        cached_players = self.config.get('players', [])
+        for player in cached_players:
+            if isinstance(player, dict):
+                # Add all name variations
+                if player.get('name'):
+                    all_names.append(player['name'])
+                if player.get('shortName'):
+                    all_names.append(player['shortName'])
+                if player.get('originalName'):
+                    all_names.append(player['originalName'])
+            elif isinstance(player, str):
+                # Backward compatibility
+                all_names.append(player)
+        
+        # Add static players
+        static_players = self.config.get('static_players', [])
+        for player in static_players:
+            if isinstance(player, str):
+                all_names.append(player)
+        
+        # Remove duplicates and empty strings
+        unique_names = list(set([name.strip() for name in all_names if name and name.strip()]))
+        return sorted(unique_names)
+    
+    def _build_final_player_data(self) -> List[Dict]:
+        """
+        Build final player data (with character info) for only the final player list.
+        
+        Returns:
+            List[Dict]: Player data objects for only the restricted players
+        """
+        if not self.restricted_file:
+            # No restriction: return all player data from database
+            return self.config.get('players', [])
+        
+        # Restriction mode: only return data for restricted players
+        all_player_data = self.config.get('players', [])
+        final_player_data = []
+        
+        for player_data in all_player_data:
+            if isinstance(player_data, dict) and 'name' in player_data:
+                player_name = player_data['name']
+                if player_name in self._final_player_list:
+                    final_player_data.append(player_data)
+        
+        return final_player_data
     
     def _save_config(self):
         """Save configuration back to players.json file."""
@@ -235,47 +349,29 @@ class PlayerProvider:
     
     def get_all_players(self, force_refresh: bool = False) -> List[str]:
         """
-        Get all player names (cached + static).
+        Get all player names from the final restricted list.
+        
+        🔒 IMPORTANT: This method ONLY returns players from the final list.
+        If PlayerProvider was initialized with restricted_file, only those players are returned.
+        The full database is NEVER exposed.
         
         Args:
-            force_refresh: Force refresh from API even if cache is valid
+            force_refresh: Force refresh from API (only applies if no restriction)
             
         Returns:
-            List of all known player names
+            List of player names from final restricted list
         """
-        # Check if we need to refresh cache
+        # If we have a restricted list, ignore force_refresh and return final list
+        if self.restricted_file:
+            return self._final_player_list.copy()  # Return copy to prevent external modification
+        
+        # If no restriction, check cache refresh (full database mode)
         if force_refresh or not self._is_cache_valid():
             self.refresh_cache()
+            # Rebuild final list after refresh
+            self._final_player_list = self._build_final_player_list()
         
-        # Get API players (now objects with name variations)
-        api_players = self.config.get('players', [])
-        static_players = self.config.get('static_players', [])
-        
-        # Extract all name variations from API players
-        all_names = []
-        
-        for player in api_players:
-            if isinstance(player, dict):
-                # Add all available name variations
-                if player.get('name'):
-                    all_names.append(player['name'])
-                if player.get('shortName'):
-                    all_names.append(player['shortName'])
-                if player.get('originalName'):
-                    all_names.append(player['originalName'])
-            elif isinstance(player, str):
-                # Backward compatibility for old format
-                all_names.append(player)
-        
-        # Add static players (should be strings)
-        for player in static_players:
-            if isinstance(player, str):
-                all_names.append(player)
-        
-        # Remove duplicates and empty strings
-        unique_names = list(set([name.strip() for name in all_names if name and name.strip()]))
-        
-        return sorted(unique_names)
+        return self._final_player_list.copy()  # Return copy to prevent external modification
     
     def search_player(self, query: str, threshold: float = 0.6) -> List[str]:
         """
@@ -322,9 +418,8 @@ class PlayerProvider:
         Returns:
             Main character name or empty string if not found
         """
-        api_players = self.config.get('players', [])
-        
-        for player in api_players:
+        # 🔒 ONLY search within final player data (restricted if applicable)
+        for player in self._final_player_data:
             if isinstance(player, dict):
                 # Check all name variations
                 player_names = []
@@ -353,9 +448,9 @@ class PlayerProvider:
             List of player names who main this character
         """
         matching_players = []
-        api_players = self.config.get('players', [])
         
-        for player in api_players:
+        # 🔒 ONLY search within final player data (restricted if applicable)
+        for player in self._final_player_data:
             if isinstance(player, dict):
                 main_char = player.get('mainCharacter', '')
                 if main_char.upper() == character_name.upper():
@@ -384,77 +479,8 @@ class PlayerProvider:
         # Case-insensitive comparison
         return main_character.upper() == character_name.upper()
 
-    def resolve_restricted_players(self, restricted_names: List[str]) -> List[str]:
-        """
-        Résout une liste restreinte de noms vers leurs données complètes avec variations.
-        
-        Args:
-            restricted_names: Liste de noms simples ['MenaRD', 'Kakeru', 'Xiaohai']
-            
-        Returns:
-            Liste enrichie avec toutes les variations trouvées dans la base complète
-        """
-        if not restricted_names:
-            return []
-        
-        print(f"🔍 Résolution de {len(restricted_names)} joueurs restreints...")
-        
-        # Charger la base complète (players.json)
-        full_provider = PlayerProvider('players.json')
-        all_players = full_provider.config.get('players', [])
-        static_players = full_provider.config.get('static_players', [])
-        
-        enriched_names = set()
-        
-        # Pour chaque nom de la liste restreinte
-        for target_name in restricted_names:
-            target_upper = target_name.strip().upper()
-            found = False
-            
-            # Chercher dans les joueurs API avec métadonnées
-            for player in all_players:
-                if isinstance(player, dict):
-                    # Vérifier toutes les variations de nom
-                    variations = []
-                    if player.get('name'):
-                        variations.append(player['name'])
-                    if player.get('shortName'):
-                        variations.append(player['shortName'])
-                    if player.get('originalName'):
-                        variations.append(player['originalName'])
-                    
-                    # Chercher correspondance (case insensitive)
-                    for variation in variations:
-                        if variation.strip().upper() == target_upper:
-                            # Ajouter toutes les variations de ce joueur
-                            for var in variations:
-                                if var.strip():
-                                    enriched_names.add(var.strip())
-                            found = True
-                            print(f"  ✅ {target_name} → {len(variations)} variations")
-                            break
-                    
-                    if found:
-                        break
-            
-            # Chercher dans les joueurs statiques
-            if not found:
-                for static_player in static_players:
-                    if isinstance(static_player, str) and static_player.strip().upper() == target_upper:
-                        enriched_names.add(static_player.strip())
-                        found = True
-                        print(f"  ✅ {target_name} → trouvé dans static_players")
-                        break
-            
-            # Si pas trouvé, ajouter tel quel
-            if not found:
-                enriched_names.add(target_name.strip())
-                print(f"  ⚠️ {target_name} → ajouté tel quel (non trouvé dans la base)")
-        
-        result = sorted(list(enriched_names))
-        print(f"📋 Résolution terminée: {len(restricted_names)} → {len(result)} noms enrichis")
-        
-        return result
+    # 🗑️ OBSOLETE: resolve_restricted_players() - remplacée par le nouveau design
+    # La restriction est maintenant gérée directement dans le constructeur
     
     def get_cache_info(self) -> Dict:
         """Get information about the current cache."""

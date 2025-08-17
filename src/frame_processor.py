@@ -169,7 +169,7 @@ class FrameProcessor:
         for frame in timer_character_frames:
             enhanced_frame = frame.copy()
             
-            # Valider player1 avec contexte character1
+            # Valider player1 avec contexte character1 (restriction déjà dans PlayerProvider)
             if 'player1' in frame:
                 char1 = frame.get('character1', '')
                 enhanced_frame['player1'] = self.text_validator.validate_player(
@@ -177,7 +177,7 @@ class FrameProcessor:
                     context_character=char1
                 )
             
-            # Valider player2 avec contexte character2  
+            # Valider player2 avec contexte character2 (restriction déjà dans PlayerProvider)
             if 'player2' in frame:
                 char2 = frame.get('character2', '')
                 enhanced_frame['player2'] = self.text_validator.validate_player(

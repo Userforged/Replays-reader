@@ -7,6 +7,15 @@ le début des matches et rounds basé sur l'évolution des valeurs de timer.
 
 Usage:
     python deduct.py input_results.json [--output output.json] [--debug]
+    python deduct.py input_results.json --player-list evo_players.json
+    python deduct.py input_results.json --min-round-duration 90 --timer-tolerance 0.4
+
+Options principales:
+    --player-list FILE    Fichier JSON avec liste restreinte de joueurs pour améliorer la précision
+    --debug              Mode debug avec logs détaillés  
+    --min-round-duration Durée minimum d'un round en secondes (défaut: 120)
+    --min-match-gap      Gap minimum entre matches en secondes (défaut: 120)
+    --timer-tolerance    Tolérance pour timer manquant 0.0-1.0 (défaut: 0.3)
 """
 
 import json

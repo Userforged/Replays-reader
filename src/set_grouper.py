@@ -168,12 +168,17 @@ class SetGrouper:
         # Calculer confiance moyenne
         avg_confidence = sum(r.get('confidence', 0.5) for r in rounds) / len(rounds)
         
+        # Extraire les noms de joueurs les plus fréquents dans ce set
+        player_info = self._extract_dominant_players(rounds)
+        
         return {
             'start_time': start_time,
             'end_time': end_time,
             'duration_seconds': duration,
             'character1': characters['character1'],
             'character2': characters['character2'],
+            'player1': player_info['player1'],
+            'player2': player_info['player2'],
             'rounds_count': len(rounds),
             'rounds': sorted_rounds,
             'confidence': avg_confidence,
@@ -212,6 +217,48 @@ class SetGrouper:
         
         # Moyenne pondérée
         return (char1_consistency + char2_consistency) / 2.0
+    
+    def _extract_dominant_players(self, rounds: List[Dict]) -> Dict[str, str]:
+        """
+        Extrait les noms de joueurs dominants d'un set basé sur les frames de détection.
+        
+        Args:
+            rounds: Liste des rounds du set
+            
+        Returns:
+            Dict avec player1 et player2 dominants
+        """
+        player1_counts = {}
+        player2_counts = {}
+        
+        # Compter les occurrences de chaque joueur
+        for round_data in rounds:
+            detection_frame = round_data.get('detection_frame', {})
+            p1 = detection_frame.get('player1', '').strip()
+            p2 = detection_frame.get('player2', '').strip()
+            
+            if p1:
+                player1_counts[p1] = player1_counts.get(p1, 0) + 1
+            if p2:
+                player2_counts[p2] = player2_counts.get(p2, 0) + 1
+        
+        # Debug: afficher les comptages si debug activé
+        if hasattr(self, 'debug') and self.debug:
+            print(f"[SetGrouper] 🔍 _extract_dominant_players:")
+            print(f"  Player1 counts: {player1_counts}")
+            print(f"  Player2 counts: {player2_counts}")
+        
+        # Trouver les joueurs dominants
+        dominant_player1 = max(player1_counts.items(), key=lambda x: x[1])[0] if player1_counts else ''
+        dominant_player2 = max(player2_counts.items(), key=lambda x: x[1])[0] if player2_counts else ''
+        
+        if hasattr(self, 'debug') and self.debug:
+            print(f"  Dominant: '{dominant_player1}' vs '{dominant_player2}'")
+        
+        return {
+            'player1': dominant_player1,
+            'player2': dominant_player2
+        }
     
     def _validate_and_enrich_sets(self, sets: List[Dict]) -> List[Dict]:
         """

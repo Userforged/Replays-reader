@@ -6,7 +6,6 @@ Version refactorisée utilisant le pipeline Characters First avec composants sp�
 
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Any
-import json
 from .text_validator import TextValidator
 from .frame_processor import FrameProcessor
 from .round_detector import RoundDetector
@@ -48,30 +47,27 @@ class MatchDeductor:
         """
         self.debug = debug
         
-        # Gérer la liste restreinte de joueurs si fournie
+        # 🔒 Nouveau design: la restriction est gérée directement par PlayerProvider
         resolved_players = None
-        if restricted_players_file:
-            resolved_players = self._resolve_restricted_players(restricted_players_file)
-            if self.debug:
-                print(f"[MatchDeductor] Liste restreinte résolue: {len(resolved_players)} joueurs")
+        if restricted_players_file and self.debug:
+            print(f"[MatchDeductor] Utilisation de la liste restreinte: {restricted_players_file}")
         
-        # Initialiser le validateur de texte avec support des joueurs
+        # Initialiser le validateur de texte avec support des joueurs restreints
         self.text_validator = TextValidator(
             characters_file=characters_file, 
-            players_config_file=players_config_file,
+            players_database_file=players_config_file,
+            restricted_players_file=restricted_players_file,
             debug=debug
         )
         
-        # Si on a des joueurs restreints, les stocker pour usage ultérieur
-        if resolved_players:
-            self.restricted_players = resolved_players
-            if self.debug:
-                print(f"[MatchDeductor] Utilisation de {len(resolved_players)} joueurs restreints")
-        else:
-            self.restricted_players = None
+        # Stocker la liste restreinte pour usage ultérieur (si fournie)
+        self.restricted_players = resolved_players
         
         # Initialiser les composants spécialisés
-        self.frame_processor = FrameProcessor(self.text_validator, debug=debug)
+        self.frame_processor = FrameProcessor(
+            self.text_validator, 
+            debug=debug
+        )
         self.round_detector = RoundDetector(
             min_round_duration=min_round_duration_seconds,
             timer_tolerance=timer_tolerance_ratio,
@@ -468,71 +464,9 @@ class MatchDeductor:
             self._log_debug(f"⚠️ Erreur parsing timestamp '{timestamp_str}': {e}")
             return datetime.min
     
-    def _resolve_restricted_players(self, restricted_file: str) -> List[str]:
-        """
-        Résout une liste restreinte de joueurs depuis un fichier.
-        
-        Args:
-            restricted_file: Chemin vers le fichier de joueurs restreints
-            
-        Returns:
-            Liste enrichie des noms de joueurs
-        """
-        try:
-            # Charger le fichier restreint
-            with open(restricted_file, 'r', encoding='utf-8') as f:
-                restricted_data = json.load(f)
-            
-            # Extraire les noms des joueurs
-            restricted_names = self._extract_player_names_from_data(restricted_data)
-            
-            if not restricted_names:
-                if self.debug:
-                    print(f"[MatchDeductor] Aucun joueur trouvé dans {restricted_file}")
-                return []
-            
-            # Utiliser PlayerProvider pour résoudre les noms
-            from .player_provider import PlayerProvider
-            full_provider = PlayerProvider('players.json')
-            resolved_names = full_provider.resolve_restricted_players(restricted_names)
-            
-            if self.debug:
-                print(f"[MatchDeductor] Résolution: {len(restricted_names)} → {len(resolved_names)} noms")
-            
-            return resolved_names
-            
-        except Exception as e:
-            if self.debug:
-                print(f"[MatchDeductor] Erreur résolution joueurs restreints: {e}")
-            return []
-    
-    def _extract_player_names_from_data(self, restricted_data: Dict) -> List[str]:
-        """
-        Extrait les noms de joueurs depuis les données JSON.
-        
-        Args:
-            restricted_data: Données JSON du fichier restreint
-            
-        Returns:
-            Liste des noms de joueurs extraits
-        """
-        restricted_names = []
-        
-        # Gérer différents formats de fichier
-        if 'players' in restricted_data:
-            for player in restricted_data['players']:
-                if isinstance(player, dict) and 'name' in player:
-                    restricted_names.append(player['name'])
-                elif isinstance(player, str):
-                    restricted_names.append(player)
-        
-        if 'static_players' in restricted_data:
-            for player in restricted_data['static_players']:
-                if isinstance(player, str):
-                    restricted_names.append(player)
-        
-        return restricted_names
-    
+    # 🗑️ OBSOLETE: _resolve_restricted_players() et _extract_player_names_from_data()
+    # Ces méthodes sont remplacées par le nouveau design de PlayerProvider qui gère
+    # la restriction directement dans son constructeur.
     def _log_debug(self, message: str):
         """Log message si debug activé."""
         if self.debug:

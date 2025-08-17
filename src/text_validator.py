@@ -35,17 +35,21 @@ class TextValidator:
     """
 
     def __init__(self, characters_file: str = "characters.json", 
-                 players_config_file: str = "players.json", debug: bool = False):
+                 players_database_file: str = "players.json", 
+                 restricted_players_file: str = None,
+                 debug: bool = False):
         """
         Initialise le validateur avec la base de données des personnages et joueurs.
 
         Args:
             characters_file: Chemin vers le fichier JSON des personnages SF6
-            players_config_file: Chemin vers le fichier JSON de configuration des joueurs
+            players_database_file: Chemin vers le fichier JSON de la base de données des joueurs
+            restricted_players_file: Chemin vers le fichier JSON de la liste restreinte (optionnel)
             debug: Mode debug pour logs détaillés
         """
         self.characters_file = characters_file
-        self.players_config_file = players_config_file
+        self.players_database_file = players_database_file
+        self.restricted_players_file = restricted_players_file
         self.debug = debug
 
         # Charger les données de référence
@@ -115,12 +119,16 @@ class TextValidator:
             return None
         
         try:
-            if not os.path.exists(self.players_config_file):
+            if not os.path.exists(self.players_database_file):
                 if self.debug:
-                    print(f"[TextValidator] ⚠️ Players config file not found: {self.players_config_file}")
+                    print(f"[TextValidator] ⚠️ Players database file not found: {self.players_database_file}")
                 return None
             
-            player_provider = PlayerProvider(self.players_config_file)
+            # 🔒 Nouveau design: PlayerProvider avec restriction dès le constructeur
+            player_provider = PlayerProvider(
+                database_file=self.players_database_file, 
+                restricted_file=self.restricted_players_file
+            )
             
             if self.debug:
                 cache_info = player_provider.get_cache_info()
@@ -134,54 +142,44 @@ class TextValidator:
                 print(f"[TextValidator] ❌ Error initializing PlayerProvider: {e}")
             return None
 
-    def validate_timer(self, raw_text: str, expected_values: Optional[List[str]] = None) -> str:
+    def validate_timer(self, raw_text: str) -> str:
         """
         Valide et nettoie un texte de timer OCR.
 
         Args:
             raw_text: Texte brut de l'OCR (ex: "Timer: 45", "4S", "99")
-            expected_values: Liste optionnelle des valeurs timer attendues (défaut: 00-99)
 
         Returns:
             Timer validé au format "XX" ou chaîne vide si invalide
         """
-        # Utiliser les valeurs par défaut si non fournies
-        timer_values = expected_values if expected_values is not None else self.timer_values
-        
         # Déléguer à l'API générique avec extraction de chiffres activée
-        return self.validate_text(raw_text, expected_values=timer_values, 
+        return self.validate_text(raw_text, expected_values=self.timer_values, 
                                 fuzzy_score_threshold=70, extract_digits=True)
 
-    def validate_character(self, raw_text: str, expected_values: Optional[List[str]] = None) -> str:
+    def validate_character(self, raw_text: str) -> str:
         """
         Valide et nettoie un nom de personnage OCR.
 
         Args:
             raw_text: Texte brut de l'OCR (ex: "RYUU", "chunli", "M.BISON")
-            expected_values: Liste optionnelle des noms de personnages attendus (défaut: characters.json)
 
         Returns:
             Nom de personnage validé ou chaîne vide si invalide
         """
-        # Utiliser les valeurs par défaut si non fournies
-        character_values = expected_values if expected_values is not None else self.character_names
-        
         # Si pas de contraintes du tout, retourner texte nettoyé
-        if not character_values:
+        if not self.character_names:
             return self._clean_character_name(raw_text)
         
         # Déléguer à l'API générique
-        return self.validate_text(raw_text, expected_values=character_values, 
+        return self.validate_text(raw_text, expected_values=self.character_names, 
                                 fuzzy_score_threshold=60, extract_digits=False)
     
-    def validate_player(self, raw_text: str, expected_values: Optional[List[str]] = None, 
-                       threshold: float = 0.5, context_character: str = "") -> str:
+    def validate_player(self, raw_text: str, threshold: float = 0.5, context_character: str = "") -> str:
         """
         Valide et nettoie un nom de joueur OCR en utilisant PlayerProvider.
 
         Args:
             raw_text: Texte brut de l'OCR (ex: "DAIGO", "JUSTIN WONG", "801 STRIDER")
-            expected_values: Liste optionnelle des noms de joueurs attendus (défaut: PlayerProvider)
             threshold: Seuil pour correspondance floue (0.0-1.0)
             context_character: Personnage joué pour validation croisée (optionnel)
 
@@ -191,10 +189,9 @@ class TextValidator:
         if not raw_text or not raw_text.strip():
             return ""
         
-        # Utiliser les valeurs fournies ou PlayerProvider
-        if expected_values is not None:
-            player_values = expected_values
-        elif self.player_provider:
+        # Utiliser PlayerProvider pour obtenir la liste de joueurs
+        player_values = None
+        if self.player_provider:
             try:
                 player_values = self.player_provider.get_all_players()
             except Exception as e:
@@ -238,19 +235,72 @@ class TextValidator:
             if original == cleaned_text:  # Plus de changements
                 break
         
-        # Remove common tournament/sponsor/team prefixes
+        # Remove common tournament/sponsor/team prefixes (comprehensive cleaning)
         sponsor_prefixes = [
             'REJECT', 'REJECTZ', 'TEAM ', 'SQUAD ', 
             'ZETA', 'TSM ', 'RB ', 'RED BULL ', 'REDBULL',
             'FGC ', 'FCG ', 'UYU ', 'RISE ', 'LIQUID',
-            'FNATIC', 'PANDA ', 'ECHO FOX', 'ECHOFOX'
+            'FNATIC', 'PANDA ', 'ECHO FOX', 'ECHOFOX',
+            'WBG ', 'WBG', 'OG ', 'OG', 'NIP', 'NO NIP',
+            'C) ', '(', ')', 'GRAND', 'FINALS',
+            'CN ', 'CN', 'JP ', 'JP', 'KR ', 'KR', 'US ', 'US',  # Country codes
+            'NO ', 'NO', 'DO ', 'DO', 'HK ', 'HK', 'JO ', 'JO',   # More countries
+            'KSG', 'KSG '  # Sponsor prefix for XiaoHai (like "CN KSGXIAOHAI")
         ]
         
-        for prefix in sponsor_prefixes:
-            if cleaned_text.upper().startswith(prefix.upper()):
-                remaining = cleaned_text[len(prefix):].strip()
-                if remaining:  # Only use if something remains
-                    cleaned_text = remaining
+        # Multiple pass cleaning for complex OCR artifacts
+        for _ in range(3):  # Max 3 passes
+            original = cleaned_text
+            
+            # Clean sponsor prefixes
+            for prefix in sponsor_prefixes:
+                if cleaned_text.upper().startswith(prefix.upper()):
+                    remaining = cleaned_text[len(prefix):].strip()
+                    if remaining:  # Only use if something remains
+                        cleaned_text = remaining
+                    break
+            
+            # Clean mixed patterns like "ZETAKAKERU", "RBMENARD", "NIPPHENOM"  
+            # Extract player name from sponsor+name combinations
+            if len(cleaned_text) > 6:  # Only for longer strings
+                # Pattern: SPONSOR+NAME (like ZETAKAKERU, RBMENARD, NIPPHENOM)
+                # Order matters: specific patterns first, then general ones
+                sponsor_patterns = [
+                    ('NIPPHENOM', 'PHENOM'),  # Special case for "NO NIPPHENOM"
+                    ('RBMENARD', 'MENARD'),   # Special case for "WBG RBMENARD"
+                    ('ZETA', 'ZETA'),
+                    ('RB', 'RB'),  
+                    ('WBG', 'WBG'),
+                    ('TSM', 'TSM'),
+                    ('OG', 'OG'),
+                    ('NIP', 'NIP'),
+                ]
+                
+                for pattern, extraction in sponsor_patterns:
+                    if pattern in cleaned_text.upper():
+                        if pattern in ['NIPPHENOM', 'RBMENARD']:
+                            # Special extraction patterns - these take priority
+                            cleaned_text = extraction
+                            if self.debug:
+                                print(f"[TextValidator] 🔧 Special pattern extraction: '{original}' -> '{cleaned_text}'")
+                            break
+                        elif cleaned_text.upper().startswith(pattern):
+                            candidate = cleaned_text[len(pattern):].strip()
+                            # Check if candidate could be a valid player name (fuzzy match against known players)
+                            if candidate and len(candidate) >= 3:
+                                if self.player_provider:
+                                    try:
+                                        matches = self.player_provider.search_player(candidate, threshold=0.4)
+                                        if matches:
+                                            cleaned_text = candidate
+                                            if self.debug:
+                                                print(f"[TextValidator] 🔧 Sponsor extraction: '{original}' -> '{cleaned_text}' (found {matches[0]})")
+                                            break
+                                    except Exception:
+                                        pass
+            
+            # Stop if no more changes
+            if original == cleaned_text:
                 break
         
         if self.debug:
@@ -283,9 +333,25 @@ class TextValidator:
                 if self.debug:
                     print(f"[TextValidator] ⚠️ Error in character-consistent search: {e}")
 
-        # 3. Correspondance floue avec PlayerProvider (tous joueurs)
+        # 3. Correspondance floue avec rapidfuzz (liste restreinte PRIORITAIRE)
         all_player_matches = []
-        if self.player_provider:
+        fuzzy_threshold = int(threshold * 100)
+        
+        # Create uppercase versions for case-insensitive matching
+        cleaned_text_upper = cleaned_text.upper()
+        player_values_upper = [p.upper() for p in player_values]
+        
+        result = process.extractOne(cleaned_text_upper, player_values_upper, score_cutoff=fuzzy_threshold)
+        if result:
+            # Find the original case version
+            original_index = player_values_upper.index(result[0])
+            original_player = player_values[original_index]
+            all_player_matches.append((original_player, result[1], "rapidfuzz_restricted"))
+            if self.debug:
+                print(f"[TextValidator] ✅ Restricted list match: '{cleaned_text}' -> '{original_player}' (score: {result[1]:.1f})")
+        
+        # 4. Correspondance floue avec PlayerProvider (tous joueurs) - SEULEMENT si pas de match restreint
+        if not all_player_matches and self.player_provider:
             try:
                 matches = self.player_provider.search_player(cleaned_text, threshold=threshold)
                 if matches:
@@ -293,17 +359,50 @@ class TextValidator:
                     fuzzy_result = process.extractOne(cleaned_text, [matches[0]], score_cutoff=int(threshold * 100))
                     if fuzzy_result:
                         all_player_matches.append((matches[0], fuzzy_result[1], "provider_fuzzy"))
+                        if self.debug:
+                            print(f"[TextValidator] ✅ Full database match: '{cleaned_text}' -> '{matches[0]}' (score: {fuzzy_result[1]:.1f})")
             except Exception as e:
                 if self.debug:
                     print(f"[TextValidator] ⚠️ Error in player fuzzy search: {e}")
         
-        # 4. Correspondance floue avec rapidfuzz (tous joueurs)
-        fuzzy_threshold = int(threshold * 100)
-        result = process.extractOne(cleaned_text, player_values, score_cutoff=fuzzy_threshold)
-        if result:
-            all_player_matches.append((result[0], result[1], "rapidfuzz"))
+        # 5. Enhanced fuzzy matching for partial names (OCR artifacts)
+        if not all_player_matches and len(cleaned_text) >= 3:
+            # Try matching against partial player names (substring matching)
+            partial_matches = []
+            for player in player_values:
+                player_upper = player.upper()
+                text_upper = cleaned_text.upper()
+                
+                # Check if cleaned text is contained in player name or vice versa
+                if text_upper in player_upper or player_upper in text_upper:
+                    # Calculate similarity score manually
+                    similarity = max(len(text_upper) / len(player_upper), len(player_upper) / len(text_upper)) * 100
+                    if similarity >= 40:  # Lower threshold for partial matches
+                        partial_matches.append((player, similarity, "partial"))
+            
+            if partial_matches:
+                # Take best partial match
+                best_partial = max(partial_matches, key=lambda x: x[1])
+                all_player_matches.append(best_partial)
+                if self.debug:
+                    print(f"[TextValidator] 🎯 Partial name match: '{cleaned_text}' -> '{best_partial[0]}' (score: {best_partial[1]:.1f})")
         
-        # 5. Sélectionner le meilleur match en priorisant la cohérence personnage
+        # 6. Try reverse fuzzy matching (player names against cleaned text)
+        if not all_player_matches and len(cleaned_text) >= 4:
+            # For complex OCR like "ZETAKAKERU", try matching each player against the full string
+            reverse_matches = []
+            for player in player_values:
+                reverse_result = process.extractOne(player, [cleaned_text], score_cutoff=40)
+                if reverse_result:
+                    reverse_matches.append((player, reverse_result[1], "reverse_fuzzy"))
+            
+            if reverse_matches:
+                best_reverse = max(reverse_matches, key=lambda x: x[1])
+                all_player_matches.append(best_reverse)
+                if self.debug:
+                    print(f"[TextValidator] 🔄 Reverse fuzzy match: '{cleaned_text}' -> '{best_reverse[0]}' (score: {best_reverse[1]:.1f})")
+        
+        # 7. Sélectionner le meilleur match en priorisant la cohérence personnage
         all_matches = character_consistent_matches + all_player_matches
         
         if all_matches:
@@ -343,7 +442,7 @@ class TextValidator:
             
             return match_name
         
-        # 6. Rejet - retourner texte original nettoyé
+        # 8. Rejet - retourner texte original nettoyé
         if self.debug:
             print(f"[TextValidator] ❌ Player text rejected: '{raw_text}' (no match in known players)")
         return cleaned_text
@@ -454,17 +553,19 @@ class TextValidator:
                 frame_data["character2"]
             )
         
-        # Valider les noms de joueurs avec contexte des personnages
+        # Valider les noms de joueurs avec contexte des personnages et liste restreinte
         if "player1" in frame_data:
             context_char = validated_frame.get("character1", "")
             validated_frame["player1"] = self.validate_player(
-                frame_data["player1"], context_character=context_char
+                frame_data["player1"], 
+                context_character=context_char
             )
 
         if "player2" in frame_data:
             context_char = validated_frame.get("character2", "")
             validated_frame["player2"] = self.validate_player(
-                frame_data["player2"], context_character=context_char
+                frame_data["player2"], 
+                context_character=context_char
             )
 
         # Préserver les autres champs tels quels (timestamp, etc.)
@@ -557,7 +658,11 @@ class TextValidator:
                         enhanced_frame['player1'] = suggested
                 elif player1:
                     # Re-valider avec contexte personnage pour améliorer la précision
-                    improved = self.validate_player(player1, context_character=char1, threshold=0.4)
+                    improved = self.validate_player(
+                        player1, 
+                        context_character=char1, 
+                        threshold=0.4
+                    )
                     if improved and improved != player1:
                         if self.debug:
                             print(f"[TextValidator] 🔧 Player1 improved: '{player1}' -> '{improved}' (with {char1} context)")
@@ -574,7 +679,11 @@ class TextValidator:
                         print(f"[TextValidator] 💡 Auto-suggestion for {char2}: {suggested}")
                         enhanced_frame['player2'] = suggested
                 elif player2:
-                    improved = self.validate_player(player2, context_character=char2, threshold=0.4)
+                    improved = self.validate_player(
+                        player2, 
+                        context_character=char2, 
+                        threshold=0.4
+                    )
                     if improved and improved != player2:
                         if self.debug:
                             print(f"[TextValidator] 🔧 Player2 improved: '{player2}' -> '{improved}' (with {char2} context)")

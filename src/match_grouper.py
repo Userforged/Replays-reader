@@ -85,6 +85,9 @@ class MatchGrouper:
             # Vérifier cohérence des joueurs
             players_consistent = self._are_players_consistent(current_match_sets, current_set)
             
+            if self.debug:
+                self._log_debug(f"   🔍 Évaluation set à {current_set['start_time'].strftime('%H:%M:%S')}: gap={time_gap:.0f}s, joueurs_ok={players_consistent}")
+            
             # Vérifier règle SF6: les 2 personnages ne peuvent pas changer en même temps
             both_chars_changed = self._both_characters_changed(current_match_sets, current_set)
             
@@ -167,8 +170,13 @@ class MatchGrouper:
         new_player1 = new_set.get('player1', '').strip()
         new_player2 = new_set.get('player2', '').strip()
         
+        if self.debug:
+            self._log_debug(f"   🔍 _are_players_consistent: nouveau set players='{new_player1}' vs '{new_player2}'")
+        
         # Si pas de joueurs détectés dans le nouveau set, accepter (OCR peut échouer)
         if not new_player1 and not new_player2:
+            if self.debug:
+                self._log_debug(f"   → Accepté: pas de joueurs détectés dans nouveau set")
             return True
         
         # Analyser les joueurs des sets existants pour trouver le pattern dominant
@@ -192,20 +200,43 @@ class MatchGrouper:
         dominant_player1 = max(player1_candidates.items(), key=lambda x: x[1])[0] if player1_candidates else ''
         dominant_player2 = max(player2_candidates.items(), key=lambda x: x[1])[0] if player2_candidates else ''
         
-        # Vérifier cohérence
-        # Accepter si au moins un joueur correspond (peut y avoir des erreurs OCR)
-        player1_match = not new_player1 or not dominant_player1 or new_player1 == dominant_player1
-        player2_match = not new_player2 or not dominant_player2 or new_player2 == dominant_player2
+        # Vérifier cohérence stricte des joueurs
+        # Si on a des joueurs détectés, ils DOIVENT correspondre exactement (ordre normal ou inversé)
         
-        # Accepter aussi le cas où les joueurs sont inversés (player1/player2 peuvent être échangés)
-        player1_inverted = not new_player1 or not dominant_player2 or new_player1 == dominant_player2
-        player2_inverted = not new_player2 or not dominant_player1 or new_player2 == dominant_player1
+        # Ordre normal: player1 nouveau = player1 dominant ET player2 nouveau = player2 dominant
+        normal_order = False
+        if new_player1 and new_player2 and dominant_player1 and dominant_player2:
+            normal_order = (new_player1 == dominant_player1 and new_player2 == dominant_player2)
         
-        # Cohérent si ordre normal OU ordre inversé
-        normal_order = player1_match and player2_match
-        inverted_order = player1_inverted and player2_inverted
+        # Ordre inversé: player1 nouveau = player2 dominant ET player2 nouveau = player1 dominant
+        inverted_order = False
+        if new_player1 and new_player2 and dominant_player1 and dominant_player2:
+            inverted_order = (new_player1 == dominant_player2 and new_player2 == dominant_player1)
         
-        is_consistent = normal_order or inverted_order
+        # Cas partiels avec OCR manquant (plus permissif mais contrôlé)
+        partial_match = False
+        if (not new_player1 or not new_player2) and (dominant_player1 or dominant_player2):
+            # Autoriser seulement si on a au moins un match exact et pas de conflit
+            if new_player1 and dominant_player1:
+                partial_match = (new_player1 == dominant_player1) and not (new_player2 and dominant_player2 and new_player2 != dominant_player2)
+            elif new_player1 and dominant_player2:
+                partial_match = (new_player1 == dominant_player2) and not (new_player2 and dominant_player1 and new_player2 != dominant_player1)
+            elif new_player2 and dominant_player1:
+                partial_match = (new_player2 == dominant_player1) and not (new_player1 and dominant_player2 and new_player1 != dominant_player2)
+            elif new_player2 and dominant_player2:
+                partial_match = (new_player2 == dominant_player2) and not (new_player1 and dominant_player1 and new_player1 != dominant_player1)
+        
+        # Un set est cohérent si :
+        # 1. Les joueurs correspondent exactement (ordre normal ou inversé) OU
+        # 2. OCR partiel mais sans conflit avec les joueurs connus
+        is_consistent = normal_order or inverted_order or partial_match
+        
+        if self.debug:
+            self._log_debug(f"   🔍 Analyse cohérence joueurs:")
+            self._log_debug(f"      Dominant: '{dominant_player1}' vs '{dominant_player2}'")
+            self._log_debug(f"      Nouveau:  '{new_player1}' vs '{new_player2}'")
+            self._log_debug(f"      Normal order: {normal_order}, Inverted: {inverted_order}, Partial: {partial_match}")
+            self._log_debug(f"      Résultat: {'cohérent' if is_consistent else 'incohérent'}")
         
         if not is_consistent:
             self._log_debug(f"   ⚠️ Joueurs incohérents: match={dominant_player1} vs {dominant_player2}, "
