@@ -6,8 +6,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Keep track of ideas and improvements to implement:
 
-- [ ] Create PlayerProvider class to read players.json and fetch player data from URLs
-- [ ] Integrate PlayerProvider with TextValidator for player name validation
+### Current Priority: MatchDeductor Refactoring
+
+**Feuille de route de refactorisation MatchDeductor** :
+
+1. **[x] Commit current changes** (validation probabiliste joueur-personnage)
+2. **[x] Create new branch** "match-deductor-refacto" 
+3. **[x] Refactor MatchDeductor** avec pattern "Pipeline with Feedback Loops"
+   - ✅ Phase 1: Character Detection (highest confidence)
+   - ✅ Phase 2: Timer Refinement (with character context)  
+   - ✅ Phase 3: Player Detection (with character+timer context)
+   - ✅ Phase 4: Match Deduction (with all contexts)
+4. **[x] Prioriser la détection des personnages** (données les plus fiables)
+   - ✅ Characters = highest confidence data 
+   - ✅ Détectés en PREMIER pour guider timer et players
+5. **[x] Organiser en méthodes phases claires** avec refinement
+   - ✅ 4 phases distinctes avec feedback loops
+   - ✅ Enhanced methods avec contexte personnage
+   - ✅ Statistiques détaillées par phase
+6. **[x] Maintenir la logique holistique** mais avec structure lisible
+   - ✅ Pipeline orchestré mais interdépendances préservées
+
+**Principe clé** : Les personnages ont la plus haute confiance et doivent guider la déduction des autres éléments.
+
+### Future Improvements
+
 - [ ] Add support for multiple video resolutions and UI scaling
 - [ ] Optimize OCR performance for real-time analysis
 - [ ] Add match statistics export (win rates, character usage, etc.)

@@ -54,7 +54,13 @@ class MatchDeductor:
         
     def analyze_frames(self, frames_data: List[Dict]) -> Dict:
         """
-        Analyse les données de frames pour détecter matches, sets et rounds.
+        Analyse les données de frames selon pipeline priorité Characters First.
+        
+        Pipeline with Feedback Loops:
+        Phase 1: Character detection (highest confidence)
+        Phase 2: Timer refinement (with character context)
+        Phase 3: Player detection (with character+timer context)
+        Phase 4: Match deduction (with all contexts)
         
         Args:
             frames_data: Liste des frames avec timestamps et données OCR (brut)
@@ -65,44 +71,113 @@ class MatchDeductor:
         if not frames_data:
             return {"matches": [], "stats": {}}
             
-        self._log_debug(f"Analyse de {len(frames_data)} frames")
+        self._log_debug(f"🚀 Pipeline Analysis: {len(frames_data)} frames")
+        
+        # ============= PHASE 1: CHARACTER DETECTION (HIGHEST CONFIDENCE) =============
+        self._log_debug("📋 Phase 1: Character Detection (highest confidence)")
+        character_enhanced_frames = self._phase1_character_detection(frames_data)
+        
+        # ============= PHASE 2: TIMER REFINEMENT (WITH CHARACTER CONTEXT) =============
+        self._log_debug("⏱️  Phase 2: Timer Refinement (with character context)")
+        timer_enhanced_frames = self._phase2_timer_refinement(character_enhanced_frames)
+        
+        # ============= PHASE 3: PLAYER DETECTION (WITH CHARACTER+TIMER CONTEXT) =============
+        self._log_debug("👤 Phase 3: Player Detection (with character+timer context)")
+        player_enhanced_frames = self._phase3_player_detection(timer_enhanced_frames)
+        
+        # ============= PHASE 4: MATCH DEDUCTION (WITH ALL CONTEXTS) =============
+        self._log_debug("🎮 Phase 4: Match Deduction (with all contexts)")
+        final_results = self._phase4_match_deduction(player_enhanced_frames, frames_data)
+        
+        return final_results
+    
+    # ================================================================================================
+    # PIPELINE PHASES: Characters First → Timer → Players → Matches
+    # ================================================================================================
+    
+    def _phase1_character_detection(self, frames_data: List[Dict]) -> List[Dict]:
+        """
+        Phase 1: Détection et validation des personnages (données les plus fiables).
+        
+        Les personnages ont la plus haute confiance car:
+        - ROI stable et bien définie
+        - Liste fermée de 26 personnages SF6
+        - Peu d'ambiguïté dans la détection OCR
+        
+        Returns:
+            Frames avec personnages validés et interpolés
+        """
+        self._log_debug("  → Interpolation temporelle des personnages...")
         
         # Interpolation temporelle pour corriger les erreurs OCR ponctuelles
-        self._log_debug("Application de l'interpolation temporelle...")
         interpolated_frames = self.text_validator.interpolate_frames_temporal(frames_data)
         
-        # Validation des textes interpolés avec TextValidator
-        validated_frames = self.text_validator.validate_frames_batch(interpolated_frames)
+        # Validation spécifique des personnages (priorité absolue)
+        character_validated_frames = []
+        for frame in interpolated_frames:
+            enhanced_frame = frame.copy()
+            
+            # Valider character1 et character2 avec haute priorité
+            if 'character1' in frame:
+                enhanced_frame['character1'] = self.text_validator.validate_character(frame['character1'])
+            if 'character2' in frame:
+                enhanced_frame['character2'] = self.text_validator.validate_character(frame['character2'])
+            
+            character_validated_frames.append(enhanced_frame)
         
-        # Stocker les frames validées pour accès dans _extract_player_names
-        self.current_validated_frames = validated_frames
+        # Stocker pour usage dans les phases suivantes
+        self.character_validated_frames = character_validated_frames
         
         if self.debug:
-            # Afficher les statistiques de validation
-            validation_stats = self.text_validator.get_validation_stats(frames_data, validated_frames)
-            self._log_debug(f"Validation stats: {validation_stats}")
+            char_stats = self._calculate_character_detection_stats(character_validated_frames)
+            self._log_debug(f"  → Character detection: {char_stats}")
         
-        # Parse et valide les données
-        parsed_frames = self._parse_and_validate_frames(validated_frames)
-        
-        # Détecte les rounds basés sur les patterns de timer SF6
-        detected_rounds = self._detect_timer_sequences(parsed_frames)
-        
-        # Groupe les rounds en sets (même character1 vs character2)
-        sets = self._group_rounds_into_sets(detected_rounds, parsed_frames)
-        
-        # Groupe les sets en matches (même opposition de joueurs)
-        matches = self._group_sets_into_matches(sets)
-        
-        # Génère les statistiques
-        stats = self._generate_stats(frames_data, matches)
-        
-        return {
-            "matches": matches,
-            "stats": stats
-        }
+        return character_validated_frames
     
-    def _parse_and_validate_frames(self, frames_data: List[Dict]) -> List[Dict]:
+    def _phase2_timer_refinement(self, character_frames: List[Dict]) -> List[Dict]:
+        """
+        Phase 2: Raffinement des timers en utilisant le contexte des personnages.
+        
+        Les personnages détectés en Phase 1 aident à:
+        - Valider les transitions de rounds (même personnages = même set)
+        - Détecter les patterns temporels cohérents
+        - Filtrer les faux positifs de timer
+        
+        Args:
+            character_frames: Frames avec personnages validés
+            
+        Returns:
+            Frames avec timers raffinés
+        """
+        self._log_debug("  → Raffinement timer avec contexte personnage...")
+        
+        # Valider les timers avec contexte personnage
+        timer_enhanced_frames = []
+        for frame in character_frames:
+            enhanced_frame = frame.copy()
+            
+            # Raffiner timer avec contexte des personnages
+            if 'timer_value' in frame:
+                char1 = frame.get('character1', '')
+                char2 = frame.get('character2', '')
+                character_context = f"{char1}vs{char2}" if char1 and char2 else ""
+                
+                enhanced_frame['timer_value'] = self.text_validator.validate_timer(
+                    frame['timer_value']
+                )
+                
+                # Ajouter métadonnées de contexte pour la suite
+                enhanced_frame['_character_context'] = character_context
+            
+            timer_enhanced_frames.append(enhanced_frame)
+        
+        if self.debug:
+            timer_stats = self._calculate_timer_detection_stats(timer_enhanced_frames)
+            self._log_debug(f"  → Timer refinement: {timer_stats}")
+        
+        return timer_enhanced_frames
+    
+    def _phase3_player_detection(self, timer_character_frames: List[Dict]) -> List[Dict]:\n        \"\"\"\n        Phase 3: Détection des joueurs avec contexte personnage + timer.\n        \n        Utilise les données des phases précédentes pour:\n        - Prioriser les joueurs cohérents avec les personnages\n        - Analyser les patterns temporels pour suggestions\n        - Appliquer la validation probabiliste\n        \n        Args:\n            timer_character_frames: Frames avec personnages et timers validés\n            \n        Returns:\n            Frames avec joueurs détectés et validés\n        \"\"\"\n        self._log_debug(\"  → Détection joueurs avec contexte personnage+timer...\")\n        \n        # Validation des joueurs avec contexte complet\n        player_enhanced_frames = []\n        for frame in timer_character_frames:\n            enhanced_frame = frame.copy()\n            \n            # Valider player1 avec contexte character1\n            if 'player1' in frame:\n                char1 = frame.get('character1', '')\n                enhanced_frame['player1'] = self.text_validator.validate_player(\n                    frame['player1'], \n                    context_character=char1\n                )\n            \n            # Valider player2 avec contexte character2  \n            if 'player2' in frame:\n                char2 = frame.get('character2', '')\n                enhanced_frame['player2'] = self.text_validator.validate_player(\n                    frame['player2'],\n                    context_character=char2\n                )\n            \n            player_enhanced_frames.append(enhanced_frame)\n        \n        # Amélioration avec patterns temporels\n        if self.text_validator.player_provider:\n            self._log_debug(\"  → Amélioration avec patterns temporels...\")\n            player_enhanced_frames = self.text_validator.enhance_player_detection_with_character_context(\n                player_enhanced_frames\n            )\n        \n        # Stocker pour usage dans la phase suivante\n        self.player_validated_frames = player_enhanced_frames\n        \n        if self.debug:\n            player_stats = self._calculate_player_detection_stats(player_enhanced_frames)\n            self._log_debug(f\"  → Player detection: {player_stats}\")\n        \n        return player_enhanced_frames\n    \n    def _phase4_match_deduction(self, fully_enhanced_frames: List[Dict], original_frames: List[Dict]) -> Dict:\n        \"\"\"\n        Phase 4: Déduction des matches avec tous les contextes disponibles.\n        \n        Utilise toutes les données raffinées pour:\n        - Détecter les rounds avec haute confiance\n        - Grouper en sets basés sur personnages\n        - Grouper en matches basés sur joueurs\n        - Générer les statistiques finales\n        \n        Args:\n            fully_enhanced_frames: Frames avec toutes les données raffinées\n            original_frames: Frames originales pour statistiques\n            \n        Returns:\n            Résultats finaux avec matches, sets, rounds\n        \"\"\"\n        self._log_debug(\"  → Déduction finale des matches...\")\n        \n        # Parse et valide les données finales\n        parsed_frames = self._parse_and_validate_frames(fully_enhanced_frames)\n        \n        # Détecte les rounds basés sur les patterns de timer SF6 (avec contexte personnage)\n        detected_rounds = self._detect_timer_sequences_with_character_context(parsed_frames)\n        \n        # Groupe les rounds en sets (même character1 vs character2)\n        sets = self._group_rounds_into_sets_enhanced(detected_rounds, parsed_frames)\n        \n        # Groupe les sets en matches (même opposition de joueurs)\n        matches = self._group_sets_into_matches_enhanced(sets)\n        \n        # Génère les statistiques\n        stats = self._generate_stats(original_frames, matches)\n        \n        self._log_debug(f\"  → Résultats finaux: {len(matches)} matches, {len(sets)} sets, {len(detected_rounds)} rounds\")\n        \n        return {\n            \"matches\": matches,\n            \"stats\": stats\n        }\n    \n    # ================================================================================================\n    # STATISTICS AND MONITORING METHODS\n    # ================================================================================================\n    \n    def _calculate_character_detection_stats(self, frames: List[Dict]) -> str:\n        \"\"\"Calcule statistiques de détection des personnages.\"\"\"\n        total_frames = len(frames)\n        char1_detected = sum(1 for f in frames if f.get('character1', '').strip())\n        char2_detected = sum(1 for f in frames if f.get('character2', '').strip())\n        \n        return f\"char1: {char1_detected}/{total_frames} ({char1_detected/total_frames:.1%}), \" \\\n               f\"char2: {char2_detected}/{total_frames} ({char2_detected/total_frames:.1%})\"\n    \n    def _calculate_timer_detection_stats(self, frames: List[Dict]) -> str:\n        \"\"\"Calcule statistiques de détection des timers.\"\"\"\n        total_frames = len(frames)\n        timer_detected = sum(1 for f in frames if f.get('timer_value', '').strip())\n        \n        return f\"timer: {timer_detected}/{total_frames} ({timer_detected/total_frames:.1%})\"\n    \n    def _calculate_player_detection_stats(self, frames: List[Dict]) -> str:\n        \"\"\"Calcule statistiques de détection des joueurs.\"\"\"\n        total_frames = len(frames)\n        player1_detected = sum(1 for f in frames if f.get('player1', '').strip())\n        player2_detected = sum(1 for f in frames if f.get('player2', '').strip())\n        \n        return f\"player1: {player1_detected}/{total_frames} ({player1_detected/total_frames:.1%}), \" \\\n               f\"player2: {player2_detected}/{total_frames} ({player2_detected/total_frames:.1%})\"\n    \n    # ================================================================================================\n    # ENHANCED METHODS WITH CHARACTER CONTEXT\n    # ================================================================================================\n    \n    def _detect_timer_sequences_with_character_context(self, parsed_frames: List[Dict]) -> List[Dict]:\n        \"\"\"\n        Version améliorée de _detect_timer_sequences qui utilise le contexte personnage.\n        \n        Les personnages aident à:\n        - Valider que les transitions de timer sont cohérentes\n        - Détecter les vrais débuts de rounds vs transitions de caméra\n        - Filtrer les faux positifs basés sur la cohérence personnage\n        \"\"\"\n        self._log_debug(\"    → Détection timer avec contexte personnage...\")\n        \n        # Utiliser la méthode existante mais avec validation personnage renforcée\n        rounds = self._detect_timer_sequences(parsed_frames)\n        \n        # Filtrer les rounds basés sur la cohérence des personnages\n        character_validated_rounds = []\n        for round_data in rounds:\n            start_time = round_data['start_time']\n            end_time = round_data['end_time']\n            \n            # Vérifier la cohérence des personnages dans ce round\n            round_characters = self._extract_round_character_consistency(\n                parsed_frames, start_time, end_time\n            )\n            \n            if round_characters['is_consistent']:\n                # Ajouter métadonnées personnage au round\n                round_data['character1'] = round_characters['character1']\n                round_data['character2'] = round_characters['character2']\n                round_data['character_consistency'] = round_characters['consistency_score']\n                character_validated_rounds.append(round_data)\n                \n                self._log_debug(f\"    ✅ Round validé: {start_time.strftime('%H:%M:%S')} \" \\\n                               f\"({round_characters['character1']} vs {round_characters['character2']})\")\n            else:\n                self._log_debug(f\"    ❌ Round rejeté: {start_time.strftime('%H:%M:%S')} \" \\\n                               f\"(personnages incohérents)\")\n        \n        return character_validated_rounds\n    \n    def _extract_round_character_consistency(self, frames: List[Dict], start_time, end_time) -> Dict:\n        \"\"\"\n        Analyse la cohérence des personnages dans une période donnée.\n        \n        Returns:\n            Dict avec is_consistent, character1, character2, consistency_score\n        \"\"\"\n        # Filtrer les frames du round\n        round_frames = [\n            f for f in frames \n            if start_time <= f['timestamp'] < end_time\n        ]\n        \n        if not round_frames:\n            return {'is_consistent': False, 'character1': '', 'character2': '', 'consistency_score': 0.0}\n        \n        # Compter les occurrences de chaque personnage\n        char1_counts = {}\n        char2_counts = {}\n        \n        for frame in round_frames:\n            char1 = frame.get('character1', '').strip()\n            char2 = frame.get('character2', '').strip()\n            \n            if char1:\n                char1_counts[char1] = char1_counts.get(char1, 0) + 1\n            if char2:\n                char2_counts[char2] = char2_counts.get(char2, 0) + 1\n        \n        # Déterminer les personnages dominants\n        most_frequent_char1 = max(char1_counts.items(), key=lambda x: x[1])[0] if char1_counts else ''\n        most_frequent_char2 = max(char2_counts.items(), key=lambda x: x[1])[0] if char2_counts else ''\n        \n        # Calculer score de cohérence\n        total_frames = len(round_frames)\n        char1_consistency = char1_counts.get(most_frequent_char1, 0) / total_frames if total_frames > 0 else 0\n        char2_consistency = char2_counts.get(most_frequent_char2, 0) / total_frames if total_frames > 0 else 0\n        \n        avg_consistency = (char1_consistency + char2_consistency) / 2\n        \n        # Un round est cohérent si les personnages sont stables (>60% du temps)\n        is_consistent = (\n            avg_consistency >= 0.6 and \n            most_frequent_char1 != most_frequent_char2 and  # Pas le même personnage\n            most_frequent_char1 and most_frequent_char2     # Les deux personnages détectés\n        )\n        \n        return {\n            'is_consistent': is_consistent,\n            'character1': most_frequent_char1,\n            'character2': most_frequent_char2,\n            'consistency_score': avg_consistency\n        }\n    \n    def _group_rounds_into_sets_enhanced(self, detected_rounds: List[Dict], parsed_frames: List[Dict]) -> List[Dict]:\n        \"\"\"\n        Version améliorée qui utilise les métadonnées personnage des rounds.\n        \"\"\"\n        self._log_debug(\"    → Groupage rounds en sets avec données personnage...\")\n        \n        if not detected_rounds:\n            return []\n        \n        sets = []\n        current_set_rounds = []\n        current_characters = None\n        \n        for round_data in detected_rounds:\n            # Utiliser les personnages déjà validés dans le round\n            char_pair = (round_data.get('character1', ''), round_data.get('character2', ''))\n            \n            if current_characters is None:\n                # Premier round\n                current_characters = char_pair\n                current_set_rounds = [round_data]\n            elif current_characters == char_pair:\n                # Même personnages → même set\n                current_set_rounds.append(round_data)\n            else:\n                # Changement de personnages → nouveau set\n                if current_set_rounds and self._is_valid_set(current_set_rounds):\n                    set_data = self._create_set_from_rounds(current_set_rounds, len(sets) + 1, current_characters)\n                    sets.append(set_data)\n                    self._log_debug(f\"    ✅ Set créé: {current_characters[0]} vs {current_characters[1]} ({len(current_set_rounds)} rounds)\")\n                \n                current_characters = char_pair\n                current_set_rounds = [round_data]\n        \n        # Ajouter le dernier set\n        if current_set_rounds and self._is_valid_set(current_set_rounds):\n            set_data = self._create_set_from_rounds(current_set_rounds, len(sets) + 1, current_characters)\n            sets.append(set_data)\n            self._log_debug(f\"    ✅ Set créé: {current_characters[0]} vs {current_characters[1]} ({len(current_set_rounds)} rounds)\")\n        \n        return sets\n    \n    def _group_sets_into_matches_enhanced(self, sets: List[Dict]) -> List[Dict]:\n        \"\"\"\n        Version améliorée qui utilise les données joueur validées.\n        \"\"\"\n        self._log_debug(\"    → Groupage sets en matches avec données joueur...\")\n        \n        if not sets:\n            return []\n        \n        # Utiliser les frames avec joueurs validés si disponible\n        validated_frames = getattr(self, 'player_validated_frames', [])\n        \n        # Extraire les joueurs pour chaque set avec les données validées\n        sets_with_players = []\n        for set_data in sets:\n            if validated_frames:\n                players = self._extract_player_names_for_set_enhanced(set_data, validated_frames)\n            else:\n                players = self._extract_player_names_for_set(set_data)\n            \n            set_with_players = set_data.copy()\n            set_with_players['_players'] = players\n            sets_with_players.append(set_with_players)\n            \n            self._log_debug(f\"    → Set: {players['player1']} vs {players['player2']} \" \\\n                           f\"({set_data['character1']} vs {set_data['character2']})\")\n        \n        # Utiliser la logique existante de groupage\n        return self._group_sets_into_matches(sets_with_players)\n    \n    def _extract_player_names_for_set_enhanced(self, set_data: Dict, validated_frames: List[Dict]) -> Dict[str, str]:\n        \"\"\"\n        Extraction améliorée utilisant les frames avec joueurs déjà validés.\n        \"\"\"\n        # Récupérer la période temporelle du set\n        set_start = set_data['_raw_start_time']\n        set_end = set_data['_raw_end_time']\n        \n        # Filtrer les frames validées dans cette période\n        set_frames = [\n            f for f in validated_frames\n            if set_start <= self._parse_timestamp(f.get('timestamp', '')) <= set_end\n        ]\n        \n        # Compter les occurrences de joueurs validés\n        player1_counts = {}\n        player2_counts = {}\n        \n        for frame in set_frames:\n            player1 = frame.get('player1', '').strip()\n            player2 = frame.get('player2', '').strip()\n            \n            if player1:\n                player1_counts[player1] = player1_counts.get(player1, 0) + 1\n            if player2:\n                player2_counts[player2] = player2_counts.get(player2, 0) + 1\n        \n        # Prendre les plus fréquents\n        player1 = max(player1_counts.items(), key=lambda x: x[1])[0] if player1_counts else ''\n        player2 = max(player2_counts.items(), key=lambda x: x[1])[0] if player2_counts else ''\n        \n        return {\n            'player1': player1,\n            'player2': player2\n        }\n    \n    def _parse_and_validate_frames(self, frames_data: List[Dict]) -> List[Dict]:
         """Parse les timestamps et valide les données de timer."""
         parsed_frames = []
         
