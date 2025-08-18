@@ -8,7 +8,7 @@ class FrameExtractor:
     OUTPUT_DIR = 'input'
     FRAMES_DIR = 'frames'
 
-    def __init__(self, video_source, output_name=None, no_prompt=False, 
+    def __init__(self, video_source, output_name=None, no_prompt=False,
                  frames_per_minute=12, debug=False, manual_format=None):
         self._initialize_basic_properties(
             video_source, frames_per_minute, debug, manual_format
@@ -35,21 +35,21 @@ class FrameExtractor:
             self.resolver = VideoResolver(preferred_quality=self.manual_format)
         else:
             self.resolver = VideoResolver()
-        
+
         if self.debug:
             print(f"[FrameExtractor] Resolving video source: '{self.video_source}'")
-            
+
         try:
             self.resolved_source = self.resolver.resolve_source(self.video_source)
             self.video_path = self.resolved_source['path']
             self.is_stream = self.resolved_source['is_stream']
-            
+
             if self.debug:
                 print(f"[FrameExtractor] Source resolved:")
                 print(f"  Path: '{self.video_path}'")
                 print(f"  Is stream: {self.is_stream}")
                 print(f"  Source type: {self.resolved_source['metadata']['source_type']}")
-                
+
         except Exception as e:
             if self.debug:
                 print(f"[FrameExtractor] Failed to resolve video source: {e}")
@@ -74,10 +74,10 @@ class FrameExtractor:
             default_name = re.sub(r'[<>:"/\\|?*]', '_', title)[:50]  # Limit length
         else:
             default_name = os.path.splitext(os.path.basename(video_source))[0]
-            
+
         if self.debug:
             print(f"[FrameExtractor] get_video_name: default_name='{default_name}', folder_name='{folder_name}', no_prompt={no_prompt}")
-        
+
         if folder_name:
             if self.debug:
                 print(f"[FrameExtractor] Using provided folder_name: '{folder_name}'")
@@ -95,7 +95,7 @@ class FrameExtractor:
     def _prepare_output_directory(self):
         if self.debug:
             print(f"[FrameExtractor] _prepare_output_directory: OUTPUT_DIR='{self.OUTPUT_DIR}', FRAMES_DIR='{self.FRAMES_DIR}', output_name='{self.output_name}'")
-        
+
         if not os.path.exists(self.OUTPUT_DIR):
             if self.debug:
                 print(f"[FrameExtractor] Creating OUTPUT_DIR: '{self.OUTPUT_DIR}'")
@@ -125,17 +125,17 @@ class FrameExtractor:
         """Extract frames from video and save to disk."""
         self._log_debug(f"extract_frames: video_path='{self.video_path}' (stream: {self.is_stream})")
         self._validate_video_source()
-        
+
         # Create output directory only when actually saving files
         if not self.output_folder:
             self.output_folder = self._prepare_output_directory()
-        
+
         cap = self._open_video_capture()
         video_info = self._get_video_properties(cap)
         self._display_extraction_info(video_info)
-        
+
         saved_count = self._extract_frames_loop(cap, video_info['fps'])
-        
+
         cap.release()
         self._log_debug("Video capture released")
         print(f"\nExtraction terminée. {saved_count} images sauvegardées dans {self.output_folder}")
@@ -146,7 +146,7 @@ class FrameExtractor:
             # For streams, we already validated via VideoResolver
             self._log_debug(f"Stream source validated: '{self.video_path}'")
             return
-            
+
         # For local files, check existence and format
         if not os.path.exists(self.video_path):
             self._log_debug(f"Video file not found: '{self.video_path}'")
@@ -160,11 +160,11 @@ class FrameExtractor:
         """Open and validate video capture."""
         self._log_debug("Opening video capture")
         cap = cv.VideoCapture(self.video_path)
-        
+
         if not cap.isOpened():
             self._log_debug("Failed to open video capture")
             raise RuntimeError("Erreur: Impossible d'ouvrir la vidéo")
-        
+
         return cap
 
     def _get_video_properties(self, cap):
@@ -173,18 +173,18 @@ class FrameExtractor:
         frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         duration = frame_count / fps
         frames_per_extraction = int(fps * self.frame_interval_seconds)
-        
+
         video_info = {
             'fps': fps,
             'frame_count': frame_count,
             'duration': duration,
             'frames_per_extraction': frames_per_extraction
         }
-        
+
         if self.debug:
             print(f"[FrameExtractor] Video properties: fps={fps}, frame_count={frame_count}, duration={duration:.2f}s")
             print(f"[FrameExtractor] Extraction settings: frames_per_minute={self.frames_per_minute}, interval={self.frame_interval_seconds:.1f}s, frames_per_extraction={frames_per_extraction}")
-        
+
         return video_info
 
     def _display_extraction_info(self, video_info):
@@ -230,11 +230,11 @@ class FrameExtractor:
         filename = os.path.join(
             self.output_folder, f'frame_{timestamp}.{self.OUTPUT_FORMAT}'
         )
-        
+
         self._log_debug(
             f"Extracting frame {frame_number} at time {current_time:.1f}s -> {filename}"
         )
-        
+
         cv.imwrite(filename, frame)
         print(f"Image sauvegardée: {filename} (temps: {current_time:.1f}s)")
 
@@ -246,14 +246,14 @@ class FrameExtractor:
     def generate_frames(self):
         """
         Générateur qui yield les frames de la vidéo selon l'intervalle configuré.
-        
+
         Yields:
             tuple: (frame, timestamp_seconds, formatted_timestamp)
         """
         if self.debug:
             source_type = "stream" if self.is_stream else "file"
             print(f"[FrameExtractor] generate_frames: Starting frame generation from {source_type} '{self.video_source}'")
-        
+
         # Validate source (already resolved during initialization)
         self._validate_video_source()
 
@@ -274,35 +274,35 @@ class FrameExtractor:
 
             current_time = 0.0
             frame_count = 0
-            
+
             while current_time < duration:
                 # Position vidéo au timestamp spécifique
                 cap.set(cv.CAP_PROP_POS_MSEC, current_time * 1000)
-                
+
                 ret, frame = cap.read()
                 if not ret:
                     if self.debug:
                         print(f"[FrameExtractor] Failed to read frame at {current_time:.1f}s")
                     current_time += self.frame_interval_seconds
                     continue
-                
+
                 # Format timestamp pour affichage
                 hours = int(current_time // 3600)
                 minutes = int((current_time % 3600) // 60)
                 seconds = int(current_time % 60)
                 formatted_timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-                
+
                 if self.debug:
                     print(f"[FrameExtractor] Yielding frame at {current_time:.1f}s ({formatted_timestamp})")
-                
+
                 yield frame, current_time, formatted_timestamp
-                
+
                 frame_count += 1
                 current_time += self.frame_interval_seconds
-                
+
             if self.debug:
                 print(f"[FrameExtractor] Frame generation complete. Generated {frame_count} frames.")
-                
+
         finally:
             cap.release()
             if self.debug:

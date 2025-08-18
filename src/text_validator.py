@@ -19,8 +19,12 @@ try:
     from .player_provider import PlayerProvider
     PLAYER_PROVIDER_AVAILABLE = True
 except ImportError:
-    PlayerProvider = None
-    PLAYER_PROVIDER_AVAILABLE = False
+    try:
+        from player_provider import PlayerProvider
+        PLAYER_PROVIDER_AVAILABLE = True
+    except ImportError:
+        PlayerProvider = None
+        PLAYER_PROVIDER_AVAILABLE = False
 
 
 class TextValidator:
@@ -34,8 +38,8 @@ class TextValidator:
     - Nettoyage des textes OCR bruités
     """
 
-    def __init__(self, characters_file: str = "characters.json", 
-                 players_database_file: str = "players.json", 
+    def __init__(self, characters_file: str = "characters.json",
+                 players_database_file: str = "players.json",
                  restricted_players_file: str = None,
                  debug: bool = False):
         """
@@ -55,7 +59,7 @@ class TextValidator:
         # Charger les données de référence
         self.character_names = self._load_character_names()
         self.timer_values = self._generate_timer_values()
-        
+
         # Initialiser PlayerProvider pour validation des joueurs
         self.player_provider = self._initialize_player_provider()
 
@@ -68,7 +72,7 @@ class TextValidator:
                     player_count = cache_info.get('total_names', cache_info.get('total_players', 0))
                 except Exception:
                     pass
-            
+
             print(
                 f"[TextValidator] Initialized with {char_count} characters, "
                 f"{len(self.timer_values)} timer values, {player_count} players"
@@ -110,33 +114,33 @@ class TextValidator:
     def _generate_timer_values(self) -> List[str]:
         """Génère la liste des valeurs de timer valides (00-99)."""
         return [f"{i:02d}" for i in range(100)]
-    
+
     def _initialize_player_provider(self) -> Optional['PlayerProvider']:
         """Initialise le PlayerProvider pour validation des joueurs."""
         if not PLAYER_PROVIDER_AVAILABLE:
             if self.debug:
                 print("[TextValidator] ⚠️ PlayerProvider not available")
             return None
-        
+
         try:
             if not os.path.exists(self.players_database_file):
                 if self.debug:
                     print(f"[TextValidator] ⚠️ Players database file not found: {self.players_database_file}")
                 return None
-            
+
             # 🔒 Nouveau design: PlayerProvider avec restriction dès le constructeur
             player_provider = PlayerProvider(
-                database_file=self.players_database_file, 
+                database_file=self.players_database_file,
                 restricted_file=self.restricted_players_file
             )
-            
+
             if self.debug:
                 cache_info = player_provider.get_cache_info()
                 total_names = cache_info.get('total_names', cache_info.get('total_players', 0))
                 print(f"[TextValidator] ✅ PlayerProvider initialized with {total_names} total names")
-            
+
             return player_provider
-            
+
         except Exception as e:
             if self.debug:
                 print(f"[TextValidator] ❌ Error initializing PlayerProvider: {e}")
@@ -153,7 +157,7 @@ class TextValidator:
             Timer validé au format "XX" ou chaîne vide si invalide
         """
         # Déléguer à l'API générique avec extraction de chiffres activée
-        return self.validate_text(raw_text, expected_values=self.timer_values, 
+        return self.validate_text(raw_text, expected_values=self.timer_values,
                                 fuzzy_score_threshold=70, extract_digits=True)
 
     def validate_character(self, raw_text: str) -> str:
@@ -169,11 +173,11 @@ class TextValidator:
         # Si pas de contraintes du tout, retourner texte nettoyé
         if not self.character_names:
             return self._clean_character_name(raw_text)
-        
+
         # Déléguer à l'API générique
-        return self.validate_text(raw_text, expected_values=self.character_names, 
+        return self.validate_text(raw_text, expected_values=self.character_names,
                                 fuzzy_score_threshold=60, extract_digits=False)
-    
+
     def validate_player(self, raw_text: str, threshold: float = 0.5, context_character: str = "") -> str:
         """
         Valide et nettoie un nom de joueur OCR en utilisant PlayerProvider.
@@ -188,7 +192,7 @@ class TextValidator:
         """
         if not raw_text or not raw_text.strip():
             return ""
-        
+
         # Utiliser PlayerProvider pour obtenir la liste de joueurs
         player_values = None
         if self.player_provider:
@@ -201,30 +205,30 @@ class TextValidator:
         else:
             # Pas de validation disponible, retourner texte nettoyé
             return raw_text.strip()
-        
+
         if not player_values:
             return raw_text.strip()
-        
+
         cleaned_text = raw_text.strip()
-        
+
         # Clean common OCR artifacts and prefixes/suffixes for better matching
         original_cleaned = cleaned_text
-        
+
         # Remove common country/region prefixes
         for prefix in ['JP ', 'US ', 'KR ', 'FR ', 'UK ', 'CA ', 'BR ']:
             if cleaned_text.upper().startswith(prefix):
                 cleaned_text = cleaned_text[len(prefix):].strip()
                 break
-        
+
         # Remove common suffixes and OCR artifacts (récursive cleaning)
         suffixes_to_remove = [
             ' JP', ' US', ' KR', ' FR', ' UK', ' CA', ' BR',  # Country codes
-            ' JPI', ' JP 2', ' US 2', ' KR 2',               # OCR artifacts  
+            ' JPI', ' JP 2', ' US 2', ' KR 2',               # OCR artifacts
             ' [L] JPI', ' [L] JP', ' [L]',                   # Bracket artifacts
             ' 2', ' NO', ' No 2', ' NO 2',                   # Number artifacts
             'PI', 'I', '2'                                   # Single char artifacts
         ]
-        
+
         # Nettoyer récursivement (plusieurs passes)
         for _ in range(3):  # Max 3 passes pour éviter boucle infinie
             original = cleaned_text
@@ -234,10 +238,10 @@ class TextValidator:
                     break
             if original == cleaned_text:  # Plus de changements
                 break
-        
+
         # Remove common tournament/sponsor/team prefixes (comprehensive cleaning)
         sponsor_prefixes = [
-            'REJECT', 'REJECTZ', 'TEAM ', 'SQUAD ', 
+            'REJECT', 'REJECTZ', 'TEAM ', 'SQUAD ',
             'ZETA', 'TSM ', 'RB ', 'RED BULL ', 'REDBULL',
             'FGC ', 'FCG ', 'UYU ', 'RISE ', 'LIQUID',
             'FNATIC', 'PANDA ', 'ECHO FOX', 'ECHOFOX',
@@ -247,11 +251,11 @@ class TextValidator:
             'NO ', 'NO', 'DO ', 'DO', 'HK ', 'HK', 'JO ', 'JO',   # More countries
             'KSG', 'KSG '  # Sponsor prefix for XiaoHai (like "CN KSGXIAOHAI")
         ]
-        
+
         # Multiple pass cleaning for complex OCR artifacts
         for _ in range(3):  # Max 3 passes
             original = cleaned_text
-            
+
             # Clean sponsor prefixes
             for prefix in sponsor_prefixes:
                 if cleaned_text.upper().startswith(prefix.upper()):
@@ -259,8 +263,8 @@ class TextValidator:
                     if remaining:  # Only use if something remains
                         cleaned_text = remaining
                     break
-            
-            # Clean mixed patterns like "ZETAKAKERU", "RBMENARD", "NIPPHENOM"  
+
+            # Clean mixed patterns like "ZETAKAKERU", "RBMENARD", "NIPPHENOM"
             # Extract player name from sponsor+name combinations
             if len(cleaned_text) > 6:  # Only for longer strings
                 # Pattern: SPONSOR+NAME (like ZETAKAKERU, RBMENARD, NIPPHENOM)
@@ -269,13 +273,13 @@ class TextValidator:
                     ('NIPPHENOM', 'PHENOM'),  # Special case for "NO NIPPHENOM"
                     ('RBMENARD', 'MENARD'),   # Special case for "WBG RBMENARD"
                     ('ZETA', 'ZETA'),
-                    ('RB', 'RB'),  
+                    ('RB', 'RB'),
                     ('WBG', 'WBG'),
                     ('TSM', 'TSM'),
                     ('OG', 'OG'),
                     ('NIP', 'NIP'),
                 ]
-                
+
                 for pattern, extraction in sponsor_patterns:
                     if pattern in cleaned_text.upper():
                         if pattern in ['NIPPHENOM', 'RBMENARD']:
@@ -298,24 +302,24 @@ class TextValidator:
                                             break
                                     except Exception:
                                         pass
-            
+
             # Stop if no more changes
             if original == cleaned_text:
                 break
-        
+
         if self.debug:
             if original_cleaned != cleaned_text:
                 print(f"[TextValidator] 🧹 Player name cleaned: '{original_cleaned}' -> '{cleaned_text}'")
             print(f"[TextValidator] 🔍 Player validation: '{raw_text}' -> '{cleaned_text}' "
                   f"(against {len(player_values)} players)")
-        
+
         # 1. Correspondance exacte (insensible à la casse)
         for player in player_values:
             if player.upper() == cleaned_text.upper():
                 if self.debug:
                     print(f"[TextValidator] ✅ Exact player match: '{cleaned_text}' -> '{player}'")
                 return player
-        
+
         # 2. Si contexte personnage disponible, prioriser les joueurs qui jouent ce personnage
         character_consistent_matches = []
         if context_character and self.player_provider:
@@ -336,11 +340,11 @@ class TextValidator:
         # 3. Correspondance floue avec rapidfuzz (liste restreinte PRIORITAIRE)
         all_player_matches = []
         fuzzy_threshold = int(threshold * 100)
-        
+
         # Create uppercase versions for case-insensitive matching
         cleaned_text_upper = cleaned_text.upper()
         player_values_upper = [p.upper() for p in player_values]
-        
+
         result = process.extractOne(cleaned_text_upper, player_values_upper, score_cutoff=fuzzy_threshold)
         if result:
             # Find the original case version
@@ -349,7 +353,7 @@ class TextValidator:
             all_player_matches.append((original_player, result[1], "rapidfuzz_restricted"))
             if self.debug:
                 print(f"[TextValidator] ✅ Restricted list match: '{cleaned_text}' -> '{original_player}' (score: {result[1]:.1f})")
-        
+
         # 4. Correspondance floue avec PlayerProvider (tous joueurs) - SEULEMENT si pas de match restreint
         if not all_player_matches and self.player_provider:
             try:
@@ -364,7 +368,7 @@ class TextValidator:
             except Exception as e:
                 if self.debug:
                     print(f"[TextValidator] ⚠️ Error in player fuzzy search: {e}")
-        
+
         # 5. Enhanced fuzzy matching for partial names (OCR artifacts)
         if not all_player_matches and len(cleaned_text) >= 3:
             # Try matching against partial player names (substring matching)
@@ -372,21 +376,21 @@ class TextValidator:
             for player in player_values:
                 player_upper = player.upper()
                 text_upper = cleaned_text.upper()
-                
+
                 # Check if cleaned text is contained in player name or vice versa
                 if text_upper in player_upper or player_upper in text_upper:
                     # Calculate similarity score manually
                     similarity = max(len(text_upper) / len(player_upper), len(player_upper) / len(text_upper)) * 100
                     if similarity >= 40:  # Lower threshold for partial matches
                         partial_matches.append((player, similarity, "partial"))
-            
+
             if partial_matches:
                 # Take best partial match
                 best_partial = max(partial_matches, key=lambda x: x[1])
                 all_player_matches.append(best_partial)
                 if self.debug:
                     print(f"[TextValidator] 🎯 Partial name match: '{cleaned_text}' -> '{best_partial[0]}' (score: {best_partial[1]:.1f})")
-        
+
         # 6. Try reverse fuzzy matching (player names against cleaned text)
         if not all_player_matches and len(cleaned_text) >= 4:
             # For complex OCR like "ZETAKAKERU", try matching each player against the full string
@@ -395,22 +399,22 @@ class TextValidator:
                 reverse_result = process.extractOne(player, [cleaned_text], score_cutoff=40)
                 if reverse_result:
                     reverse_matches.append((player, reverse_result[1], "reverse_fuzzy"))
-            
+
             if reverse_matches:
                 best_reverse = max(reverse_matches, key=lambda x: x[1])
                 all_player_matches.append(best_reverse)
                 if self.debug:
                     print(f"[TextValidator] 🔄 Reverse fuzzy match: '{cleaned_text}' -> '{best_reverse[0]}' (score: {best_reverse[1]:.1f})")
-        
+
         # 7. Sélectionner le meilleur match en priorisant la cohérence personnage
         all_matches = character_consistent_matches + all_player_matches
-        
+
         if all_matches:
             # Appliquer un bonus aux matches cohérents avec le personnage
             scored_matches = []
             for match_name, score, match_type in all_matches:
                 adjusted_score = score
-                
+
                 # Bonus pour cohérence personnage (+20 points)
                 if match_type == "character_consistent":
                     adjusted_score += 20
@@ -429,70 +433,70 @@ class TextValidator:
                                       f"(score penalty: {score:.1f} -> {adjusted_score:.1f})")
                     except Exception:
                         pass
-                
+
                 scored_matches.append((match_name, adjusted_score, match_type))
-            
+
             # Prendre le meilleur match ajusté
             best_match = max(scored_matches, key=lambda x: x[1])
             match_name, final_score, match_type = best_match
-            
+
             if self.debug:
                 print(f"[TextValidator] ✅ Best player match: '{raw_text}' -> '{match_name}' "
                       f"(final score: {final_score:.1f}, type: {match_type})")
-            
+
             return match_name
-        
+
         # 8. Rejet - retourner texte original nettoyé
         if self.debug:
             print(f"[TextValidator] ❌ Player text rejected: '{raw_text}' (no match in known players)")
         return cleaned_text
-    
+
     def validate_text(self, raw_text: str, expected_values: Optional[List[str]] = None,
                      fuzzy_score_threshold: int = 60, extract_digits: bool = False) -> str:
         """
         API générique pour valider un texte OCR contre une liste de valeurs attendues.
-        
+
         Args:
             raw_text: Texte brut de l'OCR
             expected_values: Liste des valeurs valides attendues (optionnel)
             fuzzy_score_threshold: Seuil pour correspondance floue (0-100)
             extract_digits: Si True, extrait automatiquement les chiffres du texte
-            
+
         Returns:
             Texte validé ou chaîne vide si invalide
-            
+
         Examples:
             # Timer validation
             validate_text("89", expected_values=["00", "01", ..., "99"])
-            
-            # Character validation  
+
+            # Character validation
             validate_text("RYU", expected_values=["RYU", "CHUN-LI", "KEN"])
-            
+
             # Custom validation
             validate_text("HIGH", expected_values=["HIGH", "MEDIUM", "LOW"])
         """
         if not raw_text or not raw_text.strip():
             return ""
-        
+
         cleaned_text = raw_text.strip().upper()
-        
+
         if self.debug:
             expected_count = len(expected_values) if expected_values else 0
             print(f"[TextValidator] 🔍 Generic validation: '{raw_text}' -> '{cleaned_text}' "
                   f"(against {expected_count} expected values)")
-        
+
         # Si pas de contraintes, retourner le texte nettoyé
         if not expected_values:
             if self.debug:
                 print(f"[TextValidator] ℹ️ No constraints, returning cleaned text: '{cleaned_text}'")
             return cleaned_text
-        
+
         # 1. Correspondance exacte (cas idéal)
         if cleaned_text in expected_values:
             if self.debug:
                 print(f"[TextValidator] ✅ Exact match: '{cleaned_text}'")
             return cleaned_text
-        
+
         # 2. Extraction des chiffres si demandée (pour timers notamment)
         if extract_digits:
             digits = ''.join(filter(str.isdigit, cleaned_text))
@@ -502,12 +506,12 @@ class TextValidator:
                     digits = '0' + digits
                 elif len(digits) > 2:
                     digits = digits[:2]
-                
+
                 if digits in expected_values:
                     if self.debug:
                         print(f"[TextValidator] ✅ Digits extracted: '{raw_text}' -> '{digits}'")
                     return digits
-        
+
         # 3. Correspondance floue avec rapidfuzz
         result = process.extractOne(cleaned_text, expected_values, score_cutoff=fuzzy_score_threshold)
         if result:
@@ -515,7 +519,7 @@ class TextValidator:
             if self.debug:
                 print(f"[TextValidator] ✅ Fuzzy match: '{raw_text}' -> '{best_match}' (score: {score:.1f})")
             return best_match
-        
+
         # 4. Rejet
         if self.debug:
             print(f"[TextValidator] ❌ Text rejected: '{raw_text}' (no match in expected values)")
@@ -552,19 +556,19 @@ class TextValidator:
             validated_frame["character2"] = self.validate_character(
                 frame_data["character2"]
             )
-        
+
         # Valider les noms de joueurs avec contexte des personnages et liste restreinte
         if "player1" in frame_data:
             context_char = validated_frame.get("character1", "")
             validated_frame["player1"] = self.validate_player(
-                frame_data["player1"], 
+                frame_data["player1"],
                 context_character=context_char
             )
 
         if "player2" in frame_data:
             context_char = validated_frame.get("character2", "")
             validated_frame["player2"] = self.validate_player(
-                frame_data["player2"], 
+                frame_data["player2"],
                 context_character=context_char
             )
 
@@ -599,17 +603,17 @@ class TextValidator:
     def suggest_players_for_character(self, character_name: str, limit: int = 5) -> List[str]:
         """
         Suggère des joueurs probables basés sur le personnage détecté.
-        
+
         Args:
             character_name: Nom du personnage détecté
             limit: Nombre maximum de suggestions
-            
+
         Returns:
             Liste des joueurs qui jouent ce personnage
         """
         if not self.player_provider or not character_name:
             return []
-        
+
         try:
             players = self.player_provider.find_players_by_character(character_name)
             return players[:limit]
@@ -623,32 +627,32 @@ class TextValidator:
     ) -> List[Dict[str, Any]]:
         """
         Améliore la détection des joueurs en utilisant le contexte des personnages.
-        
+
         Cette méthode post-traite les frames validées pour améliorer la précision
         des noms de joueurs en se basant sur les correspondances joueur-personnage connues.
-        
+
         Args:
             frames_data: Frames déjà validées
             confidence_threshold: Seuil de confiance pour suggérer automatiquement
-            
+
         Returns:
             Frames avec détection améliorée des joueurs
         """
         if not self.player_provider:
             return frames_data
-        
+
         enhanced_frames = []
-        
+
         # Analyser les patterns joueur-personnage dans toutes les frames
         character_player_patterns = self._analyze_character_player_patterns(frames_data)
-        
+
         for frame in frames_data:
             enhanced_frame = frame.copy()
-            
+
             # Améliorer player1 avec character1
             char1 = frame.get('character1', '')
             player1 = frame.get('player1', '')
-            
+
             if char1:
                 if not player1:
                     # Pas de joueur détecté -> suggérer le plus probable
@@ -659,19 +663,19 @@ class TextValidator:
                 elif player1:
                     # Re-valider avec contexte personnage pour améliorer la précision
                     improved = self.validate_player(
-                        player1, 
-                        context_character=char1, 
+                        player1,
+                        context_character=char1,
                         threshold=0.4
                     )
                     if improved and improved != player1:
                         if self.debug:
                             print(f"[TextValidator] 🔧 Player1 improved: '{player1}' -> '{improved}' (with {char1} context)")
                         enhanced_frame['player1'] = improved
-            
-            # Améliorer player2 avec character2  
+
+            # Améliorer player2 avec character2
             char2 = frame.get('character2', '')
             player2 = frame.get('player2', '')
-            
+
             if char2:
                 if not player2:
                     suggested = self._suggest_most_likely_player(char2, character_player_patterns)
@@ -680,48 +684,48 @@ class TextValidator:
                         enhanced_frame['player2'] = suggested
                 elif player2:
                     improved = self.validate_player(
-                        player2, 
-                        context_character=char2, 
+                        player2,
+                        context_character=char2,
                         threshold=0.4
                     )
                     if improved and improved != player2:
                         if self.debug:
                             print(f"[TextValidator] 🔧 Player2 improved: '{player2}' -> '{improved}' (with {char2} context)")
                         enhanced_frame['player2'] = improved
-            
+
             enhanced_frames.append(enhanced_frame)
-        
+
         return enhanced_frames
-    
+
     def _analyze_character_player_patterns(self, frames_data: List[Dict[str, Any]]) -> Dict[str, Dict[str, int]]:
         """
         Analyse les patterns joueur-personnage dans les frames pour détecter les associations fréquentes.
-        
+
         Returns:
             Dict[character] -> Dict[player] -> count
         """
         patterns = {}
-        
+
         for frame in frames_data:
             char1 = frame.get('character1', '').strip()
             player1 = frame.get('player1', '').strip()
             char2 = frame.get('character2', '').strip()
             player2 = frame.get('player2', '').strip()
-            
+
             # Compter les associations character1 -> player1
             if char1 and player1:
                 if char1 not in patterns:
                     patterns[char1] = {}
                 patterns[char1][player1] = patterns[char1].get(player1, 0) + 1
-            
+
             # Compter les associations character2 -> player2
             if char2 and player2:
                 if char2 not in patterns:
                     patterns[char2] = {}
                 patterns[char2][player2] = patterns[char2].get(player2, 0) + 1
-        
+
         return patterns
-    
+
     def _suggest_most_likely_player(self, character: str, patterns: Dict[str, Dict[str, int]]) -> str:
         """
         Suggère le joueur le plus probable pour un personnage basé sur les patterns détectés.
@@ -730,13 +734,13 @@ class TextValidator:
             # Pas de pattern détecté -> utiliser mainCharacter database
             suggestions = self.suggest_players_for_character(character, limit=1)
             return suggestions[0] if suggestions else ""
-        
+
         # Prendre le joueur le plus fréquent pour ce personnage
         player_counts = patterns[character]
         if player_counts:
             most_frequent = max(player_counts.items(), key=lambda x: x[1])
             return most_frequent[0]
-        
+
         return ""
 
     def get_validation_stats(

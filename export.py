@@ -1,8 +1,6 @@
 import json
 import os
 
-import cv2 as cv
-
 from src.frame_extractor import FrameExtractor
 from src.image_analyzer import ImageAnalyzer
 
@@ -149,7 +147,7 @@ def analyze_video(
 
             frame_count += 1
             _print_analysis_progress(ocr_results, frame_count)
-            
+
             # Check if max_frames limit is reached
             if max_frames and frame_count >= max_frames:
                 print(f"\n🛑 Limite atteinte: {max_frames} frames analysées")
