@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 from src.frame_extractor import FrameExtractor
 from src.image_analyzer import ImageAnalyzer
@@ -74,8 +75,69 @@ def _print_analysis_progress(results, frame_count):
         print(f"📊 Progression: {frame_count} frames analysées")
 
 
+def _create_info_object(frame_extractor, video_source, analysis_params):
+    """Create info metadata object for export JSON."""
+    source_type = "online_stream" if frame_extractor.is_stream else "local_file"
+    
+    # Ordre des clés: video_name, source, source_type, video_title (si dispo), puis analysis_date
+    info = {
+        "video_name": frame_extractor.output_name,
+        "source": video_source,
+        "source_type": source_type,
+    }
+    
+    # Add video title if available (for online streams)
+    if (frame_extractor.is_stream and 
+        hasattr(frame_extractor, 'resolved_source') and 
+        frame_extractor.resolved_source.get("metadata", {}).get("title")):
+        info["video_title"] = frame_extractor.resolved_source["metadata"]["title"]
+    
+    # Ajouter les métadonnées d'analyse
+    info.update({
+        "analysis_date": datetime.now().strftime("%Y-%m-%d"),  # Format Date seulement
+        "frames_per_minute": analysis_params.get("frames_per_minute", 12),
+        "total_frames_analyzed": 0,  # Will be updated during analysis
+        "analysis_parameters": {
+            "save_frames": analysis_params.get("save_frames", False),
+            "max_frames": analysis_params.get("max_frames"),
+            "manual_format": analysis_params.get("manual_format")
+        }
+    })
+    
+    return info
+
+
+def _finalize_json_metadata(json_path, final_frame_count):
+    """Update final metadata in the JSON file."""
+    try:
+        with open(json_path, "r", encoding="utf-8") as json_file:
+            data = json.load(json_file)
+        
+        # Update final metadata if using new format
+        if isinstance(data, dict) and "info" in data:
+            data["info"]["total_frames_analyzed"] = final_frame_count
+            data["info"]["analysis_completed_date"] = datetime.now().strftime("%Y-%m-%d")
+            
+            # Write back to file
+            with open(json_path, "w", encoding="utf-8") as json_file:
+                json.dump(data, json_file, indent=2, ensure_ascii=False)
+    except (FileNotFoundError, json.JSONDecodeError):
+        # Skip if file doesn't exist or is corrupted
+        pass
+
+
+def _initialize_json_file_with_info(json_path, info_data):
+    """Initialize JSON file with info object and empty frames array."""
+    initial_structure = {
+        "info": info_data,
+        "frames": []
+    }
+    with open(json_path, "w", encoding="utf-8") as json_file:
+        json.dump(initial_structure, json_file, indent=2, ensure_ascii=False)
+
+
 def _initialize_json_file(json_path):
-    """Initialize/clear JSON file with empty array."""
+    """Initialize/clear JSON file with empty array (legacy compatibility)."""
     with open(json_path, "w", encoding="utf-8") as json_file:
         json.dump([], json_file)
 
@@ -85,16 +147,30 @@ def _append_frame_to_json(frame_data, json_path):
     # Read existing data
     try:
         with open(json_path, "r", encoding="utf-8") as json_file:
-            analysis_results = json.load(json_file)
+            data = json.load(json_file)
+            
+        # Handle both new format (with info) and legacy format (array only)
+        if isinstance(data, dict) and "frames" in data:
+            # New format with info object
+            data["frames"].append(frame_data)
+            # Update total_frames_analyzed in info
+            if "info" in data:
+                data["info"]["total_frames_analyzed"] = len(data["frames"])
+        else:
+            # Legacy format (array) - convert to new format
+            if isinstance(data, list):
+                analysis_results = data
+            else:
+                analysis_results = []
+            analysis_results.append(frame_data)
+            data = {"info": {}, "frames": analysis_results}
     except (FileNotFoundError, json.JSONDecodeError):
-        analysis_results = []
-
-    # Add new frame
-    analysis_results.append(frame_data)
+        # File doesn't exist or is corrupted - use legacy format for compatibility
+        data = [frame_data]
 
     # Write back to file
     with open(json_path, "w", encoding="utf-8") as json_file:
-        json.dump(analysis_results, json_file, indent=2, ensure_ascii=False)
+        json.dump(data, json_file, indent=2, ensure_ascii=False)
 
 
 def _save_results_to_json(analysis_results, json_path):
@@ -116,8 +192,19 @@ def analyze_video(
     video_name = frame_extractor.output_name
     json_output_path = os.path.join(OUTPUT_DIRECTORY, f"{video_name}.export.json")
 
-    # Initialize JSON file (clear if exists)
-    _initialize_json_file(json_output_path)
+    # Create analysis parameters for metadata
+    analysis_params = {
+        "frames_per_minute": frames_per_minute,
+        "save_frames": save_frames,
+        "max_frames": max_frames,
+        "manual_format": manual_format
+    }
+    
+    # Create info object with metadata
+    info_data = _create_info_object(frame_extractor, video_source, analysis_params)
+    
+    # Initialize JSON file with info object and empty frames array
+    _initialize_json_file_with_info(json_output_path, info_data)
 
     analysis_results = []
     frame_count = 0
@@ -158,6 +245,7 @@ def analyze_video(
         return
 
     # Final file is already written incrementally, just show completion
+    _finalize_json_metadata(json_output_path, len(analysis_results))
     print(f"\n✅ Analyse terminée!")
     print(f"📄 Résultats: {json_output_path}")
     frames_info = (
