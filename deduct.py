@@ -246,11 +246,21 @@ def load_analysis_results(json_path: str) -> list:
         with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
-        if not isinstance(data, list):
-            raise ValueError("Le JSON doit contenir une liste de frames")
-
-        print(f"✅ Chargement réussi: {len(data)} frames depuis {json_path}")
-        return data
+        # Support pour le nouveau format avec structure info/frames
+        if isinstance(data, dict) and "frames" in data:
+            frames_data = data["frames"]
+            if not isinstance(frames_data, list):
+                raise ValueError("La clé 'frames' doit contenir une liste")
+            print(f"✅ Chargement réussi: {len(frames_data)} frames depuis {json_path}")
+            return frames_data
+        
+        # Support pour l'ancien format (liste directe)
+        elif isinstance(data, list):
+            print(f"✅ Chargement réussi: {len(data)} frames depuis {json_path}")
+            return data
+        
+        else:
+            raise ValueError("Le JSON doit contenir une liste de frames ou un objet avec une clé 'frames'")
 
     except json.JSONDecodeError as e:
         raise ValueError(f"JSON invalide: {e}")

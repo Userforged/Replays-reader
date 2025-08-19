@@ -325,7 +325,7 @@ class VideoAnalysis:
             return name.capitalize()
 
 
-def calculate_real_start_time(detection_time: str, detected_timer: int, target_timer: int = 99) -> str:
+def calculate_real_start_time(detection_time: str, detected_timer: int, target_timer: int = 99, buffer_seconds: int = 3) -> str:
     """
     Calcule le temps réel de début d'un round basé sur le rétro-engineering.
 
@@ -333,13 +333,14 @@ def calculate_real_start_time(detection_time: str, detected_timer: int, target_t
         detection_time: Temps où le timer a été détecté (format "HH:MM:SS")
         detected_timer: Valeur du timer détectée (ex: 97)
         target_timer: Valeur cible pour le calcul (par défaut 99)
+        buffer_seconds: Secondes supplémentaires à soustraire pour avoir plus de marge (par défaut 3)
 
     Returns:
         Temps estimé du début réel (format "HH:MM:SS")
 
     Exemple:
-        detection_time="01:10:35", detected_timer=97
-        → real_start="01:10:33" (35s - 2s car 99-97=2)
+        detection_time="01:10:35", detected_timer=97, buffer_seconds=3
+        → real_start="01:10:30" (35s - 2s - 3s = 30s)
     """
     try:
         # Parser le temps de détection
@@ -350,9 +351,12 @@ def calculate_real_start_time(detection_time: str, detected_timer: int, target_t
 
         # Calculer les secondes écoulées depuis le début théorique
         seconds_elapsed = target_timer - detected_timer
+        
+        # Ajouter le buffer pour avoir plus de marge au début
+        total_adjustment = seconds_elapsed + buffer_seconds
 
-        # Soustraire pour obtenir le début réel
-        total_seconds = hours * 3600 + minutes * 60 + seconds - seconds_elapsed
+        # Soustraire pour obtenir le début réel avec marge supplémentaire
+        total_seconds = hours * 3600 + minutes * 60 + seconds - total_adjustment
 
         # Convertir en format HH:MM:SS
         real_hours = total_seconds // 3600
