@@ -7,6 +7,7 @@ from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 
 from .image_converter import ImageConverter
 from .preprocessing_steps import PreprocessingStep
+from .roi_manager import RoiManager
 
 try:
     import easyocr
@@ -89,7 +90,7 @@ class ImageAnalyzer:
         self.character_names = (
             self._load_character_names() if self.characters_file else None
         )
-        self.rois = self._load_rois_config()
+        self._setup_roi_manager()
         self._initialize_trocr()
         self._initialize_easyocr()
 
@@ -170,34 +171,19 @@ class ImageAnalyzer:
             if self.debug:
                 print(f"[ImageAnalyzer] ❌ Erreur EasyOCR: {e}")
 
-    def _load_rois_config(self):
-        try:
-            with open(self.config_file, "r", encoding="utf-8") as f:
-                config = json.load(f)
-
-            rois = config.get("rois", [])
-            if not rois:
-                raise ValueError(f"No ROIs found in config file '{self.config_file}'")
-
-            if self.debug:
-                roi_names = [roi["name"] for roi in rois]
-                roi_list = ", ".join(roi_names)
-                print(
-                    f"[ImageAnalyzer] ✅ Loaded {len(rois)} ROI "
-                    f"configurations from {self.config_file}: {roi_list}"
-                )
-
-            return rois
-
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                f"ROI configuration file '{self.config_file}' not found. "
-                f"Please create the file or specify a valid config path."
+    def _setup_roi_manager(self):
+        """Initialize ROI manager and load configuration."""
+        self.roi_manager = RoiManager(self.config_file)
+        self.roi_manager.load()
+        
+        if self.debug:
+            all_rois = self.roi_manager.get_all_rois()
+            roi_names = [roi["name"] for roi in all_rois]
+            roi_list = ", ".join(roi_names)
+            print(
+                f"[ImageAnalyzer] ✅ Loaded {len(all_rois)} ROI "
+                f"configurations from {self.config_file}: {roi_list}"
             )
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON in config file '{self.config_file}': {e}")
-        except Exception as e:
-            raise RuntimeError(f"Error loading config file '{self.config_file}': {e}")
 
     def _load_character_names(self):
         try:
@@ -242,8 +228,10 @@ class ImageAnalyzer:
             return None
 
     def _get_roi(self, roi_name):
-        # Fallback to default ROI config if no JSON config loaded
-        if self.rois is None:
+        """Get ROI configuration using RoiManager."""
+        roi = self.roi_manager.get_roi(roi_name)
+        if roi is None:
+            # Fallback to default ROI config
             if roi_name == "timer":
                 color = (0, 255, 0)
             elif roi_name == "character1":
@@ -257,19 +245,16 @@ class ImageAnalyzer:
                 "boundaries": {"color": color},
                 "label": roi_name.upper(),
             }
-
-        for roi in self.rois:
-            if roi["name"] == roi_name:
-                # Convert list to tuple for OpenCV compatibility
-                boundaries = roi.get("boundaries", {})
-                if (
-                    "boundaries" in roi
-                    and "color" in boundaries
-                    and isinstance(boundaries["color"], list)
-                ):
-                    roi["boundaries"]["color"] = tuple(roi["boundaries"]["color"])
-                return roi
-        return None
+        
+        # Convert list to tuple for OpenCV compatibility
+        boundaries = roi.get("boundaries", {})
+        if (
+            "boundaries" in roi
+            and "color" in boundaries
+            and isinstance(boundaries["color"], list)
+        ):
+            roi["boundaries"]["color"] = tuple(roi["boundaries"]["color"])
+        return roi
 
     def initialize_ocr(self):
         # Kept for compatibility - OCR status shown once in __init__
