@@ -141,7 +141,7 @@ class VideoResolver:
     def _try_format(self, url: str, format_spec: str) -> Optional[Dict[str, Any]]:
         """Try to resolve URL with specific format."""
         cmd = [
-            '/usr/local/bin/yt-dlp',
+            '/home/jovyan/.local/bin/yt-dlp',
             '--quiet',
             '--no-warnings',
             '--print', '%(url)s',  # Print direct URL
@@ -210,7 +210,7 @@ class VideoResolver:
         elif self.is_url(source):
             # Quick info extraction without getting stream URL (use absolute path)
             cmd = [
-                '/usr/local/bin/yt-dlp',
+                '/home/jovyan/.local/bin/yt-dlp',
                 '--quiet',
                 '--no-warnings',
                 '--dump-json',

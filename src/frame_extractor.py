@@ -1,3 +1,4 @@
+import asyncio
 import cv2 as cv
 import os
 from datetime import datetime
@@ -45,7 +46,7 @@ class FrameExtractor:
             self.is_stream = self.resolved_source['is_stream']
 
             if self.debug:
-                print(f"[FrameExtractor] Source resolved:")
+                print("[FrameExtractor] Source resolved:")
                 print(f"  Path: '{self.video_path}'")
                 print(f"  Is stream: {self.is_stream}")
                 print(f"  Source type: {self.resolved_source['metadata']['source_type']}")
@@ -157,13 +158,18 @@ class FrameExtractor:
             raise ValueError("Le fichier doit être au format MP4.")
 
     def _open_video_capture(self):
-        """Open and validate video capture."""
+        """Open and validate video capture with stream buffering."""
         self._log_debug("Opening video capture")
         cap = cv.VideoCapture(self.video_path)
 
         if not cap.isOpened():
             self._log_debug("Failed to open video capture")
             raise RuntimeError("Erreur: Impossible d'ouvrir la vidéo")
+
+        # Configuration buffer pour streams YouTube
+        if self.is_stream:
+            cap.set(cv.CAP_PROP_BUFFERSIZE, 15)  # Buffer 15 frames en avance
+            self._log_debug("Stream buffer configured: 15 frames")
 
         return cap
 
@@ -243,9 +249,82 @@ class FrameExtractor:
         if self.debug:
             print(f"[FrameExtractor] {message}")
 
+    async def async_generate_frames(self):
+        """
+        Générateur asynchrone qui yield les frames de la vidéo selon l'intervalle configuré.
+        
+        Yields:
+            tuple: (frame, timestamp_seconds, formatted_timestamp)
+        """
+        if self.debug:
+            source_type = "stream" if self.is_stream else "file"
+            print(f"[FrameExtractor] async_generate_frames: Starting async frame generation from {source_type} '{self.video_source}'")
+
+        # Validate source (already resolved during initialization)
+        self._validate_video_source()
+
+        cap = cv.VideoCapture(self.video_path)
+        if not cap.isOpened():
+            if self.debug:
+                print("[FrameExtractor] Failed to open video capture")
+            raise RuntimeError("Erreur: Impossible d'ouvrir la vidéo")
+
+        # Configuration buffer pour streams
+        if self.is_stream:
+            cap.set(cv.CAP_PROP_BUFFERSIZE, 15)  # Buffer 15 frames en avance
+            if self.debug:
+                print("[FrameExtractor] Stream buffer configured: 15 frames")
+
+        try:
+            fps = cap.get(cv.CAP_PROP_FPS)
+            total_frames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+            duration = total_frames / fps
+
+            if self.debug:
+                print(f"[FrameExtractor] Video properties: fps={fps}, total_frames={total_frames}, duration={duration:.2f}s")
+                print(f"[FrameExtractor] Frame interval: {self.frame_interval_seconds:.1f}s")
+
+            current_time = 0.0
+            frame_count = 0
+
+            while current_time < duration:
+                # Position vidéo au timestamp spécifique
+                cap.set(cv.CAP_PROP_POS_MSEC, current_time * 1000)
+
+                ret, frame = cap.read()
+                if not ret:
+                    if self.debug:
+                        print(f"[FrameExtractor] Failed to read frame at {current_time:.1f}s")
+                    current_time += self.frame_interval_seconds
+                    continue
+
+                # Format timestamp pour affichage
+                hours = int(current_time // 3600)
+                minutes = int((current_time % 3600) // 60)
+                seconds = int(current_time % 60)
+                formatted_timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+                if self.debug:
+                    print(f"[FrameExtractor] Yielding frame at {current_time:.1f}s ({formatted_timestamp})")
+
+                # Yield de manière asynchrone - permet aux autres coroutines de s'exécuter
+                yield frame, current_time, formatted_timestamp
+                await asyncio.sleep(0)  # Permet la concurrence
+
+                frame_count += 1
+                current_time += self.frame_interval_seconds
+
+            if self.debug:
+                print(f"[FrameExtractor] Async frame generation complete. Generated {frame_count} frames.")
+
+        finally:
+            cap.release()
+            if self.debug:
+                print("[FrameExtractor] Video capture released")
+
     def generate_frames(self):
         """
-        Générateur qui yield les frames de la vidéo selon l'intervalle configuré.
+        Générateur synchrone qui yield les frames de la vidéo selon l'intervalle configuré.
 
         Yields:
             tuple: (frame, timestamp_seconds, formatted_timestamp)
@@ -262,6 +341,12 @@ class FrameExtractor:
             if self.debug:
                 print("[FrameExtractor] Failed to open video capture")
             raise RuntimeError("Erreur: Impossible d'ouvrir la vidéo")
+
+        # Configuration buffer pour streams
+        if self.is_stream:
+            cap.set(cv.CAP_PROP_BUFFERSIZE, 15)  # Buffer 15 frames en avance
+            if self.debug:
+                print("[FrameExtractor] Stream buffer configured: 15 frames")
 
         try:
             fps = cap.get(cv.CAP_PROP_FPS)

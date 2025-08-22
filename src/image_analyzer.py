@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 
@@ -295,6 +296,134 @@ class ImageAnalyzer:
         self._save_debug_frame(frame, analysis_results)
 
         return analysis_results
+
+    async def async_analyze_frames(self, frame_generator, rois_to_analyze=None, preprocessing: PreprocessingStep = PreprocessingStep.NONE):
+        """
+        Générateur asynchrone qui consomme des frames et yield les résultats OCR.
+        
+        Args:
+            frame_generator: Générateur async de frames (frame, timestamp_sec, timestamp_str)
+            rois_to_analyze: Liste des ROIs à analyser
+            preprocessing: Étapes de préprocessing
+            
+        Yields:
+            Dict: Résultat OCR avec timestamp
+        """
+        if rois_to_analyze is None:
+            rois_to_analyze = ["timer", "character1", "character2", "player1", "player2"]
+            
+        async for frame, timestamp_sec, timestamp_str in frame_generator:
+            # Analyse OCR asynchrone de la frame
+            ocr_results = await self._async_analyze_frame(frame, rois_to_analyze, preprocessing)
+            
+            # Ajouter les métadonnées temporelles
+            result = {
+                "timestamp": timestamp_str,
+                "timestamp_sec": timestamp_sec,
+                **ocr_results
+            }
+            
+            yield result
+            
+    async def _async_analyze_frame(self, frame, rois_to_analyze, preprocessing):
+        """Version asynchrone de analyze_frame."""
+        analysis_results = {}
+        
+        for roi_name in rois_to_analyze:
+            # Analyse ROI de manière asynchrone 
+            roi_result = await self._async_analyze_single_roi_raw(frame, roi_name, preprocessing)
+            analysis_results[roi_name] = roi_result
+            
+            # Point de concurrence après chaque ROI
+            await asyncio.sleep(0)
+        
+        self._log_final_results(analysis_results)
+        self._save_debug_frame(frame, analysis_results)
+        
+        return analysis_results
+        
+    async def _async_analyze_single_roi_raw(self, frame, roi_name, preprocessing):
+        """Version asynchrone de _analyze_single_roi_raw."""
+        roi_image, boundaries = self._extract_roi(frame, roi_name)
+
+        if roi_image is None or boundaries is None:
+            self._log_debug(f"ROI {roi_name} extraction failed")
+            return ""
+
+        self._log_roi_extraction(roi_name, roi_image, boundaries)
+        self.debug_counter += 1
+
+        # Préprocessing image
+        roi_config = self.roi_manager.get_roi(roi_name)
+        processed_image = self._enhance_roi_image(roi_image, roi_config, preprocessing)
+        
+        # OCR asynchrone
+        text = await self._async_perform_ocr(processed_image, roi_name)
+        
+        self._log_debug(f"OCR result for {roi_name}: '{text}'")
+        return text
+        
+    async def _async_perform_ocr(self, image, roi_name):
+        """Effectue l'OCR avec approche hybride sync/async."""
+        roi_config = self.roi_manager.get_roi(roi_name)
+        model_type = roi_config.get("model", "easyocr")
+        
+        if model_type == "trocr" and self.trocr_available:
+            # TrOCR reste SYNCHRONE pour éviter problèmes CUDA thread pool
+            print(f"[OCR] TrOCR sync pour {roi_name}")
+            result = self._sync_trocr_ocr(image)
+        else:
+            # EasyOCR ASYNCHRONE pour meilleure concurrence
+            print(f"[OCR] EasyOCR async pour {roi_name}")
+            result = await self._async_easyocr_ocr(image, roi_name)
+            
+        return result
+        
+    async def _async_trocr_ocr(self, image):
+        """TrOCR de manière asynchrone."""
+        # Exécuter TrOCR dans thread pool pour éviter blocage
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, self._sync_trocr_ocr, image)
+        return result
+        
+    async def _async_easyocr_ocr(self, image, roi_name):
+        """EasyOCR de manière asynchrone.""" 
+        # Exécuter EasyOCR dans thread pool pour éviter blocage
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, self._sync_easyocr_ocr, image, roi_name)
+        return result
+        
+    def _sync_trocr_ocr(self, image):
+        """Version synchrone de TrOCR avec gestion CUDA correcte."""
+        pil_image = Image.fromarray(cv.cvtColor(image, cv.COLOR_BGR2RGB))
+        pixel_values = self.trocr_processor(pil_image, return_tensors="pt").pixel_values
+        
+        # CORRECTION: Déplacer pixel_values sur le même device que le modèle
+        if hasattr(self.trocr_model, 'device'):
+            pixel_values = pixel_values.to(self.trocr_model.device)
+        elif next(self.trocr_model.parameters()).is_cuda:
+            pixel_values = pixel_values.cuda()
+            
+        generated_ids = self.trocr_model.generate(pixel_values)
+        generated_text = self.trocr_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        return generated_text
+        
+    def _sync_easyocr_ocr(self, image, roi_name):
+        """Version synchrone d'EasyOCR pour thread pool."""
+        if not self.easyocr_available:
+            return ""
+            
+        roi_config = self.roi_manager.get_roi(roi_name)
+        whitelist = roi_config.get("whitelist_chars", "")
+        
+        if whitelist:
+            results = self.easyocr_reader.readtext(image, allowlist=whitelist)
+        else:
+            results = self.easyocr_reader.readtext(image)
+            
+        if results:
+            return results[0][1] if len(results[0]) > 1 else ""
+        return ""
 
     def _analyze_single_roi_raw(self, frame, roi_name, preprocessing):
         """Analyze a single ROI and return raw OCR text without validation."""
