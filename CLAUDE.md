@@ -29,6 +29,57 @@ Keep track of ideas and improvements to implement:
 
 **Principe clé** : Les personnages ont la plus haute confiance et doivent guider la déduction des autres éléments.
 
+### ✅ COMPLETED: Interactive Menu System
+
+**Interface CLI interactive pour l'analyse de replays SF6** :
+
+1. **[x] Système de navigation au clavier** implémenté
+   - ✅ Navigation avec flèches ↑↓ et validation par Entrée
+   - ✅ Annulation gracieuse avec Ctrl+C à tout moment
+   - ✅ Interface utilisateur colorée avec émojis et formatage
+
+2. **[x] Menus de sélection de source** implémentés
+   - ✅ Choix entre fichier local et URL en ligne
+   - ✅ Validation des extensions vidéo pour fichiers locaux
+   - ✅ Test de résolution en temps réel pour URLs
+
+3. **[x] Configuration interactive d'analyse** implémentée
+   - ✅ Sélection fréquence extraction (frames/minute)
+   - ✅ Choix pipeline asynchrone vs séquentiel
+   - ✅ Configuration nombre de workers OCR
+   - ✅ Options de sauvegarde des frames
+
+4. **[x] Interface de modification ROI** implémentée
+   - ✅ Visualisation des ROIs actuels
+   - ✅ Modification interactive des coordonnées
+   - ✅ Validation des coordonnées en temps réel
+   - ✅ Sauvegarde automatique des modifications
+
+5. **[x] Script d'entrée unifié** `interactive_export.py`
+   - ✅ Intégration complète avec pipelines existants
+   - ✅ Affichage récapitulatif de configuration
+   - ✅ Gestion d'erreurs et suggestions étapes suivantes
+
+**Usage :**
+```bash
+# Interface interactive complète (recommandé pour nouveaux utilisateurs)
+python interactive_export.py
+
+# L'interface guide à travers:
+# 1. Sélection type de source (local/URL)
+# 2. Saisie et validation de la source
+# 3. Configuration des paramètres d'analyse
+# 4. Modification optionnelle des ROIs
+# 5. Confirmation et lancement automatique
+```
+
+**Avantages :**
+- **User-friendly** : Plus besoin de connaître les paramètres CLI
+- **Validation en temps réel** : Vérification des fichiers et URLs
+- **Configuration guidée** : Questions contextuelles avec valeurs par défaut
+- **Intégration seamless** : Utilise les pipelines existants sans modification
+- **ROI management** : Interface intuitive pour ajuster les zones d'analyse
+
 ### ✅ COMPLETED: Async Pipeline Implementation
 
 **Pipeline Asynchrone pour export.py** :
