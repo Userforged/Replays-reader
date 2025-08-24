@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import cv2 as cv
 import numpy as np
 
+from image_viewer import ImageViewer
+
 
 class RoiManager:
     """
@@ -35,6 +37,7 @@ class RoiManager:
         self.config_file = config_file
         self._config = None
         self._loaded = False
+        self._image_viewer = ImageViewer()  # Composition for visual operations
 
     def load(self) -> None:
         """
@@ -139,7 +142,7 @@ class RoiManager:
         # Ajouter nouvelle ROI
         self._config["rois"].append(roi_config.copy())
 
-    def update_roi_boundaries(self, name: str, boundaries: Dict[str, float]) -> None:
+    def update_roi(self, name: str, boundaries: Dict[str, float]) -> None:
         """
         Met à jour seulement les boundaries d'une ROI existante.
 
@@ -191,6 +194,25 @@ class RoiManager:
             True si la ROI existe
         """
         return name in self.get_roi_names()
+
+    def delete_roi(self, name: str) -> bool:
+        """
+        Supprime une ROI par son nom.
+        
+        Args:
+            name: Nom de la ROI à supprimer
+            
+        Returns:
+            True si la ROI existait et a été supprimée, False sinon
+        """
+        if not self._loaded:
+            raise RuntimeError("Configuration non chargée. Utilisez load() d'abord.")
+        
+        for i, roi in enumerate(self._config["rois"]):
+            if roi["name"] == name:
+                del self._config["rois"][i]
+                return True
+        return False
 
     def to_image_analyzer_format(self) -> Dict[str, Dict[str, float]]:
         """
@@ -255,8 +277,20 @@ class RoiManager:
                 errors.append(f"ROI '{roi.get('name', 'unknown')}': {e}")
 
         return len(errors) == 0, errors
-
+    
     def get_roi_info_summary(self) -> str:
+        """
+        Génère un résumé textuel des ROIs configurées.
+        
+        DEPRECATED: Use get_roi() and get_all_rois() for programmatic access.
+        This method is kept for backward compatibility only.
+        
+        Returns:
+            Chaîne de caractères avec le résumé
+        """
+        return self._get_roi_info_summary()
+
+    def _get_roi_info_summary(self) -> str:
         """
         Génère un résumé textuel des ROIs configurées.
 
@@ -289,6 +323,7 @@ class RoiManager:
     ) -> np.ndarray:
         """
         Dessine les ROIs sur une image pour prévisualisation.
+        Délègue à ImageViewer pour l'implémentation.
 
         Args:
             image: Image OpenCV (numpy array)
@@ -300,55 +335,7 @@ class RoiManager:
         if not self._loaded:
             raise RuntimeError("Configuration non chargée. Utilisez load() d'abord.")
 
-        preview_img = image.copy()
-        height, width = image.shape[:2]
-
-        for roi in self._config["rois"]:
-            name = roi["name"]
-            boundaries = roi["boundaries"]
-            color = tuple(boundaries.get("color", [0, 255, 0]))  # Vert par défaut
-            label = roi.get("label", name.upper())
-
-            # Calculer les coordonnées en pixels
-            left = int(boundaries["left"] * width)
-            top = int(boundaries["top"] * height)
-            right = int(boundaries["right"] * width)
-            bottom = int(boundaries["bottom"] * height)
-
-            # Dessiner le rectangle
-            cv.rectangle(preview_img, (left, top), (right, bottom), color, 2)
-
-            if show_labels:
-                # Ajouter le label
-                font = cv.FONT_HERSHEY_SIMPLEX
-                scale = 0.6
-                thickness = 2
-                (text_width, text_height), _ = cv.getTextSize(
-                    label, font, scale, thickness
-                )
-                text_x = left
-                text_y = max(top - 10, text_height + 5)
-
-                # Fond noir pour le texte
-                cv.rectangle(
-                    preview_img,
-                    (text_x - 2, text_y - text_height - 2),
-                    (text_x + text_width + 2, text_y + 2),
-                    (0, 0, 0),
-                    -1,
-                )
-
-                cv.putText(
-                    preview_img,
-                    label,
-                    (text_x, text_y),
-                    font,
-                    scale,
-                    (255, 255, 255),
-                    thickness,
-                )
-
-        return preview_img
+        return self._image_viewer.display_rois_on_image(image, self._config["rois"], show_labels)
 
     def get_required_roi_names(self) -> List[str]:
         """
@@ -374,6 +361,45 @@ class RoiManager:
         missing = list(required - available)
 
         return len(missing) == 0, missing
+
+    def edit_roi_on_image(self, image: np.ndarray, roi_name: str) -> bool:
+        """
+        Lance l'éditeur visuel interactif pour modifier une ROI.
+        
+        Args:
+            image: Image de référence pour l'édition
+            roi_name: Nom de la ROI à modifier
+            
+        Returns:
+            True si la ROI a été modifiée (auto-sauvegardée)
+        """
+        if not self._loaded:
+            raise RuntimeError("Configuration non chargée. Utilisez load() d'abord.")
+        
+        roi_config = self.get_roi(roi_name)
+        if roi_config is None:
+            raise ValueError(f"ROI '{roi_name}' non trouvée")
+        
+        updated_roi = self._image_viewer.interactive_roi_editor(image, roi_config)
+        
+        if updated_roi:
+            self.set_roi(roi_name, updated_roi)
+            # Note: Changes kept in memory only - not saved to rois_config.json
+            return True
+        return False
+
+    def reload_from_file(self) -> None:
+        """
+        Reload configuration from file, discarding any in-memory changes.
+        
+        Used when user chooses "Launch without saving" to ignore 
+        temporary modifications and use original ROI configuration.
+        """
+        if not self._loaded:
+            raise RuntimeError("Configuration non chargée. Utilisez load() d'abord.")
+        
+        # Simply reload from file, overwriting in-memory changes
+        self.load()
 
     def _validate_roi_config(self, roi_config: Dict[str, Any]) -> None:
         """
